@@ -1,0 +1,28 @@
+<style>
+.responsiveCal {
+position: relative; padding-bottom: 75%; height: 0; overflow: hidden;
+}
+ 
+.responsiveCal iframe {
+position: absolute; top:0; left: 0; width: 100%; height: 100%;
+}
+
+@media all and (min-width: 768px) {
+    .deskContent {display:block;}
+    .phoneContent {display:none;}
+}
+
+@media all and (max-width: 767px) {
+    .deskContent {display:none;}
+    .phoneContent {display:block;}
+}
+</style>
+<div class="responsiveCal">
+<div class="deskContent"><iframe src="https://calendar.google.com/calendar/embed?height=600&wkst=1&ctz=America%2FLos_Angeles&showPrint=0&showDate=0&showTz=0&src=NTYwZTg1OWJkMmM3YjVkZmQyMjYyY2I2ZjI4Mzg5OTIxNDM0NjA2Y2VjOTU1ZTdlYzc1ZjAyZGY5ZmQyMTM4YUBncm91cC5jYWxlbmRhci5nb29nbGUuY29t&color=%230B8043" style="border:solid 1px #777" width="800" height="600" frameborder="0" scrolling="no"></iframe>
+  </div>
+<div class="phoneContent"><iframe src="https://calendar.google.com/calendar/embed?height=600&wkst=1&ctz=America%2FLos_Angeles&showPrint=0&showDate=0&showTz=0&mode=AGENDA&src=NTYwZTg1OWJkMmM3YjVkZmQyMjYyY2I2ZjI4Mzg5OTIxNDM0NjA2Y2VjOTU1ZTdlYzc1ZjAyZGY5ZmQyMTM4YUBncm91cC5jYWxlbmRhci5nb29nbGUuY29t&color=%230B8043" style="border:solid 1px #777" width="300" height="600" frameborder="0" scrolling="no"></iframe>
+</div></div>
+
+
+
+

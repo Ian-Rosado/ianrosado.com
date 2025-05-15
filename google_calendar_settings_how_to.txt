@@ -1,0 +1,14 @@
+Calendar Settings >> scroll down to "Integrate Calendar" >> Hit "Customize"
+
+Select Calendar(s)
+Adjust width/height,
+adjust default view
+
+Title X
+Navigation Buttons X
+Date ()
+Print icon()
+view menu X
+calendar list()
+Time Zone ()
+Border X

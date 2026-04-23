@@ -1,0 +1,79 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+
+const recipes = await getCollection('recipes');
+const recentRecipes = recipes
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .slice(0, 3);
+---
+
+<Layout title="Home" pageClass="page-home">
+  <!-- Hero -->
+  <section class="max-w-5xl mx-auto px-4 py-16 md:py-24">
+    <h1 class="text-5xl md:text-6xl font-semibold text-stone-900 mb-4 leading-tight" style="font-family: var(--font-serif)">
+      Hi, I'm Ian.
+    </h1>
+    <p class="text-xl text-stone-500 max-w-xl mb-8">
+      I live in Portland, OR. I track local events, bake things, and document adventures.
+    </p>
+    <div class="flex flex-wrap gap-3">
+      <a href="/portland-events" class="px-5 py-2.5 bg-orange-600 text-white text-sm font-medium rounded-full hover:bg-orange-700 transition-colors">
+        Portland Events
+      </a>
+      <a href="/recipes" class="px-5 py-2.5 bg-white border border-stone-200 text-stone-700 text-sm font-medium rounded-full hover:border-orange-300 hover:text-orange-600 transition-colors">
+        Recipes
+      </a>
+    </div>
+  </section>
+
+  <!-- Divider -->
+  <div class="border-t border-orange-100 max-w-5xl mx-auto"></div>
+
+  <!-- Featured Recipes -->
+  {recentRecipes.length > 0 && (
+    <section class="max-w-5xl mx-auto px-4 py-12">
+      <div class="flex items-baseline justify-between mb-6">
+        <h2 class="text-2xl font-semibold text-stone-900" style="font-family: var(--font-serif)">Recent Recipes</h2>
+        <a href="/recipes" class="text-sm text-stone-400 hover:text-orange-600 transition-colors">All recipes →</a>
+      </div>
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        {recentRecipes.map(recipe => (
+          <a href={`/recipes/${recipe.id}`} class="group block bg-white rounded-2xl overflow-hidden border border-stone-100 shadow-sm hover:shadow-md hover:border-orange-200 transition-all">
+            {recipe.data.coverImage && (
+              <div class="aspect-[4/3] overflow-hidden bg-orange-50">
+                <img
+                  src={recipe.data.coverImage}
+                  alt={recipe.data.title}
+                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+              </div>
+            )}
+            <div class="p-4">
+              <div class="flex flex-wrap gap-1 mb-2">
+                {recipe.data.tags.map((tag: string) => (
+                  <span class="text-xs px-2 py-0.5 bg-orange-50 text-orange-700 rounded-full">{tag}</span>
+                ))}
+              </div>
+              <h3 class="font-medium text-stone-900 group-hover:text-orange-600 transition-colors leading-snug" style="font-family: var(--font-serif)">{recipe.data.title}</h3>
+              <p class="text-sm text-stone-400 mt-1">{recipe.data.description}</p>
+            </div>
+          </a>
+        ))}
+      </div>
+    </section>
+  )}
+
+  <!-- Portland Events promo -->
+  <section class="max-w-5xl mx-auto px-4 py-6 pb-12">
+    <div class="bg-white rounded-2xl border border-orange-100 shadow-sm p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+      <div class="flex-1">
+        <h2 class="text-xl font-semibold text-stone-900 mb-1" style="font-family: var(--font-serif)">What's happening in Portland?</h2>
+        <p class="text-stone-500 text-sm">Curated calendars for events, farmers markets, trivia nights, and more.</p>
+      </div>
+      <a href="/portland-events" class="shrink-0 px-5 py-2.5 bg-orange-600 text-white text-sm font-medium rounded-full hover:bg-orange-700 transition-colors">
+        See the calendars
+      </a>
+    </div>
+  </section>
+</Layout>

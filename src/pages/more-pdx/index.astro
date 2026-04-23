@@ -1,0 +1,23 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="More PDX" description="More Portland content — favorites, pickup soccer, and local finds." pageClass="page-events">
+  <div class="max-w-5xl mx-auto px-4 py-12">
+    <header class="mb-10">
+      <h1 class="text-4xl font-semibold text-stone-900 mb-3" style="font-family: var(--font-serif)">More PDX</h1>
+      <p class="text-stone-500 text-lg max-w-xl">More Portland content — local favorites, pickup soccer, and things worth knowing about the city.</p>
+    </header>
+
+    <div class="grid sm:grid-cols-2 gap-5">
+      <a href="/more-pdx/favorites" class="group block bg-white rounded-2xl border border-stone-100 shadow-sm hover:shadow-md transition-shadow p-6">
+        <h2 class="text-xl font-semibold text-stone-900 mb-2 group-hover:text-stone-600 transition-colors" style="font-family: var(--font-serif)">Portland Favorites</h2>
+        <p class="text-stone-500 text-sm">Places, restaurants, and spots around the city that I keep coming back to.</p>
+      </a>
+      <a href="/more-pdx/pickup-soccer" class="group block bg-white rounded-2xl border border-stone-100 shadow-sm hover:shadow-md transition-shadow p-6">
+        <h2 class="text-xl font-semibold text-stone-900 mb-2 group-hover:text-stone-600 transition-colors" style="font-family: var(--font-serif)">Portland Pickup Soccer</h2>
+        <p class="text-stone-500 text-sm">Where and when to find pickup soccer games around Portland.</p>
+      </a>
+    </div>
+  </div>
+</Layout>

@@ -1,0 +1,33 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:www.ianrosado.com)",
+      "Bash(npm --version)",
+      "PowerShell(node --version)",
+      "PowerShell(npm --version)",
+      "PowerShell(Get-Command node -ErrorAction SilentlyContinue; where.exe node 2>$null; ls \"C:\\\\Program Files\\\\nodejs\\\\\" 2>$null; ls \"$env:APPDATA\\\\npm\" 2>$null)",
+      "PowerShell(Test-Path \"C:\\\\Program Files\\\\nodejs\\\\node.exe\"; Test-Path \"C:\\\\Program Files \\(x86\\)\\\\nodejs\\\\node.exe\"; ls $env:LOCALAPPDATA\\\\Programs 2>$null | Select-Object Name)",
+      "PowerShell(ls $env:LOCALAPPDATA\\\\Programs 2>$null | Select-Object Name; Get-ChildItem \"C:\\\\\" -Directory | Select-Object Name)",
+      "PowerShell(Get-ChildItem \"$env:USERPROFILE\" -Directory | Select-Object -ExpandProperty Name | Sort-Object)",
+      "PowerShell($env:PATH = [System.Environment]::GetEnvironmentVariable\\(\"PATH\", \"Machine\"\\) + \";\" + [System.Environment]::GetEnvironmentVariable\\(\"PATH\", \"User\"\\); node --version; npm --version)",
+      "PowerShell($env:PATH = [System.Environment]::GetEnvironmentVariable\\(\"PATH\", \"Machine\"\\) + \";\" + [System.Environment]::GetEnvironmentVariable\\(\"PATH\", \"User\"\\); Set-Location \"C:\\\\Users\\\\ianpr\\\\Documents\\\\GitHub\\\\ianrosado.com\"; npm create astro@latest . -- --template minimal --install --no-git --yes 2>&1)",
+      "PowerShell($env:PATH = [System.Environment]::GetEnvironmentVariable\\(\"PATH\", \"Machine\"\\) + \";\" + [System.Environment]::GetEnvironmentVariable\\(\"PATH\", \"User\"\\); Set-Location \"C:\\\\Users\\\\ianpr\\\\Documents\\\\GitHub\\\\ianrosado.com\"; Get-ChildItem \"pink-photon\" | Select-Object Name)",
+      "PowerShell($env:PATH = [System.Environment]::GetEnvironmentVariable\\(\"PATH\", \"Machine\"\\) + \";\" + [System.Environment]::GetEnvironmentVariable\\(\"PATH\", \"User\"\\); Set-Location \"C:\\\\Users\\\\ianpr\\\\Documents\\\\GitHub\\\\ianrosado.com\"; npm install 2>&1 | tail -5)",
+      "PowerShell($env:PATH = [System.Environment]::GetEnvironmentVariable\\(\"PATH\", \"Machine\"\\) + \";\" + [System.Environment]::GetEnvironmentVariable\\(\"PATH\", \"User\"\\); Set-Location \"C:\\\\Users\\\\ianpr\\\\Documents\\\\GitHub\\\\ianrosado.com\"; npm install 2>&1 | Select-Object -Last 5)",
+      "PowerShell($env:PATH = [System.Environment]::GetEnvironmentVariable\\(\"PATH\", \"Machine\"\\) + \";\" + [System.Environment]::GetEnvironmentVariable\\(\"PATH\", \"User\"\\); Set-Location \"C:\\\\Users\\\\ianpr\\\\Documents\\\\GitHub\\\\ianrosado.com\"; npx astro add tailwind --yes 2>&1 | Select-Object -Last 10)",
+      "PowerShell($env:PATH = [System.Environment]::GetEnvironmentVariable\\(\"PATH\", \"Machine\"\\) + \";\" + [System.Environment]::GetEnvironmentVariable\\(\"PATH\", \"User\"\\); Set-Location \"C:\\\\Users\\\\ianpr\\\\Documents\\\\GitHub\\\\ianrosado.com\"; cat package.json)",
+      "PowerShell($env:PATH = [System.Environment]::GetEnvironmentVariable\\(\"PATH\", \"Machine\"\\) + \";\" + [System.Environment]::GetEnvironmentVariable\\(\"PATH\", \"User\"\\); Set-Location \"C:\\\\Users\\\\ianpr\\\\Documents\\\\GitHub\\\\ianrosado.com\"; npm install @tailwindcss/typography 2>&1 | Select-Object -Last 4)",
+      "mcp__Claude_Preview__preview_start",
+      "PowerShell($env:PATH = [System.Environment]::GetEnvironmentVariable\\(\"PATH\", \"Machine\"\\) + \";\" + [System.Environment]::GetEnvironmentVariable\\(\"PATH\", \"User\"\\); \\(Get-Command npm\\).Source)",
+      "mcp__Claude_in_Chrome__tabs_context_mcp",
+      "mcp__Claude_in_Chrome__navigate",
+      "mcp__Claude_in_Chrome__computer",
+      "mcp__Claude_in_Chrome__get_page_text",
+      "mcp__Claude_in_Chrome__read_page",
+      "PowerShell($env:PATH = \"C:\\\\Program Files\\\\nodejs;\" + [System.Environment]::GetEnvironmentVariable\\(\"PATH\", \"Machine\"\\) + \";\" + [System.Environment]::GetEnvironmentVariable\\(\"PATH\", \"User\"\\); Set-Location \"C:\\\\Users\\\\ianpr\\\\Documents\\\\GitHub\\\\ianrosado.com\"; & \"C:\\\\Users\\\\ianpr\\\\Documents\\\\GitHub\\\\ianrosado.com\\\\node_modules\\\\.bin\\\\astro.cmd\" dev 2>&1 | Select-Object -First 50)",
+      "PowerShell($env:PATH = \"C:\\\\Program Files\\\\nodejs;\" + [System.Environment]::GetEnvironmentVariable\\(\"PATH\", \"Machine\"\\) + \";\" + [System.Environment]::GetEnvironmentVariable\\(\"PATH\", \"User\"\\); Set-Location \"C:\\\\Users\\\\ianpr\\\\Documents\\\\GitHub\\\\ianrosado.com\"; & \"C:\\\\Users\\\\ianpr\\\\Documents\\\\GitHub\\\\ianrosado.com\\\\node_modules\\\\.bin\\\\astro.cmd\" dev 2>&1 | Select-Object -First 30)",
+      "mcp__Claude_in_Chrome__tabs_create_mcp",
+      "Bash(git add *)"
+    ]
+  }
+}

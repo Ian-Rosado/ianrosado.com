@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "ianrosado.com",
+      "runtimeExecutable": "cmd.exe",
+      "runtimeArgs": ["/c", "set PATH=C:\\Program Files\\nodejs;%PATH% && C:\\Users\\ianpr\\Documents\\GitHub\\ianrosado.com\\node_modules\\.bin\\astro.cmd dev"],
+      "port": 4321
+    }
+  ]
+}

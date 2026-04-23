@@ -1,0 +1,63 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@theme {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-serif: 'Lora', ui-serif, Georgia, serif;
+  --color-brand: #ea580c;
+  --color-brand-hover: #c2410c;
+  --color-brand-light: #fff7ed;
+}
+
+/* ── Shared diagonal gradient (light top-left → saturated orange bottom-right) ── */
+:root {
+  --gradient-base: linear-gradient(135deg, #ffffff 0%, #fff7ed 30%, #fed7aa 65%, #fb923c 100%);
+}
+
+/* ── Per-page background patterns layered over the gradient ── */
+
+/* Home: just the base gradient, no texture */
+.page-home {
+  background-image: var(--gradient-base);
+}
+
+/* Portland Events: dot grid over the gradient — open city feel */
+.page-events {
+  background-image:
+    radial-gradient(circle, rgba(180, 130, 80, 0.2) 1px, transparent 1px),
+    var(--gradient-base);
+  background-size: 22px 22px, 100% 100%;
+}
+
+/* Recipes: diagonal lines over the gradient — warm/cozy kitchen */
+.page-recipes {
+  background-image:
+    repeating-linear-gradient(
+      -45deg,
+      transparent 0px,
+      transparent 14px,
+      rgba(180, 80, 10, 0.06) 14px,
+      rgba(180, 80, 10, 0.06) 15px
+    ),
+    var(--gradient-base);
+  background-size: auto, 100% 100%;
+}
+
+/* My Life: horizontal ruled lines over the gradient — journal/travel feel */
+.page-mylife {
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      transparent 0px,
+      transparent 31px,
+      rgba(160, 90, 20, 0.1) 31px,
+      rgba(160, 90, 20, 0.1) 32px
+    ),
+    var(--gradient-base);
+  background-size: auto, 100% 100%;
+}
+
+/* About: just the gradient, clean */
+.page-about {
+  background-image: var(--gradient-base);
+}

@@ -1,0 +1,111 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout
+  title="Portland Events"
+  description="Curated Google Calendars for Portland events, farmers markets, trivia nights, and more."
+  pageClass="page-events"
+>
+  <div class="max-w-5xl mx-auto px-4 py-12">
+    <header class="mb-10">
+      <h1 class="text-4xl font-semibold text-stone-900 mb-3" style="font-family: var(--font-serif)">Portland Events</h1>
+      <p class="text-stone-500 text-lg max-w-2xl">
+        A curated set of calendars for things happening around Portland — events I find interesting,
+        farmers markets, trivia nights by neighborhood, and more. Portland staples (like the Naked Bike Ride) are marked in purple.
+      </p>
+    </header>
+
+    <!-- Resources -->
+    <div class="mb-10 p-5 bg-white rounded-2xl border border-stone-100 shadow-sm">
+      <h2 class="text-xs font-semibold uppercase tracking-widest text-stone-400 mb-3">Good sources for more</h2>
+      <ul class="flex flex-wrap gap-x-6 gap-y-2 text-sm text-stone-600">
+        <li><a href="https://everout.com/portland/" target="_blank" rel="noopener" class="hover:text-orange-600 underline underline-offset-2">Portland Mercury's EverOut</a></li>
+        <li><a href="https://www.travelportland.com/events/" target="_blank" rel="noopener" class="hover:text-orange-600 underline underline-offset-2">Travel Portland Festivals</a></li>
+        <li><a href="https://www.pdxpipeline.com/" target="_blank" rel="noopener" class="hover:text-orange-600 underline underline-offset-2">PDX Pipeline</a></li>
+        <li><a href="https://shift2bikes.org/" target="_blank" rel="noopener" class="hover:text-orange-600 underline underline-offset-2">Pedalpalooza (Shift2Bikes)</a></li>
+      </ul>
+    </div>
+
+    <!-- Main Events Calendar -->
+    <section class="mb-12">
+      <h2 class="text-2xl font-semibold text-stone-900 mb-4" style="font-family: var(--font-serif)">Events</h2>
+      <div class="relative w-full rounded-2xl overflow-hidden border border-stone-100 shadow-sm" style="padding-bottom: 60%; height: 0;">
+        <iframe
+          class="hidden md:block absolute top-0 left-0 w-full h-full"
+          src="https://calendar.google.com/calendar/embed?height=600&wkst=1&ctz=America%2FLos_Angeles&bgcolor=%23ffffff&src=ZDExczY1cjV2bHE1NDBrMmFpY2RtOGM3bmRycDZkc2xAaW1wb3J0LmNhbGVuZGFyLmdvb2dsZS5jb20&color=%23616161"
+          style="border: 0"
+          frameborder="0"
+          scrolling="no"
+        ></iframe>
+        <iframe
+          class="md:hidden absolute top-0 left-0 w-full h-full"
+          src="https://calendar.google.com/calendar/embed?height=600&wkst=1&ctz=America%2FLos_Angeles&bgcolor=%23ffffff&mode=AGENDA&src=ZDExczY1cjV2bHE1NDBrMmFpY2RtOGM3bmRycDZkc2xAaW1wb3J0LmNhbGVuZGFyLmdvb2dsZS5jb20&color=%23616161"
+          style="border: 0"
+          frameborder="0"
+          scrolling="no"
+        ></iframe>
+      </div>
+    </section>
+
+    <!-- Farmers Markets -->
+    <section class="mb-12">
+      <h2 class="text-2xl font-semibold text-stone-900 mb-2" style="font-family: var(--font-serif)">Farmers Markets</h2>
+      <p class="text-stone-500 text-sm mb-4">Portland has farmers markets almost every day of the week.</p>
+      <div class="relative w-full rounded-2xl overflow-hidden border border-stone-100 shadow-sm" style="padding-bottom: 60%; height: 0;">
+        <iframe
+          class="hidden md:block absolute top-0 left-0 w-full h-full"
+          src="https://calendar.google.com/calendar/embed?height=600&wkst=1&ctz=America%2FLos_Angeles&showPrint=0&showDate=0&showTz=0&src=NTYwZTg1OWJkMmM3YjVkZmQyMjYyY2I2ZjI4Mzg5OTIxNDM0NjA2Y2VjOTU1ZTdlYzc1ZjAyZGY5ZmQyMTM4YUBncm91cC5jYWxlbmRhci5nb29nbGUuY29t&color=%230B8043"
+          style="border: 0"
+          frameborder="0"
+          scrolling="no"
+        ></iframe>
+        <iframe
+          class="md:hidden absolute top-0 left-0 w-full h-full"
+          src="https://calendar.google.com/calendar/embed?height=600&wkst=1&ctz=America%2FLos_Angeles&showPrint=0&showDate=0&showTz=0&mode=AGENDA&src=NTYwZTg1OWJkMmM3YjVkZmQyMjYyY2I2ZjI4Mzg5OTIxNDM0NjA2Y2VjOTU1ZTdlYzc1ZjAyZGY5ZmQyMTM4YUBncm91cC5jYWxlbmRhci5nb29nbGUuY29t&color=%230B8043"
+          style="border: 0"
+          frameborder="0"
+          scrolling="no"
+        ></iframe>
+      </div>
+    </section>
+
+    <!-- Trivia Nights placeholder -->
+    <section class="mb-12">
+      <h2 class="text-2xl font-semibold text-stone-900 mb-2" style="font-family: var(--font-serif)">Trivia Nights</h2>
+      <p class="text-stone-500 text-sm mb-4">Trivia is big in Portland. Calendars organized by neighborhood.</p>
+      <div class="grid sm:grid-cols-2 gap-4">
+        {['N & NE Portland', 'NW & SW Portland', 'SE Portland', 'Surrounding Areas'].map(area => (
+          <div class="p-4 bg-stone-100 rounded-xl text-center text-stone-400 text-sm">
+            <p class="font-medium text-stone-500 mb-1">{area}</p>
+            <p class="text-xs">Calendar coming soon</p>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <!-- Portland Favorites Map -->
+    <section class="mb-12">
+      <h2 class="text-2xl font-semibold text-stone-900 mb-2" style="font-family: var(--font-serif)">Portland Favorites Map</h2>
+      <p class="text-stone-500 text-sm mb-4">A map of places I like around the city.</p>
+      <div class="relative w-full rounded-2xl overflow-hidden border border-stone-100 shadow-sm" style="padding-bottom: 60%; height: 0;">
+        <iframe
+          class="absolute top-0 left-0 w-full h-full"
+          src="https://www.google.com/maps/d/u/0/embed?mid=1PPFjj6o3PLraMpY1BxJsboW1ZiITlGI&ehbc=2E312F&noprof=1"
+          style="border: 0"
+          frameborder="0"
+          scrolling="no"
+        ></iframe>
+      </div>
+    </section>
+
+    <!-- Feedback -->
+    <section class="p-6 bg-white rounded-2xl border border-stone-100 shadow-sm">
+      <h2 class="text-lg font-semibold text-stone-900 mb-1" style="font-family: var(--font-serif)">Know something I'm missing?</h2>
+      <p class="text-stone-500 text-sm mb-3">If you have a suggestion for an event, calendar, or place to add, reach out.</p>
+      <a href="mailto:ian.p.rosado@gmail.com?subject=Portland Events Suggestion" class="inline-block px-5 py-2 bg-orange-600 text-white text-sm font-medium rounded-full hover:bg-orange-700 transition-colors">
+        Send a suggestion
+      </a>
+    </section>
+  </div>
+</Layout>

@@ -1,11 +1,11 @@
 ---
 title: "Gooey Oatmeal Chocolate Chip Cookies"
 date: 2024-02-01
-description: "Crispy outside, gooey inside — the chill step is non-negotiable."
+description: "Crispy outside, gooey inside. The chill step is non-negotiable."
 tags: ["cookies", "chocolate", "oatmeal"]
 ingredients:
   - "1 cup brown sugar"
-  - "1 stick (8 tbsp) salted butter, room temperature"
+  - "1 stick (8 tablespoons) salted butter, room temp"
   - "1 egg"
   - "1 tsp vanilla extract"
   - "1/2 tsp baking soda"
@@ -13,63 +13,71 @@ ingredients:
   - "1/2 tsp salt"
   - "1 tsp cinnamon"
   - "1/4 tsp nutmeg"
-  - "1 tbsp molasses (optional but recommended)"
-  - "1 cup all-purpose flour"
+  - "1 tbsp molasses (optional, but recommended)"
+  - "1 cup flour"
   - "1.5 cups instant oatmeal"
   - "1 cup semi-sweet chocolate chips (optional)"
 equipment:
-  - "Stand mixer or hand mixer (or strong arms)"
+  - "Mixer or strong arms"
   - "Cookie sheets"
-  - "Refrigerator or freezer"
+  - "Refrigerator or freezer space"
 ---
 
 Makes about 25 cookies.
 
-## Step 1: Soften the butter
+## Step 1
 
-Leave butter out until it reaches room temperature. Preheat your oven to 350°F.
+Set 1 stick of butter out to soften at room temp. Preheat your oven to 350°F.
 
-<!-- Photo: creamed butter before sugar -->
+## Step 2
 
-## Step 2: Cream butter and brown sugar
+Once butter is soft, cream together: 1 stick of butter, 1 cup of brown sugar
 
-Beat together until smooth with no lumps — this takes a couple minutes with a mixer.
+This is the consistency of "creamed butter and sugar". No lumps. Much easier with room temp butter.
 
-<!-- Photo: creamed butter + sugar consistency -->
+<!-- Photo: creamed butter and sugar consistency -->
 
-## Step 3: Add wet ingredients
+## Step 3
 
-Add the egg, vanilla, baking soda, baking powder, salt, cinnamon, nutmeg, and molasses. Mix well.
+Add (in no particular order): 1 egg, 1 tsp vanilla extract, 1/2 tsp baking soda, 1/2 tsp baking powder, 1/2 tsp salt, 1 tsp cinnamon, 1/4 tsp nutmeg, 1 tbsp molasses (optional, but recommended)
 
-<!-- Photo: wet ingredients combined -->
+<!-- Photo: wet ingredients mixed in -->
 
-## Step 4: Add flour and oats
+## Step 4
 
-Mix in the flour and instant oatmeal until fully combined. Fold in chocolate chips if using.
+Mix well, then add remaining ingredients: 1 cup flour, 1.5 cups instant oatmeal
 
-<!-- Photo: dough after flour and oats added -->
+Optional: Add 1 cup semi-sweet chocolate chips
 
-## Step 5: Chill the dough
+<!-- Photo: dough fully combined -->
 
-This is the non-negotiable step. Refrigerate for at least 15–20 minutes (or freeze for 10). Don't skip it.
+## Step 5: For Gooey Cookies
 
-<!-- Photo: dough chilled and ready to portion -->
+Place cookie dough in the refrigerator or freezer to cool for 15–20 minutes.
 
-## Step 6: Portion and bake
+<!-- Photo: dough chilled and ready -->
 
-Spoon tablespoon-sized balls onto cookie sheets about 1 inch apart. Bake 9–12 minutes at 350°F until they reach your preferred texture — less time = gooier center.
+## Step 6
 
-<!-- Photo: cookies on sheet before baking -->
+Once cooled, spoon tablespoons of dough onto cookie sheets, about 1 inch apart.
+
+<!-- Photo: dough portioned on sheet -->
+
+## Step 7
+
+Bake for 9–12 minutes at 350°F, or until desired texture is achieved. Cookies will puff up in the oven and collapse slightly when cooled.
+
 <!-- Photo: cookies fresh from oven -->
+<!-- Photo: finished cooled cookies -->
 
 ---
 
 ## Let's talk about the chill step
 
-Chilling dough before baking creates a bigger temperature differential between the outside and inside of the cookie, and it does three things:
+One key to really gooey cookies (any cookies, not just these) is chilling the dough before baking. Having the dough start at a lower temperature creates a bigger temperature differential from the outside of the cookie to the inside as the cookie bakes. That does a few things for us:
 
-1. **Crispy shell** — the exterior sets quickly in the hot oven before the inside has a chance to catch up
-2. **Less spread** — cold, firm dough doesn't immediately flatten on the sheet
-3. **Gooey center** — the inside takes longer to solidify, staying soft and underdone in the best way
+1. The outside bakes and solidifies before the inside of the cookie can, creating a crispy shell that prevents the inside from expanding as much.
 
-The 9–12 minute range gives you a lot of control: 9 minutes produces a very gooey cookie that firms up as it cools. 12 minutes gives you something crispier throughout. I prefer 10.
+2. The dough is firmer to start, so it doesn't flatten out immediately when placed in the oven. This helps the core of the cookie stay cooler longer.
+
+3. With the cookie core at a lower temperature, it bakes/solidifies later than the outside (or not at all), creating a soft gooey center.

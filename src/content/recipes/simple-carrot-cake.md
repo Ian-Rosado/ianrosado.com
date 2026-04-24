@@ -1,19 +1,19 @@
 ---
 title: "Simple Carrot Cake"
 date: 2024-05-01
-description: "Cake is a vessel for frosting. This one takes that seriously."
+description: "Cake is but a vessel for frosting."
 tags: ["cake", "frosting", "carrot"]
 ingredients:
   - "2 cups all-purpose flour"
-  - "2 tsp baking soda"
-  - "1/2 tsp fine sea salt"
-  - "1 1/2 tsp ground cinnamon"
-  - "1 1/4 cups vegetable oil"
+  - "2 teaspoons baking soda"
+  - "1/2 teaspoon fine sea salt"
+  - "1 and 1/2 teaspoons ground cinnamon"
+  - "1 and 1/4 cups vegetable oil"
   - "1 cup granulated sugar"
   - "1 cup lightly packed brown sugar"
-  - "1 tsp vanilla extract"
+  - "1 teaspoon vanilla extract"
   - "4 large eggs, room temperature"
-  - "3 cups peeled, grated carrots (about 5–6 large carrots)"
+  - "3 cups of peeled carrots"
 equipment:
   - "Two 9-inch round baking pans (or one 13×9 pan)"
   - "Mixing bowls"
@@ -21,64 +21,76 @@ equipment:
   - "Electric mixer (or hand mixer)"
 ---
 
-**For the cream cheese frosting:**
-- 8 oz cream cheese, room temperature
-- 1 stick salted butter, room temperature
-- ~2 cups powdered sugar
-- ~1/4 cup milk or heavy cream
-- 1 pinch salt
+**For the frosting:** 8 ounces cream cheese (1 block package), room temperature · ~2 cups powdered sugar · ~1/4 cup milk or heavy cream · 1 stick salted butter, room temp · 1 pinch of salt
 
-## Step 1: Prep and preheat
+---
 
-Preheat oven to 350°F. Grate 3 cups of carrots — this takes longer than you think, do it first.
+If you've been tracking my recipes so far, you might notice that this is the first recipe with no chocolate to date. Listen, I'm a complex individual. I might only make desserts, but they aren't all chocolate. Anyways, I call this a simple recipe because a lot of carrot cake recipes online will call for some other fruit like pineapple or applesauce to make the cake more moist — this doesn't call for any of that. I don't think it's necessary. This cake is perfect and moist as is.
 
-<!-- Photo: grated carrots -->
+## Step 1
 
-## Step 2: Mix the dry ingredients
+Preheat the oven to 350°F (176°C).
 
-Whisk together flour, baking soda, salt, and cinnamon in a large bowl.
+## Step 2
+
+Whisk together: 2 cups all-purpose flour, 2 teaspoons baking soda, 1/2 teaspoon fine sea salt, 1 and 1/2 teaspoons ground cinnamon
 
 <!-- Photo: dry ingredients whisked -->
 
-## Step 3: Coat the carrots
+## Step 3
 
-Add the grated carrots to the dry ingredients and toss until fully coated. This helps them distribute evenly through the batter and prevents sinking.
+Grate 3 cups of carrots (5–6 full large carrots).
+
+<!-- Photo: grated carrots -->
+
+## Step 4
+
+Mix the 3 cups of carrots with your dry ingredients, until fully coated.
 
 <!-- Photo: carrots mixed into dry ingredients -->
 
-## Step 4: Mix the wet ingredients
+## Step 5
 
-In a separate bowl, combine oil, both sugars, and vanilla. Add the room-temperature eggs and mix until combined.
+In a separate bowl, mix together: 1 and 1/4 cups vegetable oil, 1 cup granulated sugar, 1 cup lightly packed brown sugar, 1 teaspoon vanilla extract
 
 <!-- Photo: wet ingredients mixed -->
+
+## Step 6
+
+Once mixed, add: 4 large eggs, room temp
+
 <!-- Photo: eggs added to wet mixture -->
 
-## Step 5: Combine
+## Step 7
 
-Pour the wet ingredients into the dry/carrot bowl and fold until just combined. Scrape the bottom of the bowl — dry pockets hide there.
+Mix the ingredients of both bowls together, making sure to scrape the bottom of the bowl.
 
 <!-- Photo: batter combined -->
-<!-- Photo: batter in pans ready to bake -->
 
-## Step 6: Bake
+## Step 8
 
-Spray pans with oil and divide batter evenly. Bake 35–45 minutes until a knife inserted in the center comes out clean. Don't overbake — err on the side of pulling it early.
+Prepare your baking pan or pans with oil spray, then split your batter evenly (or fill your one pan).
+
+<!-- Photo: batter in pans -->
+
+## Step 9
+
+Bake at 350°F for 35 to 45 minutes, or until a butter knife inserted in the middle comes out clean.
 
 <!-- Photo: baked cakes out of the oven -->
 
-## Step 7: Cool completely, then frost
+## Frosting
 
-The cake must be fully cool before frosting or the cream cheese frosting will slide off. Beat all frosting ingredients together, adjusting with more milk (looser) or more powdered sugar (stiffer) until you get a spreadable consistency.
+Beat together: 8 ounces cream cheese (room temperature), ~2 cups powdered sugar, ~1/4 cup milk or heavy cream, 1 stick salted butter (room temp), 1 pinch of salt — adding liquid to thin or sugar to thicken until you get the desired consistency. Be careful — a little milk goes a long way.
 
 <!-- Photo: frosted cake -->
 
 ---
 
-## Cake is a vessel for frosting
+## Let's discuss
 
-I mean that. The carrot cake itself is good — moist, warmly spiced — but the cream cheese frosting is why people make carrot cake. Don't be shy with it.
+You might look at those last pictures and think "That's way too much frosting". And you're entitled to an opinion, even if it's incorrect. One of my favorite adages I took from my mother is "Cake is but a vessel for frosting". Anyways, you can always scrape it off, but you can't always get more.
 
-A few notes:
-- **Coating carrots in dry ingredients** helps prevent them from sinking to the bottom, though honestly this doesn't always matter — they're dense enough to stay distributed on their own
-- **Don't add pineapple or applesauce** — other recipes do this for moisture, but the oil ratio here handles that already
-- **Room temperature eggs and cream cheese** are non-negotiable. Cold cream cheese lumps and doesn't beat smooth
+In this recipe I had you mix the carrots and the dry ingredients together because some people say that coating the carrots first helps suspend them in the wet batter so that they don't all sink to the bottom. I haven't personally found this to be an issue but it doesn't hurt to do — unless you take a really long time after you coat the carrots (like maybe you realized you don't have enough brown sugar and have to run to the store) in which case it can suck the moisture out of the carrots which will look a little funny but in the end will probably taste the exact same.
+
+Like I mentioned at the top — some recipes will call for pineapple or applesauce or some other addition for more moisture. If you're curious, I would give it a try! But most important is probably just not overbaking your cake.

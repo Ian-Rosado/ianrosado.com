@@ -4,75 +4,70 @@ date: 2024-04-01
 description: "Lighter than you'd expect. The folding technique is everything."
 tags: ["dessert", "chocolate", "mousse", "no-bake"]
 ingredients:
-  - "3.5 oz dark chocolate (62% cacao is ideal)"
-  - "1 tbsp salted butter"
+  - "3 1/2 ounces dark chocolate (62% cacao is ideal)"
+  - "1 tablespoon salted butter"
   - "2 large egg yolks"
-  - "1 tbsp granulated sugar"
+  - "1 tablespoon white sugar"
   - "1/4 cup water"
-  - "1 tiny pinch of salt"
+  - "1 tiny pinch salt"
   - "1/2 cup chilled heavy whipping cream"
-  - "Powdered sugar and vanilla extract (for whipped cream)"
+  - "Powdered sugar and vanilla (for whipped cream)"
 equipment:
-  - "Small saucepan"
+  - "Saucepan"
   - "Whisk"
-  - "Mixing bowl"
-  - "Serving cups or ramekins"
+  - "Bowl"
+  - "Containers for serving"
 ---
 
 Makes about 6 servings.
 
-## Step 1: Prep the chocolate
+## Step 1
 
-Chop 1.5 oz of the chocolate into small pieces along with 1 tbsp butter. Set aside — these will be melted into the egg mixture off heat.
+Chop 1.5 ounces of chocolate into small pieces for easy melting and set aside with 1 tbsp of butter.
 
 <!-- Photo: chocolate chopped and ready -->
 
-## Step 2: Cook the egg yolk base
+## Step 2
 
-Combine egg yolks, sugar, water, and salt in a saucepan over medium-low heat. Whisk continuously — don't stop — until the mixture thickens and turns foamy.
+Add to saucepan: 2 large egg yolks, 1 tablespoon white sugar, 1/4 cup water, 1 tiny pinch salt
+
+Cook over medium-low heat, whisking continuously until the mixture is thick and foamy.
 
 <!-- Photo: egg mixture before cooking -->
 <!-- Photo: egg mixture thick and foamy -->
 
-## Step 3: Melt in the chocolate
+## Step 3
 
-Remove from heat. Add the chopped chocolate and butter immediately and whisk until fully melted and combined.
+Once the yolk mixture is thick and hot, add: 3 1/2 ounces dark chocolate (chopped), 1 tablespoon butter
 
-<!-- Photo: chocolate melting into the egg base -->
+Whisk until all the chocolate is melted. Remove from heat and continue to whisk occasionally until room temp.
 
-## Step 4: Cool to room temperature
-
-Set the chocolate mixture aside and whisk occasionally until it reaches room temperature. Don't rush this — if it's warm when you fold it into the cream, it will deflate.
-
+<!-- Photo: chocolate melting into egg base -->
 <!-- Photo: chocolate mixture cooled -->
 
-## Step 5: Make the whipped cream
+## Step 4: Whipped Cream
 
-Beat 1/2 cup of cold heavy cream with a small amount of powdered sugar and a splash of vanilla for 30–45 seconds until soft peaks form. Don't overwhip.
+Beat 1/2 cup chilled heavy whipping cream with powdered sugar and vanilla. You can hand beat your cream. I like to throw mine in the food processor for 30–45 seconds.
 
 <!-- Photo: whipped cream at soft peaks -->
 
-## Step 6: Fold together
+## Step 5: The Fold
 
-Add 1/3 of the chocolate mixture to the whipped cream and fold gently. Then add the remainder and fold until just combined — visible streaks are fine. Slow, deliberate strokes.
+Start by adding 1/3 of the chocolate mixture and folding it in, then add the rest.
 
-<!-- Photo: folding first addition -->
-<!-- Photo: mousse fully folded -->
+<!-- Photo: folding in progress -->
+<!-- Photo: mousse fully combined -->
 
-## Step 7: Chill and serve
+## Step 6
 
-Scoop into serving cups and refrigerate for at least 1 hour. Serve with a dollop of whipped cream and fruit if you'd like.
+Scoop the mousse into your serving containers and refrigerate for at least 1 hour to let set. Serve with more whipped cream and optional fruit.
 
 <!-- Photo: finished mousse in serving cups -->
 
 ---
 
-## The folding technique
+## Let's discuss
 
-This isn't a traditional French mousse, but the most important technique is the same: the fold.
+This isn't a traditional French mousse recipe, but it was easy and the end result was well worth it.
 
-Whipped cream is air. Every stir, every fold is mechanical action that pops bubbles and deflates structure. The goal is to combine the chocolate base and whipped cream while destroying as few bubbles as possible.
-
-Use a wide spatula, work from the bottom up, and rotate the bowl as you go. The motion should feel slow and deliberate — nothing quick, nothing forceful. Stop as soon as you stop seeing big streaks. A small amount of under-mixing is better than over-mixing.
-
-The two-stage fold (1/3 first, then the rest) makes this easier because it loosens the cream before you add the bulk of the heavier chocolate base.
+The most important technique here is the fold. We are essentially mixing, but trying not to break down the structure that we've created in whipping our cream. Use slow, deliberate strokes from the bottom up — nothing quick, nothing forceful.

@@ -1,57 +1,59 @@
 ---
 title: "Exquisite Almond Sugar Cookies"
 date: 2024-06-01
-description: "The almond extract is the whole point. Don't skip it, don't reduce it."
+description: "The almond extract is optional, but not really."
 tags: ["cookies", "almond", "sugar cookies"]
 ingredients:
-  - "1 3/4 cups (218g) all-purpose flour, spooned and leveled"
-  - "1/2 tsp baking soda"
-  - "1/2 tsp baking powder"
-  - "1/2 tsp salt"
-  - "1 cup (200g) granulated sugar"
-  - "1/4 cup (50g) granulated sugar, for rolling"
-  - "1/2 cup (113g) salted butter, room temperature"
+  - "1 3/4 cups (218 g) all-purpose flour, spooned and leveled"
+  - "1/2 teaspoon baking soda"
+  - "1/2 teaspoon baking powder"
+  - "1/2 teaspoon salt"
+  - "1 cup (200 g) granulated sugar"
+  - "1/4 cup (50 g) granulated sugar, for rolling"
+  - "1/2 cup (113 g) salted butter, room temperature"
   - "1 large egg, room temperature"
-  - "1 tbsp vanilla extract"
-  - "1/2 tsp almond extract"
+  - "1 tablespoon vanilla extract"
+  - "1/2 teaspoon almond extract (optional, but not really)"
 equipment:
   - "Mixing bowl"
-  - "Electric mixer (or strong arms)"
+  - "Electric mixer (or hand mixer — or strong arms)"
   - "Baking sheets"
   - "Parchment paper or silicone baking mat"
 ---
 
-## Step 1: Cream butter and sugar
+Sugar cookies are about as simple as they come, but I find with a little bit of extra flavor and by taking the time to chill your dough, they can really take it to the next level. I was traveling when I made these cookies so I mixed them by hand, which wasn't actually that bad.
 
-Preheat oven to 350°F. Beat room-temperature butter and 1 cup of sugar together until light and fluffy.
+## Step 1
+
+Preheat the oven to 350°F (176°C).
+
+## Step 2
+
+Cream together: 1/2 cup (1 stick) butter, 1 cup sugar
 
 <!-- Photo: creamed butter and sugar -->
 
-## Step 2: Add eggs and extracts
+## Step 3
 
-Add the egg, vanilla extract, and almond extract. Mix well. The almond extract goes in here — don't hold back.
+Add: 1 egg, 1 tbsp vanilla, 1/2 tsp almond extract
 
 <!-- Photo: egg and extracts added -->
 
-## Step 3: Add dry ingredients
+## Step 4
 
-Mix in baking soda, baking powder, salt, and flour until a soft dough forms.
+Then mix in: 1/2 tsp baking soda, 1/2 tsp baking powder, 1/2 tsp salt, 1 3/4 cup flour
 
 <!-- Photo: dough formed -->
 
-## Step 4: Chill
+## Step 5
 
-Refrigerate the dough for at least 1 hour. This firms it up enough to roll into balls and keeps the cookies from spreading too thin.
-
-## Step 5: Roll and coat
-
-Roll dough into balls (about 1 tablespoon each) and coat in the reserved 1/4 cup sugar — or sprinkles if you want more visual interest.
+Roll dough into balls and coat in the remaining 1/4 cup sugar (or sprinkles). Refrigerate for at least 1 hour.
 
 <!-- Photo: dough balls coated in sugar -->
 
-## Step 6: Bake
+## Step 6
 
-Place on lined baking sheets and bake at 350°F for 11–12 minutes. You want the bottoms to turn light brown but the tops to still look slightly underdone. They firm up as they cool.
+Bake at 350°F for 11–12 minutes until bottoms turn light brown.
 
 <!-- Photo: cookies on sheet -->
 <!-- Photo: baked cookies cooled -->
@@ -59,13 +61,8 @@ Place on lined baking sheets and bake at 350°F for 11–12 minutes. You want th
 
 ---
 
-## Why almond extract matters
+## Let's discuss
 
-Most sugar cookies taste like sugar and butter, which is fine but forgettable. Almond extract adds a depth of flavor — floral, slightly nutty, distinctly not vanilla — that makes these taste like they came from a good bakery.
+The almond extract is what makes these worth writing about. Most sugar cookies taste like sugar and butter, which is fine but forgettable. The almond extract adds a depth of flavor that most sugar cookies lack.
 
-Half a teaspoon sounds like very little but it punches well above its weight. Go to 3/4 tsp if you want more presence.
-
-A few other notes:
-- **Parchment paper** is worth using here — it prevents the bottoms from browning before the tops are done
-- **Spooned and leveled flour** means you spoon flour into the measuring cup and level it off, rather than scooping directly. Scooping packs flour and makes cookies dry
-- The cookies will look underdone at 11 minutes. Pull them anyway — they set as they cool
+Chilling the dough makes a big difference here as well — same principle as the oatmeal cookies. And parchment paper is worth using: it helps prevent the bottoms from browning before the tops are done.

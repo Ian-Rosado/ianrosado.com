@@ -4,62 +4,64 @@ date: 2024-03-01
 description: "A deeply chocolatey cake that happens to be vegan. Chia eggs are the secret."
 tags: ["vegan", "cake", "chocolate", "dairy-free"]
 ingredients:
-  - "2 cups granulated sugar"
-  - "1 3/4 cups all-purpose flour"
-  - "3/4 cup unsweetened cocoa powder"
-  - "1 1/2 tsp baking powder"
-  - "1 1/2 tsp baking soda"
-  - "1 tsp salt"
-  - "2 chia eggs (2 tbsp chia seeds + 5 tbsp water)"
-  - "1 cup dairy-free milk (vanilla protein shake works great)"
-  - "1/2 cup neutral oil"
-  - "2 tsp vanilla extract"
+  - "2 cups sugar"
+  - "1.75 cups flour"
+  - "0.75 cups cocoa powder"
+  - "1.5 teaspoons baking powder"
+  - "1.5 teaspoons baking soda"
+  - "1 teaspoon salt"
+  - "2 chia eggs (2 tablespoons chia seeds + 5 tablespoons water)"
+  - "1 cup dairy free milk (OWYN vanilla protein shake recommended)"
+  - "0.5 cup oil"
+  - "2 teaspoons vanilla extract"
   - "1 cup boiling water"
-  - "Vegetable spray for pan"
+  - "Vegetable spray"
 equipment:
   - "13×9 inch baking pan"
   - "Mixing bowl"
   - "Small bowl (for chia eggs)"
 ---
 
-## Step 1: Make the chia eggs
+## Step 1
 
-Combine 2 tablespoons chia seeds with 5 tablespoons water in a small bowl. Let sit for 5 minutes until the seeds congeal into a gel. This is your egg replacement.
+Preheat your oven to 350°F.
+
+## Step 2: Make your chia eggs
+
+Combine in a small bowl or cup: 2 tablespoons chia seeds, 5 tablespoons water. Set aside for 5 minutes.
 
 <!-- Photo: chia seeds before water -->
 <!-- Photo: chia eggs after 5 minutes — fully gelled -->
 
-## Step 2: Mix the dry ingredients
+## Step 3: Mix together dry ingredients
 
-Preheat oven to 350°F. In a large bowl, whisk together sugar, flour, cocoa powder, baking powder, baking soda, and salt.
+2 cups sugar, 1.75 cups flour, 0.75 cups cocoa powder, 1.5 teaspoons baking powder, 1.5 teaspoons baking soda, 1 teaspoon salt
 
-<!-- Photo: dry ingredients whisked together -->
+<!-- Photo: dry ingredients mixed -->
 
-## Step 3: Add wet ingredients
+## Step 4: Add and mix
 
-Add the chia eggs, dairy-free milk, oil, and vanilla extract to the dry mixture. Stir to combine.
+2 chia eggs, 1 cup dairy free milk, 1/2 cup oil, 2 teaspoons vanilla
 
-<!-- Photo: wet ingredients added to dry -->
+<!-- Photo: wet ingredients added -->
 
-## Step 4: Add boiling water
+## Step 5
 
-Heat 1 cup of water to boiling and add it to the batter. This makes the batter very thin — that's correct. Mix thoroughly, scraping the sides of the bowl.
+Heat 1 cup of water to boiling (microwave is fine) and add to the mixture. Mix and scrape down the sides of the bowl until homogenous.
 
-<!-- Photo: thin batter consistency after boiling water -->
+<!-- Photo: thin batter after boiling water added -->
 
-## Step 5: Bake
+## Step 6
 
-Pour into a greased 13×9 pan. Bake approximately 25 minutes until a knife inserted in the center comes out clean.
+Pour the mixture into a well-greased 13×9 baking pan. Bake for ~25 minutes or until a knife inserted into the cake comes out clean.
 
-<!-- Photo: batter in pan before baking -->
-<!-- Photo: baked cake in pan -->
+<!-- Photo: batter in pan -->
+<!-- Photo: baked cake -->
 
 ---
 
-## Why chia eggs work
+## Let's discuss
 
-Chia seeds absorb water and form a gel that mimics the binding and moisture-retention properties of eggs. They're not perfect — nothing is — but for a chocolate cake where you're adding cocoa, vanilla, and boiling water, the flavor contribution of real eggs is minimal anyway.
+There's a couple of factors that make this cake so great despite being vegan. There's no milk or eggs, but you still get a nice rich flavor with lots of sugar and cocoa powder. The chia eggs also do an excellent job of holding moisture and binding the cake together, like an egg would. You can feel little chia seed texture when you eat it, but it's barely noticeable and honestly the upside way outweighs any concerns from that. I would consider putting chia seeds in a non-vegan dessert.
 
-The bigger surprise is the protein shake. OWYN vanilla protein shake (or any sweet vanilla dairy-free milk) pulls triple duty here: it adds sugar, fat, and flavor depth that plain oat milk doesn't. You can use plain dairy-free milk and it'll still be good, but the shake takes it up a level.
-
-The boiling water loosens the batter and helps bloom the cocoa powder, which is why the crumb is so dark and rich despite being vegan.
+The protein shake we used for the milk replacement also makes a big difference I'm sure. OWYN has a decent sugar and fat content as well as some nice vanilla flavor that adds some depth. I would hesitate to try other milk alternatives, but I think protein shakes are pretty well suited for this purpose.

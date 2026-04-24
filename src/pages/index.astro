@@ -30,9 +30,22 @@ const recentRecipes = recipes
   <!-- Divider -->
   <div class="border-t border-orange-100 max-w-5xl mx-auto"></div>
 
+  <!-- Portland Events promo -->
+  <section class="max-w-5xl mx-auto px-4 py-12">
+    <div class="bg-white rounded-2xl border border-orange-100 shadow-sm p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+      <div class="flex-1">
+        <h2 class="text-xl font-semibold text-stone-900 mb-1" style="font-family: var(--font-serif)">What's happening in Portland?</h2>
+        <p class="text-stone-500 text-sm">Curated calendars for events, farmers markets, trivia nights, and more.</p>
+      </div>
+      <a href="/portland-events" class="shrink-0 px-5 py-2.5 bg-orange-600 text-white text-sm font-medium rounded-full hover:bg-orange-700 transition-colors">
+        See the calendars
+      </a>
+    </div>
+  </section>
+
   <!-- Featured Recipes -->
   {recentRecipes.length > 0 && (
-    <section class="max-w-5xl mx-auto px-4 py-12">
+    <section class="max-w-5xl mx-auto px-4 pb-12">
       <div class="flex items-baseline justify-between mb-6">
         <h2 class="text-2xl font-semibold text-stone-900" style="font-family: var(--font-serif)">Recent Recipes</h2>
         <a href="/recipes" class="text-sm text-stone-400 hover:text-orange-600 transition-colors">All recipes →</a>
@@ -63,17 +76,4 @@ const recentRecipes = recipes
       </div>
     </section>
   )}
-
-  <!-- Portland Events promo -->
-  <section class="max-w-5xl mx-auto px-4 py-6 pb-12">
-    <div class="bg-white rounded-2xl border border-orange-100 shadow-sm p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4">
-      <div class="flex-1">
-        <h2 class="text-xl font-semibold text-stone-900 mb-1" style="font-family: var(--font-serif)">What's happening in Portland?</h2>
-        <p class="text-stone-500 text-sm">Curated calendars for events, farmers markets, trivia nights, and more.</p>
-      </div>
-      <a href="/portland-events" class="shrink-0 px-5 py-2.5 bg-orange-600 text-white text-sm font-medium rounded-full hover:bg-orange-700 transition-colors">
-        See the calendars
-      </a>
-    </div>
-  </section>
 </Layout>

@@ -66,7 +66,7 @@ function calUrl(src: string | string[], mobile = false, opts: { color?: string; 
       <section class="mb-12">
         <h2 class="text-2xl font-semibold text-stone-900 mb-2" style="font-family: var(--font-serif)">{cal.title}</h2>
         {cal.description && <p class="text-stone-500 text-sm mb-4">{cal.description}</p>}
-        <div class="relative w-full rounded-2xl overflow-hidden border border-stone-100 shadow-sm" style="padding-bottom: 60%; height: 0;">
+        <div class="cal-frame relative w-full rounded-2xl overflow-hidden border border-stone-100 shadow-sm">
           <iframe
             class="hidden md:block absolute top-0 left-0 w-full h-full"
             src={calUrl(cal.src, false, { color: cal.color })}
@@ -89,7 +89,7 @@ function calUrl(src: string | string[], mobile = false, opts: { color?: string; 
     <section class="mb-12">
       <h2 class="text-2xl font-semibold text-stone-900 mb-2" style="font-family: var(--font-serif)">Trivia Nights</h2>
       <p class="text-stone-500 text-sm mb-4">Trivia is big in Portland. All neighborhoods in one calendar — toggle areas on/off using the checkboxes in the bottom-left of the embed.</p>
-      <div class="relative w-full rounded-2xl overflow-hidden border border-stone-100 shadow-sm" style="padding-bottom: 60%; height: 0;">
+      <div class="cal-frame relative w-full rounded-2xl overflow-hidden border border-stone-100 shadow-sm">
         <iframe
           class="hidden md:block absolute top-0 left-0 w-full h-full"
           src={calUrl(triviaSrcs, true, { showTitle: false })}
@@ -111,7 +111,7 @@ function calUrl(src: string | string[], mobile = false, opts: { color?: string; 
     <section class="mb-12">
       <h2 class="text-2xl font-semibold text-stone-900 mb-2" style="font-family: var(--font-serif)">Pedalpalooza</h2>
       <p class="text-stone-500 text-sm mb-4">The Shift community calendar — bike events year-round, with Pedalpalooza in the summer.</p>
-      <div class="relative w-full rounded-2xl overflow-hidden border border-stone-100 shadow-sm" style="padding-bottom: 60%; height: 0;">
+      <div class="cal-frame relative w-full rounded-2xl overflow-hidden border border-stone-100 shadow-sm">
         <iframe
           class="hidden md:block absolute top-0 left-0 w-full h-full"
           src={calUrl(pedalpalozzaSrc)}
@@ -133,7 +133,7 @@ function calUrl(src: string | string[], mobile = false, opts: { color?: string; 
     <section class="mb-12">
       <h2 class="text-2xl font-semibold text-stone-900 mb-2" style="font-family: var(--font-serif)">Portland Favorites Map</h2>
       <p class="text-stone-500 text-sm mb-4">A map of places I like around the city.</p>
-      <div class="relative w-full rounded-2xl overflow-hidden border border-stone-100 shadow-sm" style="padding-bottom: 60%; height: 0;">
+      <div class="cal-frame relative w-full rounded-2xl overflow-hidden border border-stone-100 shadow-sm">
         <iframe
           class="absolute top-0 left-0 w-full h-full"
           src="https://www.google.com/maps/d/u/0/embed?mid=1PPFjj6o3PLraMpY1BxJsboW1ZiITlGI&ehbc=2E312F&noprof=1"
@@ -162,3 +162,10 @@ function calUrl(src: string | string[], mobile = false, opts: { color?: string; 
     </section>
   </div>
 </Layout>
+
+<style>
+  .cal-frame { padding-bottom: 80%; height: 0; }
+  @media (min-width: 768px) {
+    .cal-frame { padding-bottom: 60%; }
+  }
+</style>

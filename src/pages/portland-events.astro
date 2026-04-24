@@ -92,7 +92,7 @@ function calUrl(src: string | string[], mobile = false, opts: { color?: string; 
       <div class="relative w-full rounded-2xl overflow-hidden border border-stone-100 shadow-sm" style="padding-bottom: 60%; height: 0;">
         <iframe
           class="hidden md:block absolute top-0 left-0 w-full h-full"
-          src={calUrl(triviaSrcs, false, { showTitle: false })}
+          src={calUrl(triviaSrcs, true, { showTitle: false })}
           style="border: 0"
           frameborder="0"
           scrolling="no"

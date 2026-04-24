@@ -9,6 +9,19 @@
   --color-brand-light: #fff7ed;
 }
 
+/* ── Fraction formatting ── */
+.frac {
+  white-space: nowrap;
+}
+.frac sup,
+.frac sub {
+  font-size: 0.72em;
+  line-height: 0;
+  font-variant-numeric: normal;
+}
+.frac sup { vertical-align: 0.5em; }
+.frac sub { vertical-align: -0.2em; }
+
 /* ── Shared diagonal gradient (light top-left → saturated orange bottom-right) ── */
 :root {
   --gradient-base: linear-gradient(135deg, #ffffff 0%, #fff7ed 30%, #fed7aa 65%, #fb923c 100%);

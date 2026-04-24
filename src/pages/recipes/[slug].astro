@@ -12,6 +12,12 @@ export async function getStaticPaths() {
 
 const { recipe } = Astro.props;
 const { Content } = await render(recipe);
+
+function frac(text: string): string {
+  return text.replace(/(\d+)\s*\/\s*(\d+)/g, (_, n, d) =>
+    `<span class="frac"><sup>${n}</sup><span aria-hidden="true">⁄</span><sub>${d}</sub></span>`
+  );
+}
 ---
 
 <Layout title={recipe.data.title} description={recipe.data.description} pageClass="page-recipes">
@@ -53,7 +59,7 @@ const { Content } = await render(recipe);
           {recipe.data.ingredients.map((item: string) => (
             <li class="flex items-start gap-2.5 text-stone-700 text-sm">
               <span class="mt-2 h-1.5 w-1.5 rounded-full bg-orange-300 shrink-0"></span>
-              {item}
+              <span set:html={frac(item)} />
             </li>
           ))}
         </ul>
@@ -65,7 +71,7 @@ const { Content } = await render(recipe);
             {recipe.data.equipment.map((item: string) => (
               <li class="flex items-start gap-2.5 text-stone-700 text-sm">
                 <span class="mt-2 h-1.5 w-1.5 rounded-full bg-orange-300 shrink-0"></span>
-                {item}
+                <span set:html={frac(item)} />
               </li>
             ))}
           </ul>

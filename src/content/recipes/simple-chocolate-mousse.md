@@ -36,6 +36,10 @@ Cook over medium-low heat, whisking continuously until the mixture is thick and 
 
 ![Egg yolks, sugar and water in saucepan before cooking](/images/recipes/simple-chocolate-mousse/step-02.jpg)
 
+<video autoplay loop muted playsinline><source src="/images/recipes/simple-chocolate-mousse/stirring1.mp4" type="video/mp4"></video>
+<video autoplay loop muted playsinline><source src="/images/recipes/simple-chocolate-mousse/stirring2.mp4" type="video/mp4"></video>
+<video autoplay loop muted playsinline><source src="/images/recipes/simple-chocolate-mousse/stirring3.mp4" type="video/mp4"></video>
+
 ## Step 3
 
 Once the yolk mixture is thick and hot, add: 3 1/2 ounces dark chocolate (chopped), 1 tablespoon butter
@@ -45,9 +49,13 @@ Whisk until all the chocolate is melted. Remove from heat and continue to whisk 
 ![Chocolate and butter added to hot egg base](/images/recipes/simple-chocolate-mousse/step-03.jpg)
 ![Chocolate mixture fully melted and combined](/images/recipes/simple-chocolate-mousse/step-04.jpg)
 
+<video autoplay loop muted playsinline><source src="/images/recipes/simple-chocolate-mousse/stirring4.mp4" type="video/mp4"></video>
+
 ## Step 4: Whipped Cream
 
 Beat 1/2 cup chilled heavy whipping cream with powdered sugar and vanilla. You can hand beat your cream. I like to throw mine in the food processor for 30–45 seconds.
+
+<video autoplay loop muted playsinline><source src="/images/recipes/simple-chocolate-mousse/blending.mp4" type="video/mp4"></video>
 
 ![Whipped cream at soft peaks in food processor](/images/recipes/simple-chocolate-mousse/step-05.jpg)
 
@@ -56,6 +64,9 @@ Beat 1/2 cup chilled heavy whipping cream with powdered sugar and vanilla. You c
 Start by adding 1/3 of the chocolate mixture and folding it in, then add the rest.
 
 ![Chocolate being folded into whipped cream](/images/recipes/simple-chocolate-mousse/step-06.jpg)
+
+<video autoplay loop muted playsinline><source src="/images/recipes/simple-chocolate-mousse/whisking.mp4" type="video/mp4"></video>
+
 ![Mousse fully combined](/images/recipes/simple-chocolate-mousse/step-07.jpg)
 
 ## Step 6
@@ -71,3 +82,5 @@ Scoop the mousse into your serving containers and refrigerate for at least 1 hou
 This isn't a traditional French mousse recipe, but it was easy and the end result was well worth it.
 
 The most important technique here is the fold. We are essentially mixing, but trying not to break down the structure that we've created in whipping our cream. Use slow, deliberate strokes from the bottom up — nothing quick, nothing forceful.
+
+<video autoplay loop muted playsinline><source src="/images/recipes/simple-chocolate-mousse/schitts-creek-david.mp4" type="video/mp4"></video>

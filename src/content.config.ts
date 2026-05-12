@@ -23,6 +23,7 @@ const sabbatical = defineCollection({
     photoSource: z.string().default('sabbatical'),
     layout: z.enum(['gallery', 'inline', 'carousel']).default('gallery'),
     mapId: z.string().optional(),
+    wideContent: z.boolean().default(false),
   }),
 });
 

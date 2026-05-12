@@ -28,3 +28,6 @@ pnpm-debug.log*
 
 # windows artifacts
 nul
+
+# large image sets — hosted separately, not in git
+public/images/sabbatical-from-site/

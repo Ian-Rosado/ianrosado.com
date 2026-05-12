@@ -2,6 +2,7 @@
 title: "GF No-bake Chocolate Peanut Butter Cookies"
 date: 2024-01-15
 description: "No preamble, just steps. I will explain later."
+coverImage: "/images/recipes/gf-no-bake-chocolate-peanut-butter-cookies/cover.jpg"
 tags: ["gluten-free", "no-bake", "cookies", "chocolate"]
 ingredients:
   - "2 cups sugar"
@@ -23,26 +24,26 @@ No preamble, just steps. I will explain later.
 
 In a large saucepan on medium heat add: 1/2 cup of milk, 1 stick of butter, 2 cups sugar, 1/4 cup cocoa powder
 
-<!-- Photo: ingredients in saucepan -->
+![Milk, butter, sugar and cocoa in saucepan](/images/recipes/gf-no-bake-chocolate-peanut-butter-cookies/step-01.jpg)
 
 ## Step 2
 
 Stir/whisk until fully mixed. Bring to a boil and let boil for 1 minute.
 
-<!-- Photo: mixture boiling -->
+![Chocolate mixture fully mixed and smooth](/images/recipes/gf-no-bake-chocolate-peanut-butter-cookies/step-02.jpg)
 
 ## Step 3
 
 Remove from heat. Add: 1 tbsp vanilla extract, 1 large pinch of salt, 1 cup peanut butter, 3 cups oats
 
-<!-- Photo: oats and peanut butter added -->
+![Oats and peanut butter fully mixed in](/images/recipes/gf-no-bake-chocolate-peanut-butter-cookies/step-03.jpg)
 
 ## Step 4
 
 Spoon onto parchment or wax paper, let cool for 30 minutes. Done!
 
-<!-- Photo: cookies spooned onto parchment -->
-<!-- Photo: finished cookies -->
+![Cookies spooned onto parchment paper](/images/recipes/gf-no-bake-chocolate-peanut-butter-cookies/step-04.jpg)
+![Finished cookies up close](/images/recipes/gf-no-bake-chocolate-peanut-butter-cookies/step-05.jpg)
 
 Keep cookies in the refrigerator or freezer and enjoy!
 

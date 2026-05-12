@@ -1,0 +1,109 @@
+---
+import { getCollection, render } from 'astro:content';
+import Layout from '../../../layouts/Layout.astro';
+import { readdir } from 'fs/promises';
+import { join } from 'path';
+
+export async function getStaticPaths() {
+  const entries = (await getCollection('sabbatical')).sort(
+    (a, b) => a.data.sortOrder - b.data.sortOrder
+  );
+
+  return entries.map((entry, i) => ({
+    params: { slug: entry.id },
+    props: {
+      entry,
+      prev: entries[i - 1] ?? null,
+      next: entries[i + 1] ?? null,
+    },
+  }));
+}
+
+const { entry, prev, next } = Astro.props;
+const { Content } = await render(entry);
+
+// Discover actual photo files from disk at build time
+const photoDir = join(process.cwd(), 'public', 'images', entry.data.photoSource, entry.id);
+const photoFiles = await readdir(photoDir).catch(() => []);
+const photos = photoFiles
+  .filter(f => /\.jpe?g$/i.test(f))
+  .sort()
+  .map(f => `/images/${entry.data.photoSource}/${entry.id}/${f}`);
+---
+
+<Layout title={entry.data.title} description={entry.data.description} pageClass="page-mylife">
+  <article class="max-w-4xl mx-auto px-4 py-12">
+
+    <!-- Back link -->
+    <a href="/my-life/sabbatical" class="inline-flex items-center gap-1 text-sm text-stone-400 hover:text-orange-600 transition-colors mb-8">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+      </svg>
+      All Sections
+    </a>
+
+    <!-- Header -->
+    <header class="mb-8">
+      <h1 class="text-4xl font-semibold text-stone-900 mb-3 leading-tight" style="font-family: var(--font-serif)">
+        {entry.data.title}
+      </h1>
+      <p class="text-stone-500 text-lg">{entry.data.description}</p>
+    </header>
+
+    <!-- Narrative text -->
+    {photos.length > 0 && (
+      <div class="mb-10 prose prose-stone max-w-none
+        prose-p:text-stone-600 prose-p:leading-relaxed prose-p:text-base">
+        <Content />
+      </div>
+    )}
+
+    {photos.length === 0 && (
+      <div class="mb-10 prose prose-stone max-w-none
+        prose-p:text-stone-600 prose-p:leading-relaxed prose-p:text-base">
+        <Content />
+      </div>
+    )}
+
+    <!-- Photo gallery -->
+    {photos.length > 0 && (
+      <div class="columns-1 sm:columns-2 lg:columns-3 gap-3 space-y-3">
+        {photos.map((src, i) => (
+          <div class="break-inside-avoid">
+            <img
+              src={src}
+              alt={`${entry.data.title} — photo ${i + 1}`}
+              class="w-full rounded-xl shadow-sm"
+              loading={i < 6 ? 'eager' : 'lazy'}
+            />
+          </div>
+        ))}
+      </div>
+    )}
+
+    <!-- Prev / Next navigation -->
+    <nav class="mt-12 pt-8 border-t border-stone-100 flex justify-between gap-4">
+      <div>
+        {prev && (
+          <a href={`/my-life/sabbatical/${prev.id}`} class="inline-flex items-center gap-1 text-sm text-stone-400 hover:text-orange-600 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+            {prev.data.title}
+          </a>
+        )}
+      </div>
+      <div>
+        {next && (
+          <a href={`/my-life/sabbatical/${next.id}`} class="inline-flex items-center gap-1 text-sm text-stone-400 hover:text-orange-600 transition-colors">
+            {next.data.title}
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </a>
+        )}
+      </div>
+    </nav>
+
+  </article>
+</Layout>

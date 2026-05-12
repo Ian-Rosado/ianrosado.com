@@ -1,6 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import { getCollection } from 'astro:content';
+import { Image } from 'astro:assets';
 
 const recipes = await getCollection('recipes');
 recipes.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
@@ -20,10 +21,13 @@ recipes.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
         <a href={`/recipes/${recipe.id}`} class="group block bg-white rounded-2xl overflow-hidden border border-stone-100 shadow-sm hover:shadow-md hover:border-orange-200 transition-all">
           {recipe.data.coverImage ? (
             <div class="aspect-[4/3] overflow-hidden bg-orange-50">
-              <img
+              <Image
                 src={recipe.data.coverImage}
                 alt={recipe.data.title}
+                width={400}
+                height={300}
                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                loading="lazy"
               />
             </div>
           ) : (

@@ -1,6 +1,7 @@
 ---
 import { getCollection, render } from 'astro:content';
 import Layout from '../../layouts/Layout.astro';
+import { Image } from 'astro:assets';
 
 export async function getStaticPaths() {
   const recipes = await getCollection('recipes');
@@ -47,7 +48,14 @@ function frac(text: string): string {
     <!-- Cover image -->
     {recipe.data.coverImage && (
       <div class="rounded-2xl overflow-hidden mb-10 aspect-[16/9] bg-stone-100">
-        <img src={recipe.data.coverImage} alt={recipe.data.title} class="w-full h-full object-cover" />
+        <Image
+          src={recipe.data.coverImage}
+          alt={recipe.data.title}
+          width={1200}
+          height={675}
+          class="w-full h-full object-cover"
+          loading="eager"
+        />
       </div>
     )}
 

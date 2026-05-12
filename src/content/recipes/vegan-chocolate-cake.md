@@ -2,6 +2,7 @@
 title: "Rich and Moist Vegan Chocolate Cake"
 date: 2024-03-01
 description: "A deeply chocolatey cake that happens to be vegan. Chia eggs are the secret."
+coverImage: "/images/recipes/vegan-chocolate-cake/cover.jpg"
 tags: ["vegan", "cake", "chocolate", "dairy-free"]
 ingredients:
   - "2 cups sugar"
@@ -30,33 +31,29 @@ Preheat your oven to 350°F.
 
 Combine in a small bowl or cup: 2 tablespoons chia seeds, 5 tablespoons water. Set aside for 5 minutes.
 
-<!-- Photo: chia seeds before water -->
-<!-- Photo: chia eggs after 5 minutes — fully gelled -->
+![Chia seeds before water](/images/recipes/vegan-chocolate-cake/step-01.jpg)
+![Chia eggs fully gelled after 5 minutes](/images/recipes/vegan-chocolate-cake/step-02.jpg)
+![Chia eggs with visible gel and bubbles](/images/recipes/vegan-chocolate-cake/step-03.jpg)
 
 ## Step 3: Mix together dry ingredients
 
 2 cups sugar, 1.75 cups flour, 0.75 cups cocoa powder, 1.5 teaspoons baking powder, 1.5 teaspoons baking soda, 1 teaspoon salt
 
-<!-- Photo: dry ingredients mixed -->
-
 ## Step 4: Add and mix
 
 2 chia eggs, 1 cup dairy free milk, 1/2 cup oil, 2 teaspoons vanilla
 
-<!-- Photo: wet ingredients added -->
+![Batter in stand mixer after wet ingredients added](/images/recipes/vegan-chocolate-cake/step-04.jpg)
 
 ## Step 5
 
 Heat 1 cup of water to boiling (microwave is fine) and add to the mixture. Mix and scrape down the sides of the bowl until homogenous.
 
-<!-- Photo: thin batter after boiling water added -->
-
 ## Step 6
 
 Pour the mixture into a well-greased 13×9 baking pan. Bake for ~25 minutes or until a knife inserted into the cake comes out clean.
 
-<!-- Photo: batter in pan -->
-<!-- Photo: baked cake -->
+![Baked vegan chocolate cake fresh from the oven](/images/recipes/vegan-chocolate-cake/step-05.jpg)
 
 ---
 

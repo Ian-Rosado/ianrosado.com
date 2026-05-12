@@ -1,20 +1,49 @@
 ---
+import { getCollection } from 'astro:content';
 import Layout from '../../layouts/Layout.astro';
+
+const entries = (await getCollection('sabbatical')).sort(
+  (a, b) => a.data.sortOrder - b.data.sortOrder
+);
 ---
 
-<Layout title="Sabbatical Road Trip" description="40+ days on the road from Oregon through the American Southwest." pageClass="page-mylife">
-  <div class="max-w-3xl mx-auto px-4 py-12">
+<Layout title="Sabbatical Road Trip" description="40+ days from Oregon through California, Utah, Arizona, New Mexico, and Texas." pageClass="page-mylife">
+  <div class="max-w-5xl mx-auto px-4 py-12">
+
     <a href="/my-life" class="inline-flex items-center gap-1 text-sm text-stone-400 hover:text-stone-700 transition-colors mb-8">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
       </svg>
       My Life
     </a>
-    <h1 class="text-4xl font-semibold text-stone-900 mb-3" style="font-family: var(--font-serif)">Sabbatical Road Trip</h1>
-    <p class="text-stone-500 mb-8">40+ days from Oregon through California, Utah, Arizona, New Mexico, and Texas.</p>
 
-    <div class="p-8 bg-white rounded-2xl border border-stone-100 shadow-sm text-center text-stone-400">
-      <p>Content coming soon — migrating from Google Sites.</p>
+    <header class="mb-10">
+      <h1 class="text-4xl font-semibold text-stone-900 mb-3 leading-tight" style="font-family: var(--font-serif)">Sabbatical Road Trip</h1>
+      <p class="text-stone-500 text-lg max-w-2xl">40+ days from Oregon through California, Utah, Arizona, New Mexico, and Texas. Solo truck camping, national parks, backpacking, and a few weddings along the way.</p>
+    </header>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      {entries.map((entry) => {
+        const coverSrc = `/images/${entry.data.photoSource}/${entry.id}/photo-01.jpg`;
+        return (
+          <a href={`/my-life/sabbatical/${entry.id}`} class="group block bg-white rounded-2xl border border-stone-100 shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+            <div class="aspect-[4/3] bg-stone-100 overflow-hidden">
+              <img
+                src={coverSrc}
+                alt={entry.data.title}
+                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                onerror="this.parentElement.classList.add('flex','items-center','justify-center'); this.remove();"
+                loading="lazy"
+              />
+            </div>
+            <div class="p-4">
+              <h2 class="font-semibold text-stone-900 mb-1 group-hover:text-orange-600 transition-colors" style="font-family: var(--font-serif)">{entry.data.title}</h2>
+              <p class="text-stone-500 text-sm leading-snug">{entry.data.description}</p>
+            </div>
+          </a>
+        );
+      })}
     </div>
+
   </div>
 </Layout>

@@ -2,6 +2,7 @@
 title: "Exquisite Almond Sugar Cookies"
 date: 2024-06-01
 description: "The almond extract is optional, but not really."
+coverImage: "/images/recipes/exquisite-almond-sugar-cookies/cover.jpg"
 tags: ["cookies", "almond", "sugar cookies"]
 ingredients:
   - "1 3/4 cups (218 g) all-purpose flour, spooned and leveled"
@@ -31,33 +32,32 @@ Preheat the oven to 350°F (176°C).
 
 Cream together: 1/2 cup (1 stick) butter, 1 cup sugar
 
-<!-- Photo: creamed butter and sugar -->
+![Creamed butter and sugar](/images/recipes/exquisite-almond-sugar-cookies/step-01.jpg)
 
 ## Step 3
 
 Add: 1 egg, 1 tbsp vanilla, 1/2 tsp almond extract
 
-<!-- Photo: egg and extracts added -->
+![Egg and extracts added to creamed butter](/images/recipes/exquisite-almond-sugar-cookies/step-02.jpg)
 
 ## Step 4
 
 Then mix in: 1/2 tsp baking soda, 1/2 tsp baking powder, 1/2 tsp salt, 1 3/4 cup flour
 
-<!-- Photo: dough formed -->
+![Dough fully formed](/images/recipes/exquisite-almond-sugar-cookies/step-03.jpg)
 
 ## Step 5
 
 Roll dough into balls and coat in the remaining 1/4 cup sugar (or sprinkles). Refrigerate for at least 1 hour.
 
-<!-- Photo: dough balls coated in sugar -->
+![Dough balls coated in sugar on baking sheet](/images/recipes/exquisite-almond-sugar-cookies/step-04.jpg)
 
 ## Step 6
 
 Bake at 350°F for 11–12 minutes until bottoms turn light brown.
 
-<!-- Photo: cookies on sheet -->
-<!-- Photo: baked cookies cooled -->
-<!-- Photo: finished cookies close-up -->
+![Baked cookies on silicone mat](/images/recipes/exquisite-almond-sugar-cookies/step-05.jpg)
+![Finished cookies cooling on rack](/images/recipes/exquisite-almond-sugar-cookies/step-06.jpg)
 
 ---
 

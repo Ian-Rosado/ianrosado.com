@@ -9,7 +9,15 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "convert-heic": "node scripts/convert-heic.js",
+    "convert-gif": "node scripts/convert-gif.js",
+    "download-sabbatical": "node scripts/download-sabbatical-photos.js"
+  },
+  "devDependencies": {
+    "ffmpeg-static": "^5.2.0",
+    "heic-convert": "^2.1.0",
+    "sharp": "^0.33.0"
   },
   "dependencies": {
     "@tailwindcss/typography": "^0.5.19",

@@ -14,4 +14,14 @@ const recipes = defineCollection({
   }),
 });
 
-export const collections = { recipes };
+const sabbatical = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/sabbatical' }),
+  schema: z.object({
+    title: z.string(),
+    description: z.string(),
+    sortOrder: z.number(),
+    photoSource: z.string().default('sabbatical-from-site'),
+  }),
+});
+
+export const collections = { recipes, sabbatical };

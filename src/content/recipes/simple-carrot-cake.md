@@ -2,6 +2,7 @@
 title: "Simple Carrot Cake"
 date: 2024-05-01
 description: "Cake is but a vessel for frosting."
+coverImage: "/images/recipes/simple-carrot-cake/cover.jpg"
 tags: ["cake", "frosting", "carrot"]
 ingredients:
   - "2 cups all-purpose flour"
@@ -35,55 +36,55 @@ Preheat the oven to 350°F (176°C).
 
 Whisk together: 2 cups all-purpose flour, 2 teaspoons baking soda, 1/2 teaspoon fine sea salt, 1 and 1/2 teaspoons ground cinnamon
 
-<!-- Photo: dry ingredients whisked -->
+![Dry ingredients whisked together in bowl](/images/recipes/simple-carrot-cake/step-01.jpg)
 
 ## Step 3
 
 Grate 3 cups of carrots (5–6 full large carrots).
 
-<!-- Photo: grated carrots -->
+![Freshly grated carrots](/images/recipes/simple-carrot-cake/step-02.jpg)
 
 ## Step 4
 
 Mix the 3 cups of carrots with your dry ingredients, until fully coated.
 
-<!-- Photo: carrots mixed into dry ingredients -->
+![Carrots mixed into dry ingredients](/images/recipes/simple-carrot-cake/step-03.jpg)
 
 ## Step 5
 
 In a separate bowl, mix together: 1 and 1/4 cups vegetable oil, 1 cup granulated sugar, 1 cup lightly packed brown sugar, 1 teaspoon vanilla extract
 
-<!-- Photo: wet ingredients mixed -->
+![Oil, sugars and vanilla mixed together](/images/recipes/simple-carrot-cake/step-04.jpg)
 
 ## Step 6
 
 Once mixed, add: 4 large eggs, room temp
 
-<!-- Photo: eggs added to wet mixture -->
+![Four eggs added to wet mixture](/images/recipes/simple-carrot-cake/step-05.jpg)
 
 ## Step 7
 
 Mix the ingredients of both bowls together, making sure to scrape the bottom of the bowl.
 
-<!-- Photo: batter combined -->
+![Batter fully combined](/images/recipes/simple-carrot-cake/step-06.jpg)
 
 ## Step 8
 
 Prepare your baking pan or pans with oil spray, then split your batter evenly (or fill your one pan).
 
-<!-- Photo: batter in pans -->
+![Batter split between two round pans](/images/recipes/simple-carrot-cake/step-07.jpg)
 
 ## Step 9
 
 Bake at 350°F for 35 to 45 minutes, or until a butter knife inserted in the middle comes out clean.
 
-<!-- Photo: baked cakes out of the oven -->
+![Baked cakes cooling in pans](/images/recipes/simple-carrot-cake/step-08.jpg)
 
 ## Frosting
 
 Beat together: 8 ounces cream cheese (room temperature), ~2 cups powdered sugar, ~1/4 cup milk or heavy cream, 1 stick salted butter (room temp), 1 pinch of salt — adding liquid to thin or sugar to thicken until you get the desired consistency. Be careful — a little milk goes a long way.
 
-<!-- Photo: frosted cake -->
+![Frosted carrot cake](/images/recipes/simple-carrot-cake/step-09.jpg)
 
 ---
 

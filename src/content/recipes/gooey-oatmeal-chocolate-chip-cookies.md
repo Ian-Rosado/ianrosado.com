@@ -2,6 +2,7 @@
 title: "Gooey Oatmeal Chocolate Chip Cookies"
 date: 2024-02-01
 description: "Crispy outside, gooey inside. The chill step is non-negotiable."
+coverImage: "/images/recipes/gooey-oatmeal-chocolate-chip-cookies/cover.jpg"
 tags: ["cookies", "chocolate", "oatmeal"]
 ingredients:
   - "1 cup brown sugar"
@@ -35,13 +36,13 @@ Once butter is soft, cream together: 1 stick of butter, 1 cup of brown sugar
 
 This is the consistency of "creamed butter and sugar". No lumps. Much easier with room temp butter.
 
-<!-- Photo: creamed butter and sugar consistency -->
+![Creamed butter and brown sugar in stand mixer](/images/recipes/gooey-oatmeal-chocolate-chip-cookies/step-01.jpg)
 
 ## Step 3
 
 Add (in no particular order): 1 egg, 1 tsp vanilla extract, 1/2 tsp baking soda, 1/2 tsp baking powder, 1/2 tsp salt, 1 tsp cinnamon, 1/4 tsp nutmeg, 1 tbsp molasses (optional, but recommended)
 
-<!-- Photo: wet ingredients mixed in -->
+![Oats and flour mixed into dough](/images/recipes/gooey-oatmeal-chocolate-chip-cookies/step-02.jpg)
 
 ## Step 4
 
@@ -49,26 +50,25 @@ Mix well, then add remaining ingredients: 1 cup flour, 1.5 cups instant oatmeal
 
 Optional: Add 1 cup semi-sweet chocolate chips
 
-<!-- Photo: dough fully combined -->
+![Chocolate chips added to dough](/images/recipes/gooey-oatmeal-chocolate-chip-cookies/step-03.jpg)
 
 ## Step 5: For Gooey Cookies
 
 Place cookie dough in the refrigerator or freezer to cool for 15–20 minutes.
 
-<!-- Photo: dough chilled and ready -->
+![Dough portioned onto baking sheet](/images/recipes/gooey-oatmeal-chocolate-chip-cookies/step-04.jpg)
 
 ## Step 6
 
 Once cooled, spoon tablespoons of dough onto cookie sheets, about 1 inch apart.
 
-<!-- Photo: dough portioned on sheet -->
+![Cookies fresh out of the oven](/images/recipes/gooey-oatmeal-chocolate-chip-cookies/step-05.jpg)
 
 ## Step 7
 
 Bake for 9–12 minutes at 350°F, or until desired texture is achieved. Cookies will puff up in the oven and collapse slightly when cooled.
 
-<!-- Photo: cookies fresh from oven -->
-<!-- Photo: finished cooled cookies -->
+![Finished oatmeal chocolate chip cookies](/images/recipes/gooey-oatmeal-chocolate-chip-cookies/step-06.jpg)
 
 ---
 

@@ -32,6 +32,8 @@ Stir/whisk until fully mixed. Bring to a boil and let boil for 1 minute.
 
 ![Chocolate mixture fully mixed and smooth](/images/recipes/gf-no-bake-chocolate-peanut-butter-cookies/step-02.jpg)
 
+<video autoplay loop muted playsinline><source src="/images/recipes/gf-no-bake-chocolate-peanut-butter-cookies/boiling.mp4" type="video/mp4"></video>
+
 ## Step 3
 
 Remove from heat. Add: 1 tbsp vanilla extract, 1 large pinch of salt, 1 cup peanut butter, 3 cups oats

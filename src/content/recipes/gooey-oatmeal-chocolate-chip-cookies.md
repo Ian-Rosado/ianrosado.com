@@ -38,6 +38,8 @@ This is the consistency of "creamed butter and sugar". No lumps. Much easier wit
 
 ![Creamed butter and brown sugar in stand mixer](/images/recipes/gooey-oatmeal-chocolate-chip-cookies/step-01.jpg)
 
+<video autoplay loop muted playsinline><source src="/images/recipes/gooey-oatmeal-chocolate-chip-cookies/creaming.mp4" type="video/mp4"></video>
+
 ## Step 3
 
 Add (in no particular order): 1 egg, 1 tsp vanilla extract, 1/2 tsp baking soda, 1/2 tsp baking powder, 1/2 tsp salt, 1 tsp cinnamon, 1/4 tsp nutmeg, 1 tbsp molasses (optional, but recommended)

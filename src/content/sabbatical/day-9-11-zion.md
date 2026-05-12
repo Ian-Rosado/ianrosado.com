@@ -19,3 +19,15 @@ When I got back to the visitor's center I got confirmation that I had a permit f
 <div class="aspect-video rounded-xl overflow-hidden my-6">
   <iframe src="https://www.youtube.com/embed/csfvMQcpa4Y" title="Zion" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen class="w-full h-full"></iframe>
 </div>
+
+<div class="aspect-video rounded-xl overflow-hidden my-6">
+  <iframe src="https://www.youtube.com/embed/Pmm3HJXfang" title="Zion" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen class="w-full h-full"></iframe>
+</div>
+
+<div class="aspect-video rounded-xl overflow-hidden my-6">
+  <iframe src="https://www.youtube.com/embed/-E6nVTUy25Y" title="Zion" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen class="w-full h-full"></iframe>
+</div>
+
+<div class="aspect-video rounded-xl overflow-hidden my-6">
+  <iframe src="https://www.youtube.com/embed/eYnY0H5HBQI" title="Zion" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen class="w-full h-full"></iframe>
+</div>

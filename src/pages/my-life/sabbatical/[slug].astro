@@ -22,13 +22,18 @@ export async function getStaticPaths() {
 const { entry, prev, next } = Astro.props;
 const { Content } = await render(entry);
 
-// Discover actual photo files from disk at build time
-const photoDir = join(process.cwd(), 'public', 'images', entry.data.photoSource, entry.id);
-const photoFiles = await readdir(photoDir).catch(() => []);
-const photos = photoFiles
-  .filter(f => /\.jpe?g$/i.test(f))
-  .sort()
-  .map(f => `/images/${entry.data.photoSource}/${entry.id}/${f}`);
+const layout = entry.data.layout; // 'gallery' | 'inline' | 'carousel'
+
+// Discover actual photo files from disk at build time (gallery + carousel modes)
+let photos: string[] = [];
+if (layout !== 'inline') {
+  const photoDir = join(process.cwd(), 'public', 'images', entry.data.photoSource, entry.id);
+  const photoFiles = await readdir(photoDir).catch(() => []);
+  photos = photoFiles
+    .filter(f => /\.jpe?g$/i.test(f))
+    .sort()
+    .map(f => `/images/${entry.data.photoSource}/${entry.id}/${f}`);
+}
 ---
 
 <Layout title={entry.data.title} description={entry.data.description} pageClass="page-mylife">
@@ -50,35 +55,153 @@ const photos = photoFiles
       <p class="text-stone-500 text-lg">{entry.data.description}</p>
     </header>
 
-    <!-- Narrative text -->
-    {photos.length > 0 && (
-      <div class="mb-10 prose prose-stone max-w-none
-        prose-p:text-stone-600 prose-p:leading-relaxed prose-p:text-base">
+    <!-- ── INLINE layout: photos embedded in markdown body ── -->
+    {layout === 'inline' && (
+      <div class="prose prose-stone max-w-none
+        prose-p:text-stone-600 prose-p:leading-relaxed prose-p:text-base
+        prose-img:rounded-xl prose-img:shadow-sm prose-img:w-full">
         <Content />
       </div>
     )}
 
-    {photos.length === 0 && (
-      <div class="mb-10 prose prose-stone max-w-none
-        prose-p:text-stone-600 prose-p:leading-relaxed prose-p:text-base">
-        <Content />
-      </div>
-    )}
+    <!-- ── GALLERY layout: text above, masonry grid below ── -->
+    {layout === 'gallery' && (
+      <>
+        <div class="mb-10 prose prose-stone max-w-none
+          prose-p:text-stone-600 prose-p:leading-relaxed prose-p:text-base">
+          <Content />
+        </div>
 
-    <!-- Photo gallery -->
-    {photos.length > 0 && (
-      <div class="columns-1 sm:columns-2 lg:columns-3 gap-3 space-y-3">
-        {photos.map((src, i) => (
-          <div class="break-inside-avoid">
-            <img
-              src={src}
-              alt={`${entry.data.title} — photo ${i + 1}`}
-              class="w-full rounded-xl shadow-sm"
-              loading={i < 6 ? 'eager' : 'lazy'}
-            />
+        {photos.length > 0 && (
+          <div class="columns-1 sm:columns-2 lg:columns-3 gap-3 space-y-3">
+            {photos.map((src, i) => (
+              <div class="break-inside-avoid">
+                <img
+                  src={src}
+                  alt={`${entry.data.title} — photo ${i + 1}`}
+                  class="w-full rounded-xl shadow-sm"
+                  loading={i < 6 ? 'eager' : 'lazy'}
+                />
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        )}
+      </>
+    )}
+
+    <!-- ── CAROUSEL layout: text above, horizontal scroll-snap strip below ── -->
+    {layout === 'carousel' && (
+      <>
+        <div class="mb-10 prose prose-stone max-w-none
+          prose-p:text-stone-600 prose-p:leading-relaxed prose-p:text-base">
+          <Content />
+        </div>
+
+        {photos.length > 0 && (
+          <div class="relative">
+            <!-- Scroll container -->
+            <div
+              id="carousel"
+              class="flex gap-3 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-4
+                     [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            >
+              {photos.map((src, i) => (
+                <div class="snap-start shrink-0 w-72 sm:w-96">
+                  <img
+                    src={src}
+                    alt={`${entry.data.title} — photo ${i + 1}`}
+                    class="w-full h-64 sm:h-80 object-cover rounded-xl shadow-sm"
+                    loading={i < 3 ? 'eager' : 'lazy'}
+                  />
+                </div>
+              ))}
+            </div>
+
+            <!-- Prev / Next arrow buttons -->
+            <button
+              id="carousel-prev"
+              aria-label="Previous photo"
+              class="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4
+                     bg-white/90 hover:bg-white border border-stone-200
+                     rounded-full w-9 h-9 flex items-center justify-center
+                     shadow-md text-stone-600 hover:text-orange-600
+                     transition-colors disabled:opacity-30 disabled:cursor-default"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <button
+              id="carousel-next"
+              aria-label="Next photo"
+              class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4
+                     bg-white/90 hover:bg-white border border-stone-200
+                     rounded-full w-9 h-9 flex items-center justify-center
+                     shadow-md text-stone-600 hover:text-orange-600
+                     transition-colors disabled:opacity-30 disabled:cursor-default"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+        )}
+
+        <!-- Dot indicator -->
+        {photos.length > 1 && (
+          <div id="carousel-dots" class="flex justify-center gap-1.5 mt-4">
+            {photos.map((_, i) => (
+              <button
+                class="carousel-dot w-2 h-2 rounded-full bg-stone-300 transition-colors"
+                data-index={i}
+                aria-label={`Go to photo ${i + 1}`}
+              />
+            ))}
+          </div>
+        )}
+
+        <script>
+          const track = document.getElementById('carousel') as HTMLElement | null;
+          const prevBtn = document.getElementById('carousel-prev') as HTMLButtonElement | null;
+          const nextBtn = document.getElementById('carousel-next') as HTMLButtonElement | null;
+          const dots = document.querySelectorAll<HTMLButtonElement>('.carousel-dot');
+
+          if (track && prevBtn && nextBtn) {
+            const slideWidth = () => {
+              const first = track.firstElementChild as HTMLElement | null;
+              return first ? first.offsetWidth + 12 : 300; // 12 = gap-3
+            };
+
+            const scrollBy = (dir: number) => {
+              track.scrollBy({ left: dir * slideWidth(), behavior: 'smooth' });
+            };
+
+            prevBtn.addEventListener('click', () => scrollBy(-1));
+            nextBtn.addEventListener('click', () => scrollBy(1));
+
+            // Dot clicks
+            dots.forEach((dot, i) => {
+              dot.addEventListener('click', () => {
+                track.scrollTo({ left: i * slideWidth(), behavior: 'smooth' });
+              });
+            });
+
+            // Update active dot on scroll
+            const updateDots = () => {
+              const idx = Math.round(track.scrollLeft / slideWidth());
+              dots.forEach((dot, i) => {
+                dot.classList.toggle('bg-orange-500', i === idx);
+                dot.classList.toggle('bg-stone-300', i !== idx);
+              });
+              prevBtn.disabled = track.scrollLeft < 4;
+              nextBtn.disabled = track.scrollLeft >= track.scrollWidth - track.clientWidth - 4;
+            };
+
+            track.addEventListener('scroll', updateDots, { passive: true });
+            updateDots(); // init
+          }
+        </script>
+      </>
     )}
 
     <!-- Prev / Next navigation -->

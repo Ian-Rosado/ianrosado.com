@@ -12,7 +12,8 @@
     "astro": "astro",
     "convert-heic": "node scripts/convert-heic.js",
     "convert-gif": "node scripts/convert-gif.js",
-    "download-sabbatical": "node scripts/download-sabbatical-photos.js"
+    "download-sabbatical": "node scripts/download-sabbatical-photos.js",
+    "import-sabbatical": "node scripts/import-sabbatical-photos.js"
   },
   "devDependencies": {
     "ffmpeg-static": "^5.2.0",

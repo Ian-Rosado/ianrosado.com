@@ -2,7 +2,7 @@
 title: "Exquisite Almond Sugar Cookies"
 date: 2024-06-01
 description: "The almond extract is optional, but not really."
-coverImage: "/images/recipes/exquisite-almond-sugar-cookies/cover.jpg"
+coverImage: "/images/recipes/exquisite-almond-sugar-cookies/step-06.jpg"
 tags: ["cookies", "almond", "sugar cookies"]
 ingredients:
   - "1 3/4 cups (218 g) all-purpose flour, spooned and leveled"
@@ -21,6 +21,8 @@ equipment:
   - "Baking sheets"
   - "Parchment paper or silicone baking mat"
 ---
+
+![Finished almond sugar cookies](/images/recipes/exquisite-almond-sugar-cookies/step-00.jpg)
 
 Sugar cookies are about as simple as they come, but I find with a little bit of extra flavor and by taking the time to chill your dough, they can really take it to the next level. I was traveling when I made these cookies so I mixed them by hand, which wasn't actually that bad.
 

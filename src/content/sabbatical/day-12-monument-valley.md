@@ -2,7 +2,7 @@
 title: "Day 12: Monument Valley"
 description: "Catching the monuments in the rearview mirror at golden hour after a detour from slot canyon plans."
 sortOrder: 8
-photoSource: "sabbatical-from-site"
+mapId: "1ivalBNXbC0NwFfpbu_BIZ7olrURoCIg"
 ---
 
 Technically this happened on the same day as the Angel's Landing hike in Zion — I finished the hike around 11:00am and headed east. My original plan was to explore some slot canyons near Page, AZ, but with the rain the last few days, flash floods were a real risk in any slot canyons, so I decided to skip that and push on to Monument Valley. I stopped for all-you-can-eat pizza in Page, then stopped at the Glen Canyon Dam visitor center before making it to Monument Valley.

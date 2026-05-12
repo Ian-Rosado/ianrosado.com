@@ -2,6 +2,7 @@
 title: "Days 9–11: Zion"
 description: "Three days including the Narrows, Angel's Landing, guerrilla truck camping, and a pair of California condors."
 sortOrder: 7
+mapId: "1Vx6BwhuytEHr3uFS41K_S5J7IGNAfLY"
 ---
 
 I took my time getting from Capitol Reef to Zion — I stopped at the Otter Creek reservoir to swim and shower, and got lunch in Koosharem before making it to my free campsite for the night in the Uintah Flat dispersed camping area.

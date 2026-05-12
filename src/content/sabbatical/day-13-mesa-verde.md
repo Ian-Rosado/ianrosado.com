@@ -2,7 +2,7 @@
 title: "Day 13: Mesa Verde"
 description: "Ranger-led tours of Cliff Palace and Balcony House, and learning the real story of where the people went."
 sortOrder: 9
-photoSource: "sabbatical-from-site"
+mapId: "10vKEr3x3BuQcLS66Ep9H2EE0podZYPA"
 ---
 
 I woke up and drove into Mesa Verde National Park. I had ranger-led tours starting at 1:00pm so I took my time on the way, stopping to see the viewpoints along the drive. I had tours to Cliff Palace and Balcony House.

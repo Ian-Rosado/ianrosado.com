@@ -2,7 +2,7 @@
 title: "Day 5: Steens Mountain and the Alvord Desert"
 description: "Summit drive, bike riding on the playa, and a night at the Alvord hot springs under the stars."
 sortOrder: 3
-photoSource: "sabbatical-from-site"
+mapId: "1rF3AHpFoFDlAlskO9_4G2z0iHfLlTCo"
 ---
 
 I started my morning at Page Springs Campground west of Steens Mountain. I got gas and then did the ~30-mile drive to the top of Steens. Most of the drive was uneventful — you barely realize you're going up in elevation until you get to the top and are treated with the drastic drop-off on the other side. Here I got my first look at the Alvord Desert, visible in some photos from the top of Steens. The wide, glacially carved valleys are quite the sight, and the fact that everything is drivable makes Steens Mountain a great destination, other than being so remote.

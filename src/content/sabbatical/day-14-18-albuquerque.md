@@ -2,7 +2,7 @@
 title: "Days 14–18: Albuquerque"
 description: "New Mexican food, old friends, and a surprise at Angel's Peak campground."
 sortOrder: 10
-photoSource: "sabbatical-from-site"
+mapId: "1NkV0lZNlcOt0yU7J9ycksc0WkRtyrk4"
 ---
 
 Before getting to Albuquerque I spent the night at Angel's Peak campground — initially because it was free and off the highway. But in the morning I woke up in the light and saw that it was actually very pretty: some nice painted hills and eroded valleys.

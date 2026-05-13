@@ -3,6 +3,7 @@ title: "Day 35: Half Dome"
 description: "23 miles, 6,000 feet of elevation gain — the hardest hike of my life, and I'm glad I did it."
 sortOrder: 16
 mapId: "1LUOKF1xVbJQgbkg8NatkmUj6ipG5AT4"
+coverPhoto: "photo-10.jpg"
 ---
 
 This was the hardest hike of my life. I woke up at 5:30am and drove into the park to start hiking by 7:00am, and later realized I was one of the last people to start. The Mist Trail was closed so I wasn't able to get close-up views of the two waterfalls along those trails and I had to take the longer route — the John Muir Trail — to get to Half Dome. 10 miles in I was pretty tired and made it to the sub-dome, where it got really steep. The views were amazing and climbing the cables was a little scary but a cool experience. The whole time I was dreading the hike back.

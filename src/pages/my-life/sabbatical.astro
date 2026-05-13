@@ -24,7 +24,7 @@ const entries = (await getCollection('sabbatical')).sort(
 
     <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
       {entries.map((entry) => {
-        const coverSrc = `/images/${entry.data.photoSource}/${entry.id}/photo-01.jpg`;
+        const coverSrc = `/images/${entry.data.photoSource}/${entry.id}/${entry.data.coverPhoto}`;
         return (
           <a href={`/my-life/sabbatical/${entry.id}`} class="group block bg-white rounded-2xl border border-stone-100 shadow-sm hover:shadow-md transition-shadow overflow-hidden">
             <div class="aspect-[4/3] bg-stone-100 overflow-hidden">

@@ -10,13 +10,23 @@ import Layout from '../../layouts/Layout.astro';
     </header>
 
     <div class="grid sm:grid-cols-2 gap-5">
-      <a href="/more-pdx/favorites" class="group block bg-white rounded-2xl border border-stone-100 shadow-sm hover:shadow-md transition-shadow p-6">
-        <h2 class="text-xl font-semibold text-stone-900 mb-2 group-hover:text-stone-600 transition-colors" style="font-family: var(--font-serif)">Portland Favorites</h2>
-        <p class="text-stone-500 text-sm">Places, restaurants, and spots around the city that I keep coming back to.</p>
+      <a href="/more-pdx/favorites" class="group block bg-white rounded-2xl border border-stone-100 shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+        <div class="aspect-video overflow-hidden">
+          <img src="/images/more-pdx/map_screenshot.png" alt="Portland Favorites" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+        </div>
+        <div class="p-6">
+          <h2 class="text-xl font-semibold text-stone-900 mb-2 group-hover:text-stone-600 transition-colors" style="font-family: var(--font-serif)">Portland Favorites</h2>
+          <p class="text-stone-500 text-sm">Places, restaurants, and spots around the city that I keep coming back to.</p>
+        </div>
       </a>
-      <a href="/more-pdx/pickup-soccer" class="group block bg-white rounded-2xl border border-stone-100 shadow-sm hover:shadow-md transition-shadow p-6">
-        <h2 class="text-xl font-semibold text-stone-900 mb-2 group-hover:text-stone-600 transition-colors" style="font-family: var(--font-serif)">Portland Pickup Soccer</h2>
-        <p class="text-stone-500 text-sm">Where and when to find pickup soccer games around Portland.</p>
+      <a href="/more-pdx/pickup-soccer" class="group block bg-white rounded-2xl border border-stone-100 shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+        <div class="aspect-video overflow-hidden">
+          <img src="/images/more-pdx/pickup_image.png" alt="Portland Pickup Soccer" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+        </div>
+        <div class="p-6">
+          <h2 class="text-xl font-semibold text-stone-900 mb-2 group-hover:text-stone-600 transition-colors" style="font-family: var(--font-serif)">Portland Pickup Soccer</h2>
+          <p class="text-stone-500 text-sm">Where and when to find pickup soccer games around Portland.</p>
+        </div>
       </a>
     </div>
   </div>

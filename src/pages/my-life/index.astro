@@ -10,9 +10,14 @@ import Layout from '../../layouts/Layout.astro';
     </header>
 
     <div class="grid sm:grid-cols-2 gap-5">
-      <a href="/my-life/sabbatical" class="group block bg-white rounded-2xl border border-stone-100 shadow-sm hover:shadow-md transition-shadow p-6">
-        <h2 class="text-xl font-semibold text-stone-900 mb-2 group-hover:text-stone-600 transition-colors" style="font-family: var(--font-serif)">Sabbatical Road Trip</h2>
-        <p class="text-stone-500 text-sm">40+ days from Oregon through California, Utah, Arizona, New Mexico, and Texas.</p>
+      <a href="/my-life/sabbatical" class="group block bg-white rounded-2xl border border-stone-100 shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+        <div class="aspect-video overflow-hidden">
+          <img src="/images/my-life/sabbatical.jpg" alt="Sabbatical Road Trip" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+        </div>
+        <div class="p-6">
+          <h2 class="text-xl font-semibold text-stone-900 mb-2 group-hover:text-stone-600 transition-colors" style="font-family: var(--font-serif)">Sabbatical Road Trip</h2>
+          <p class="text-stone-500 text-sm">40+ days from Oregon through California, Utah, Arizona, New Mexico, and Texas.</p>
+        </div>
       </a>
     </div>
   </div>

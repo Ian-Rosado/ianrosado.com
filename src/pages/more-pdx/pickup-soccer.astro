@@ -49,25 +49,10 @@ import Layout from '../../layouts/Layout.astro';
 
     <!-- Calendar -->
     <section class="mb-10">
-      <div class="flex items-center justify-between mb-3">
-        <h2 class="text-sm font-semibold uppercase tracking-widest text-orange-600">Game Calendar</h2>
-        <div class="flex rounded-lg border border-stone-200 overflow-hidden text-xs font-medium">
-          <button
-            id="btn-month"
-            class="px-3 py-1.5 bg-orange-600 text-white transition-colors"
-            onclick="setView('month')"
-          >Month</button>
-          <button
-            id="btn-agenda"
-            class="px-3 py-1.5 bg-white text-stone-600 hover:bg-stone-50 transition-colors"
-            onclick="setView('agenda')"
-          >Agenda</button>
-        </div>
-      </div>
+      <h2 class="text-sm font-semibold uppercase tracking-widest text-orange-600 mb-3">Game Calendar</h2>
       <div class="rounded-2xl overflow-hidden border border-stone-100 shadow-sm" style="height: 600px">
         <iframe
-          id="cal-iframe"
-          src="https://calendar.google.com/calendar/embed?wkst=1&ctz=America%2FVancouver&showPrint=0&showDate=0&showCalendars=0&showTz=0&src=YWFmMjIwNWQ0ZTM0NGYzMmVlZTRkZWNkOWMyZWU3NjMyMDZjOWU3YjJkNDc1YWUzNDNjNTQwZWY4NjE2MWI2N0Bncm91cC5jYWxlbmRhci5nb29nbGUuY29t&color=%23795548&mode=MONTH"
+          src="https://calendar.google.com/calendar/embed?wkst=1&ctz=America%2FVancouver&showPrint=0&showDate=0&showCalendars=0&showTz=0&src=YWFmMjIwNWQ0ZTM0NGYzMmVlZTRkZWNkOWMyZWU3NjMyMDZjOWU3YjJkNDc1YWUzNDNjNTQwZWY4NjE2MWI2N0Bncm91cC5jYWxlbmRhci5nb29nbGUuY29t&color=%23795548"
           class="w-full h-full border-0"
           loading="lazy"
           title="Portland Pickup Soccer Calendar"
@@ -91,24 +76,3 @@ import Layout from '../../layouts/Layout.astro';
 
   </div>
 </Layout>
-
-<script>
-  const BASE_URL = 'https://calendar.google.com/calendar/embed?wkst=1&ctz=America%2FVancouver&showPrint=0&showDate=0&showCalendars=0&showTz=0&src=YWFmMjIwNWQ0ZTM0NGYzMmVlZTRkZWNkOWMyZWU3NjMyMDZjOWU3YjJkNDc1YWUzNDNjNTQwZWY4NjE2MWI2N0Bncm91cC5jYWxlbmRhci5nb29nbGUuY29t&color=%23795548';
-
-  function setView(mode: string) {
-    const iframe = document.getElementById('cal-iframe') as HTMLIFrameElement;
-    const btnMonth = document.getElementById('btn-month');
-    const btnAgenda = document.getElementById('btn-agenda');
-    if (!iframe || !btnMonth || !btnAgenda) return;
-
-    iframe.src = BASE_URL + '&mode=' + mode.toUpperCase();
-
-    if (mode === 'month') {
-      btnMonth.className = 'px-3 py-1.5 bg-orange-600 text-white transition-colors';
-      btnAgenda.className = 'px-3 py-1.5 bg-white text-stone-600 hover:bg-stone-50 transition-colors';
-    } else {
-      btnAgenda.className = 'px-3 py-1.5 bg-orange-600 text-white transition-colors';
-      btnMonth.className = 'px-3 py-1.5 bg-white text-stone-600 hover:bg-stone-50 transition-colors';
-    }
-  }
-</script>

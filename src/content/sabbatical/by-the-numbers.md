@@ -3,6 +3,7 @@ title: "By the Numbers"
 description: "Steps, miles, sleep, and fuel — tracking 40+ days on the road with a Fitbit and a Google Sheet."
 sortOrder: 0
 mapId: "1oUA0Yu3PpKOSc_mEiuFeMY512MK-ijw"
+layout: inline
 wideContent: true
 coverPhoto: "by_the_numbers.png"
 ---

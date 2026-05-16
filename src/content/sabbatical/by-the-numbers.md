@@ -24,6 +24,6 @@ To me the trip is split into a few distinct sections: a long backpacking trip to
 
 <img src="/images/sabbatical/by-the-numbers/mpg_vs_date.jpg" alt="MPG over time" class="w-full rounded-xl shadow-sm my-8" />
 
-The sleep tracking data extends a bit beyond the sabbatical itself — you can clearly see on the chart where the trip began.
+I track my sleep even outside of my sabbatical.  I had a week off before the road trip started, and you can see pretty clearly on the chart where my sabbatical starts:
 
 <img src="/images/sabbatical/by-the-numbers/duration_vs_date.jpg" alt="Sleep duration over time" class="w-full rounded-xl shadow-sm my-8" />

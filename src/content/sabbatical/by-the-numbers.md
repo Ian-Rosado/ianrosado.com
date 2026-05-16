@@ -16,21 +16,21 @@ To me the trip is split into a few distinct sections: a long backpacking trip to
 </div>
 
 <div class="w-full rounded-xl overflow-hidden my-8" style="height: 450px">
-  <iframe src="https://docs.google.com/spreadsheets/d/e/2CAIWO3ekCUCEFY-Yeu4Mo-OrH3rU-Iil5LN3Cf-_Ksh3Nm9NSVuEidrTwYj8a_slvQweDsCDbLxdtXUvD1Q/gviz/chartiframe?oid=1278287510&resourcekey" class="w-full h-full border-0" loading="lazy" title="Chart 1"></iframe>
+  <iframe src="https://docs.google.com/spreadsheets/d/e/2CAIWO3ekCUCEFY-Yeu4Mo-OrH3rU-Iil5LN3Cf-_Ksh3Nm9NSVuEidrTwYj8a_slvQweDsCDbLxdtXUvD1Q/gviz/chartiframe?oid=1278287510&resourcekey&w=1200&h=450" class="w-full h-full border-0" loading="lazy" title="Chart 1"></iframe>
 </div>
 
 <div class="w-full rounded-xl overflow-hidden my-8" style="height: 450px">
-  <iframe src="https://docs.google.com/spreadsheets/d/e/2CAIWO3ekCUCEFY-Yeu4Mo-OrH3rU-Iil5LN3Cf-_Ksh3Nm9NSVuEidrTwYj8a_slvQweDsCDbLxdtXUvD1Q/gviz/chartiframe?oid=465433282&resourcekey" class="w-full h-full border-0" loading="lazy" title="Chart 2"></iframe>
+  <iframe src="https://docs.google.com/spreadsheets/d/e/2CAIWO3ekCUCEFY-Yeu4Mo-OrH3rU-Iil5LN3Cf-_Ksh3Nm9NSVuEidrTwYj8a_slvQweDsCDbLxdtXUvD1Q/gviz/chartiframe?oid=465433282&resourcekey&w=1200&h=450" class="w-full h-full border-0" loading="lazy" title="Chart 2"></iframe>
 </div>
 
 <div class="w-full rounded-xl overflow-hidden my-8" style="height: 450px">
-  <iframe src="https://docs.google.com/spreadsheets/d/e/2CAIWO3ekCUCEFY-Yeu4Mo-OrH3rU-Iil5LN3Cf-_Ksh3Nm9NSVuEidrTwYj8a_slvQweDsCDbLxdtXUvD1Q/gviz/chartiframe?oid=1181611170&resourcekey" class="w-full h-full border-0" loading="lazy" title="Chart 3"></iframe>
+  <iframe src="https://docs.google.com/spreadsheets/d/e/2CAIWO3ekCUCEFY-Yeu4Mo-OrH3rU-Iil5LN3Cf-_Ksh3Nm9NSVuEidrTwYj8a_slvQweDsCDbLxdtXUvD1Q/gviz/chartiframe?oid=1181611170&resourcekey&w=1200&h=450" class="w-full h-full border-0" loading="lazy" title="Chart 3"></iframe>
 </div>
 
 <div class="w-full rounded-xl overflow-hidden my-8" style="height: 450px">
-  <iframe src="https://docs.google.com/spreadsheets/d/e/2CAIWO3ekCUCEFY-Yeu4Mo-OrH3rU-Iil5LN3Cf-_Ksh3Nm9NSVuEidrTwYj8a_slvQweDsCDbLxdtXUvD1Q/gviz/chartiframe?oid=1483501293&resourcekey" class="w-full h-full border-0" loading="lazy" title="Chart 4"></iframe>
+  <iframe src="https://docs.google.com/spreadsheets/d/e/2CAIWO3ekCUCEFY-Yeu4Mo-OrH3rU-Iil5LN3Cf-_Ksh3Nm9NSVuEidrTwYj8a_slvQweDsCDbLxdtXUvD1Q/gviz/chartiframe?oid=1483501293&resourcekey&w=1200&h=450" class="w-full h-full border-0" loading="lazy" title="Chart 4"></iframe>
 </div>
 
 <div class="w-full rounded-xl overflow-hidden my-8" style="height: 450px">
-  <iframe src="https://docs.google.com/spreadsheets/d/e/2CAIWO3em0N9W0LKx0g0OcX5qc4B-9GOGWXVS8HvsyCItulr6mzQykhDKG7CmAmm1-o0z3mKKD0z3tVUmiOg/gviz/chartiframe?oid=681503095&resourcekey" class="w-full h-full border-0" loading="lazy" title="Chart 5"></iframe>
+  <iframe src="https://docs.google.com/spreadsheets/d/e/2CAIWO3em0N9W0LKx0g0OcX5qc4B-9GOGWXVS8HvsyCItulr6mzQykhDKG7CmAmm1-o0z3mKKD0z3tVUmiOg/gviz/chartiframe?oid=681503095&resourcekey&w=1200&h=450" class="w-full h-full border-0" loading="lazy" title="Chart 5"></iframe>
 </div>

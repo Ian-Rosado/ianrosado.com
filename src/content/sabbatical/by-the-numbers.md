@@ -15,13 +15,8 @@ To me the trip is split into a few distinct sections: a long backpacking trip to
   <iframe src="https://docs.google.com/presentation/d/1YO7D8lx8srdS6ecWroZjErDyBNvsC6HackCi3guLPrI/embed?start=false&loop=false" class="w-full h-full border-0" allowfullscreen loading="lazy" title="By the Numbers — slides"></iframe>
 </div>
 
-<div class="grid sm:grid-cols-2 gap-6 my-8">
-  <img src="/images/sabbatical/by-the-numbers/walking_miles_vs_date.jpg" alt="Walking miles over time" class="w-full rounded-xl shadow-sm" />
-  <img src="/images/sabbatical/by-the-numbers/calories_burned_vs_date.jpg" alt="Calories burned over time" class="w-full rounded-xl shadow-sm" />
-  <img src="/images/sabbatical/by-the-numbers/duration_vs_date.jpg" alt="Sleep duration over time" class="w-full rounded-xl shadow-sm" />
-  <img src="/images/sabbatical/by-the-numbers/driving_time_vs_date.jpg" alt="Driving time over time" class="w-full rounded-xl shadow-sm" />
-</div>
-
-<div class="my-8">
-  <img src="/images/sabbatical/by-the-numbers/mpg_vs_date.jpg" alt="MPG over time" class="w-full rounded-xl shadow-sm" />
-</div>
+<img src="/images/sabbatical/by-the-numbers/walking_miles_vs_date.jpg" alt="Walking miles over time" class="w-full rounded-xl shadow-sm my-8" />
+<img src="/images/sabbatical/by-the-numbers/calories_burned_vs_date.jpg" alt="Calories burned over time" class="w-full rounded-xl shadow-sm my-8" />
+<img src="/images/sabbatical/by-the-numbers/duration_vs_date.jpg" alt="Sleep duration over time" class="w-full rounded-xl shadow-sm my-8" />
+<img src="/images/sabbatical/by-the-numbers/driving_time_vs_date.jpg" alt="Driving time over time" class="w-full rounded-xl shadow-sm my-8" />
+<img src="/images/sabbatical/by-the-numbers/mpg_vs_date.jpg" alt="MPG over time" class="w-full rounded-xl shadow-sm my-8" />

@@ -4,13 +4,13 @@ import Layout from '../layouts/Layout.astro';
 const calendars = [
   {
     title: 'Portland Events',
-    description: null,
+    description: 'A hand-curated calendar of interesting events happening around Portland — festivals, markets, performances, and one-of-a-kind local happenings. Annual Portland staples like the World Naked Bike Ride and Adult Soapbox Derby are marked in purple so you never miss them. You can add any of these calendars to your own Google Calendar using the + button in the bottom-right corner of the embed.',
     src: '6218570f10546f6f03748bbd25adcde299bfd55ef4741d8d1520e79653d9c9f6%40group.calendar.google.com',
     color: '%23F4511E',
   },
   {
     title: 'Farmers Markets',
-    description: 'Portland has farmers markets almost every day of the week.',
+    description: 'Portland has one of the best farmers market scenes in the country — with markets running nearly every day of the week across the metro area. From the iconic PSU Saturday Market in the South Park Blocks to neighborhood markets in Beaverton, Hillsboro, and beyond, there\'s almost always a market nearby.',
     src: '560e859bd2c7b5dfd2262cb6f28389921434606cec955e7ec75f02df9fd2138a%40group.calendar.google.com',
     color: '%230B8043',
   },
@@ -35,14 +35,14 @@ function calUrl(src: string | string[], mobile = false, opts: { color?: string; 
 
 <Layout
   title="Portland Events"
-  description="Curated Google Calendars for Portland events, farmers markets, trivia nights, and more."
+  description="A curated Portland events calendar — things to do in Portland, OR including farmers markets, trivia nights, Pedalpalooza, and local staples. Updated regularly."
   pageClass="page-events"
 >
   <div class="max-w-5xl mx-auto px-4 py-12">
     <header class="mb-10">
       <h1 class="text-4xl font-semibold text-stone-900 mb-3" style="font-family: var(--font-serif)">Portland Events</h1>
       <p class="text-stone-500 text-lg max-w-2xl">
-        A curated set of calendars for things happening around Portland — events I find interesting,
+        A curated set of calendars for things happening around Portland, Oregon — events I find interesting,
         farmers markets, trivia nights by neighborhood, and more. Portland staples (like the Naked Bike Ride and Adult Soapbox Derby) are marked in purple.
       </p>
     </header>
@@ -88,7 +88,7 @@ function calUrl(src: string | string[], mobile = false, opts: { color?: string; 
     <!-- Trivia Nights -->
     <section class="mb-12">
       <h2 class="text-2xl font-semibold text-stone-900 mb-2" style="font-family: var(--font-serif)">Trivia Nights</h2>
-      <p class="text-stone-500 text-sm mb-4">Trivia is big in Portland. All neighborhoods in one calendar — toggle areas on/off using the checkboxes in the bottom-left of the embed.</p>
+      <p class="text-stone-500 text-sm mb-4">Trivia nights are a Portland institution — bars and venues across the city run weekly games, and they fill up fast. This calendar covers N &amp; NE, NW &amp; SW, SE Portland, and surrounding areas all in one view. Toggle neighborhoods on and off using the checkboxes in the bottom-left of the embed. Arrive early — popular spots book out quickly.</p>
       <div class="cal-frame relative w-full rounded-2xl overflow-hidden border border-stone-100 shadow-sm">
         <iframe
           class="hidden md:block absolute top-0 left-0 w-full h-full"
@@ -110,7 +110,7 @@ function calUrl(src: string | string[], mobile = false, opts: { color?: string; 
     <!-- Pedalpalooza / Shift Community Calendar -->
     <section class="mb-12">
       <h2 class="text-2xl font-semibold text-stone-900 mb-2" style="font-family: var(--font-serif)">Pedalpalooza</h2>
-      <p class="text-stone-500 text-sm mb-4">The Shift community calendar — bike events year-round, with Pedalpalooza in the summer.</p>
+      <p class="text-stone-500 text-sm mb-4">Portland is one of the most bike-friendly cities in the country, and Pedalpalooza is its annual celebration of cycling culture. Organized by the Shift community, it features hundreds of rides over several weeks each summer. This calendar tracks Shift bike events year-round — not just Pedalpalooza season.</p>
       <div class="cal-frame relative w-full rounded-2xl overflow-hidden border border-stone-100 shadow-sm">
         <iframe
           class="hidden md:block absolute top-0 left-0 w-full h-full"

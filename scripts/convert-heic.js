@@ -3,20 +3,21 @@
  *
  * Converts all .heic / .HEIC files in a directory (recursive) to .jpg.
  * Skips files that already have a matching .jpg alongside them.
- * Uses sharp (libvips) for broad compatibility with all HEIC variants.
+ * Uses heic-convert (pure JS/WASM) — works on Windows, Mac, and Linux.
  *
  * Usage:
- *   node scripts/convert-heic.js                             # all recipe folders
- *   node scripts/convert-heic.js public/images/recipes/simple-carrot-cake
- *   node scripts/convert-heic.js "C:\Users\you\Downloads\photos"
+ *   npm run convert-heic                                         # all recipe folders
+ *   npm run convert-heic -- public/images/recipes/simple-carrot-cake
+ *   npm run convert-heic -- "C:\Users\you\Downloads\photos"
  */
 
+import heicConvert from 'heic-convert';
 import sharp from 'sharp';
-import { readdir, stat } from 'fs/promises';
+import { readFile, readdir, stat, writeFile } from 'fs/promises';
 import { join, extname, basename, dirname } from 'path';
 
 const DEFAULT_DIR = 'public/images/recipes';
-const QUALITY = 90; // 1–100, higher = bigger file / better quality
+const QUALITY = 90; // 1–100
 
 async function findHeicFiles(dir) {
   const entries = await readdir(dir, { withFileTypes: true });
@@ -45,7 +46,14 @@ async function convertFile(heicPath) {
   }
 
   try {
-    await sharp(heicPath)
+    const inputBuffer = await readFile(heicPath);
+    const outputBuffer = await heicConvert({
+      buffer: inputBuffer,
+      format: 'JPEG',
+      quality: QUALITY / 100,
+    });
+    // Run through sharp to compress and ensure correct JPEG output
+    await sharp(Buffer.from(outputBuffer))
       .jpeg({ quality: QUALITY, mozjpeg: true })
       .toFile(jpgPath);
     console.log(`  ✅ Saved:      ${basename(jpgPath)}`);

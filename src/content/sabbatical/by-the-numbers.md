@@ -4,6 +4,7 @@ description: "Steps, miles, sleep, and fuel — tracking 40+ days on the road wi
 sortOrder: 0
 mapId: "1oUA0Yu3PpKOSc_mEiuFeMY512MK-ijw"
 wideContent: true
+coverPhoto: "by_the_numbers.png"
 ---
 
 I kept track of a few different stats throughout the trip. My Fitbit tracked steps, walking miles, calories burned, and sleep duration, while I manually tracked driving distance and fuel burned by entering values into a Google Sheet whenever I got gas.

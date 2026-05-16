@@ -15,22 +15,13 @@ To me the trip is split into a few distinct sections: a long backpacking trip to
   <iframe src="https://docs.google.com/presentation/d/1YO7D8lx8srdS6ecWroZjErDyBNvsC6HackCi3guLPrI/embed?start=false&loop=false" class="w-full h-full border-0" allowfullscreen loading="lazy" title="By the Numbers — slides"></iframe>
 </div>
 
-<div class="w-full rounded-xl overflow-hidden my-8" style="height: 450px">
-  <iframe src="https://docs.google.com/spreadsheets/d/e/2CAIWO3ekCUCEFY-Yeu4Mo-OrH3rU-Iil5LN3Cf-_Ksh3Nm9NSVuEidrTwYj8a_slvQweDsCDbLxdtXUvD1Q/gviz/chartiframe?oid=1278287510&resourcekey&w=1200&h=450" class="w-full h-full border-0" loading="lazy" title="Chart 1"></iframe>
+<div class="grid sm:grid-cols-2 gap-6 my-8">
+  <img src="/images/sabbatical/by-the-numbers/walking_miles_vs_date.jpg" alt="Walking miles over time" class="w-full rounded-xl shadow-sm" />
+  <img src="/images/sabbatical/by-the-numbers/calories_burned_vs_date.jpg" alt="Calories burned over time" class="w-full rounded-xl shadow-sm" />
+  <img src="/images/sabbatical/by-the-numbers/duration_vs_date.jpg" alt="Sleep duration over time" class="w-full rounded-xl shadow-sm" />
+  <img src="/images/sabbatical/by-the-numbers/driving_time_vs_date.jpg" alt="Driving time over time" class="w-full rounded-xl shadow-sm" />
 </div>
 
-<div class="w-full rounded-xl overflow-hidden my-8" style="height: 450px">
-  <iframe src="https://docs.google.com/spreadsheets/d/e/2CAIWO3ekCUCEFY-Yeu4Mo-OrH3rU-Iil5LN3Cf-_Ksh3Nm9NSVuEidrTwYj8a_slvQweDsCDbLxdtXUvD1Q/gviz/chartiframe?oid=465433282&resourcekey&w=1200&h=450" class="w-full h-full border-0" loading="lazy" title="Chart 2"></iframe>
-</div>
-
-<div class="w-full rounded-xl overflow-hidden my-8" style="height: 450px">
-  <iframe src="https://docs.google.com/spreadsheets/d/e/2CAIWO3ekCUCEFY-Yeu4Mo-OrH3rU-Iil5LN3Cf-_Ksh3Nm9NSVuEidrTwYj8a_slvQweDsCDbLxdtXUvD1Q/gviz/chartiframe?oid=1181611170&resourcekey&w=1200&h=450" class="w-full h-full border-0" loading="lazy" title="Chart 3"></iframe>
-</div>
-
-<div class="w-full rounded-xl overflow-hidden my-8" style="height: 450px">
-  <iframe src="https://docs.google.com/spreadsheets/d/e/2CAIWO3ekCUCEFY-Yeu4Mo-OrH3rU-Iil5LN3Cf-_Ksh3Nm9NSVuEidrTwYj8a_slvQweDsCDbLxdtXUvD1Q/gviz/chartiframe?oid=1483501293&resourcekey&w=1200&h=450" class="w-full h-full border-0" loading="lazy" title="Chart 4"></iframe>
-</div>
-
-<div class="w-full rounded-xl overflow-hidden my-8" style="height: 450px">
-  <iframe src="https://docs.google.com/spreadsheets/d/e/2CAIWO3em0N9W0LKx0g0OcX5qc4B-9GOGWXVS8HvsyCItulr6mzQykhDKG7CmAmm1-o0z3mKKD0z3tVUmiOg/gviz/chartiframe?oid=681503095&resourcekey&w=1200&h=450" class="w-full h-full border-0" loading="lazy" title="Chart 5"></iframe>
+<div class="my-8">
+  <img src="/images/sabbatical/by-the-numbers/mpg_vs_date.jpg" alt="MPG over time" class="w-full rounded-xl shadow-sm" />
 </div>

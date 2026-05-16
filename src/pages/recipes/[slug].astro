@@ -21,7 +21,18 @@ function frac(text: string): string {
 }
 ---
 
-<Layout title={recipe.data.title} description={recipe.data.description} pageClass="page-recipes">
+<Layout title={recipe.data.title} description={recipe.data.description} pageClass="page-recipes" ogImage={recipe.data.coverImage}>
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "Recipe",
+    "name": recipe.data.title,
+    "description": recipe.data.description,
+    "author": { "@type": "Person", "name": "Ian Rosado" },
+    "datePublished": recipe.data.date.toISOString().split('T')[0],
+    "keywords": recipe.data.tags.join(', '),
+    "recipeIngredient": recipe.data.ingredients,
+    ...(recipe.data.coverImage ? { "image": `https://www.ianrosado.com${recipe.data.coverImage}` } : {}),
+  })} />
   <article class="max-w-3xl mx-auto px-4 py-12">
 
     <!-- Back link -->

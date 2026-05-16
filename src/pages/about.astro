@@ -3,6 +3,20 @@ import Layout from '../layouts/Layout.astro';
 ---
 
 <Layout title="About" description="About Ian Rosado — data engineer based in Portland, OR." pageClass="page-about">
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "Ian Rosado",
+    "url": "https://www.ianrosado.com",
+    "image": "https://www.ianrosado.com/images/ian.jpg",
+    "jobTitle": "Data and Analytics Engineer",
+    "address": { "@type": "PostalAddress", "addressLocality": "Portland", "addressRegion": "OR" },
+    "sameAs": [
+      "https://www.linkedin.com/in/ianrosado/",
+      "https://github.com/Ian-Rosado",
+      "https://www.instagram.com/ian_p_rosado/"
+    ]
+  })} />
   <div class="max-w-2xl mx-auto px-4 py-12">
     <header class="mb-10">
       <h1 class="text-4xl font-semibold text-stone-900 mb-3" style="font-family: var(--font-serif)">About</h1>

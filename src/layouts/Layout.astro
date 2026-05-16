@@ -5,10 +5,15 @@ interface Props {
   title: string;
   description?: string;
   pageClass?: string;
+  ogImage?: string;
 }
 
-const { title, description = "Ian Rosado's personal site — Portland events, recipes, and more.", pageClass = 'page-home' } = Astro.props;
+const { title, description = "Ian Rosado's personal site — Portland events, recipes, and more.", pageClass = 'page-home', ogImage } = Astro.props;
 const pathname = Astro.url.pathname;
+const siteUrl = 'https://www.ianrosado.com';
+const canonicalUrl = `${siteUrl}${pathname}`;
+const pageTitle = title === 'Home' ? 'Ian Rosado' : `${title} | Ian Rosado`;
+const ogImageUrl = ogImage ? `${siteUrl}${ogImage}` : `${siteUrl}/images/home/portland-events.jpeg`;
 
 const navLinks = [
   { href: '/', label: 'Home' },
@@ -29,13 +34,34 @@ function isActive(href: string) {
 <html lang="en">
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Primary meta -->
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalUrl} />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:site_name" content="Ian Rosado" />
+
+    <!-- Twitter card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageUrl} />
+
+    <!-- Favicons -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content={description} />
-    <title>{title === 'Home' ? 'Ian Rosado' : `${title} | Ian Rosado`}</title>
+
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Lora:ital,wght@0,600;1,400&display=swap" rel="stylesheet" />

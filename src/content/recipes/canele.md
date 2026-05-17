@@ -55,7 +55,10 @@ In a large bowl, whisk together **250 g (1 cup) sugar**, **2 large eggs**, and *
 
 Add about ¼ of the hot milk mixture to the egg mixture, stirring constantly to temper the eggs and prevent them from scrambling.
 
-![Tempering the eggs with hot milk](/images/recipes/canele/IMG_7984.jpg)
+<figure>
+  <img src="/images/recipes/canele/IMG_7984.jpg" alt="Tempering the eggs with hot milk" />
+  <figcaption>You can see some small clumps of flour in my batter here. I was worried at the time but these ended up smoothing out.</figcaption>
+</figure>
 
 ## Add the flour
 

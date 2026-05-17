@@ -25,15 +25,45 @@ equipment:
   - "Cooling rack"
 ---
 
-## Make the batter
+![Canelés](/images/recipes/canele/IMG_7972.jpg)
+
+## Heat the milk
 
 In a saucepan, combine **500 ml (2 cups + 2 tbsp) cold milk** and **1 tsp vanilla bean powder**. Bring to a gentle simmer, then remove from heat.
 
+![Milk and vanilla in saucepan](/images/recipes/canele/IMG_7973.jpg)
+
+![Milk coming to a simmer](/images/recipes/canele/IMG_7974.jpg)
+
+<video autoplay loop muted playsinline class="w-full rounded-xl my-6">
+  <source src="/images/recipes/canele/IMG_7981.mp4" type="video/mp4">
+</video>
+
+## Mix the sugar and eggs
+
 In a large bowl, whisk together **250 g (1 cup) sugar**, **2 large eggs**, and **2 egg yolks** until combined. Stir in **50 g (3½ tbsp) melted butter**.
+
+![Sugar, eggs, and yolks](/images/recipes/canele/IMG_7975.jpg)
+
+![Whisking together](/images/recipes/canele/IMG_7976.jpg)
+
+![Adding melted butter](/images/recipes/canele/IMG_7977.jpg)
+
+![Egg mixture combined](/images/recipes/canele/IMG_7978.jpg)
+
+## Temper the eggs
 
 Add about ¼ of the hot milk mixture to the egg mixture, stirring constantly to temper the eggs and prevent them from scrambling.
 
+![Tempering the eggs with hot milk](/images/recipes/canele/IMG_7984.jpg)
+
+## Add the flour
+
 Add **100 g (½ cup) flour** and stir until smooth and consistent.
+
+![Adding flour to the batter](/images/recipes/canele/IMG_7983.jpg)
+
+## Add the remaining milk
 
 Pour in the remaining hot milk mixture, stirring constantly until fully incorporated.
 
@@ -41,11 +71,13 @@ Pour in the remaining hot milk mixture, stirring constantly until fully incorpor
 
 Stir in **60 ml (1 shot) dark rum**.
 
-![Adding rum to the batter](/images/recipes/canele/IMG_7995.jpg)
+![Adding dark rum](/images/recipes/canele/IMG_7985.jpg)
 
 ## Rest
 
 Cover the batter and refrigerate for at least 24 hours, and up to 4 days. This rest is essential — don't skip it.
+
+![Batter covered and ready to rest](/images/recipes/canele/IMG_7995.jpg)
 
 ## Coat the molds
 

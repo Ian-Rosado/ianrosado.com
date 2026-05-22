@@ -10,6 +10,7 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
+    "vercel-build": "node scripts/vercel-build.js",
     "dev:pdx-events": "astro dev --config astro.pdx-events.config.mjs",
     "build:pdx-events": "astro build --config astro.pdx-events.config.mjs",
     "convert-heic": "node scripts/convert-heic.js",

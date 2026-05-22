@@ -1,0 +1,91 @@
+---
+interface Props {
+  backLink?: { href: string; label: string };
+}
+const { backLink } = Astro.props;
+---
+
+<div class="max-w-4xl mx-auto px-4 py-12">
+
+  {backLink && (
+    <a href={backLink.href} class="inline-flex items-center gap-1 text-sm text-stone-400 hover:text-orange-600 transition-colors mb-8">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+      </svg>
+      {backLink.label}
+    </a>
+  )}
+
+  <!-- Header -->
+  <header class="mb-8">
+    <h1 class="text-4xl font-semibold text-stone-900 mb-3 leading-tight" style="font-family: var(--font-serif)">Portland Favorites</h1>
+    <p class="text-stone-600 text-lg leading-relaxed max-w-2xl">
+      I've lived in Portland for more than 10 years and have been cultivating lists of favorites and places I want to try the whole time. This is all based on personal opinion and experience — in order for a place to make the list, I have to have personally been there and loved it.
+    </p>
+    <p class="text-stone-500 text-sm mt-3">
+      Note: I lived in Beaverton/Hillsboro for 6 years, so there's a bit of a west-side skew. If your favorite is missing, I guess you'll just have to recommend it to me.
+    </p>
+  </header>
+
+  <!-- Absolute best picks -->
+  <section class="mb-10">
+    <h2 class="text-sm font-semibold uppercase tracking-widest text-orange-600 mb-4">Absolute Favorites</h2>
+    <p class="text-stone-500 text-sm mb-5">For any self-respecting 9-year-old at heart, the categories that matter most:</p>
+    <div class="grid sm:grid-cols-3 gap-4">
+
+      <div class="bg-white rounded-2xl border border-stone-100 shadow-sm p-5">
+        <div class="text-2xl mb-2">🍔</div>
+        <p class="text-xs font-semibold uppercase tracking-wider text-orange-600 mb-1">Best Burger</p>
+        <p class="font-semibold text-stone-900 mb-1" style="font-family: var(--font-serif)">Mr. Bento Burger</p>
+        <p class="text-stone-500 text-sm">7180 NE Cornell Rd, Hillsboro</p>
+      </div>
+
+      <div class="bg-white rounded-2xl border border-stone-100 shadow-sm p-5">
+        <div class="text-2xl mb-2">🍕</div>
+        <p class="text-xs font-semibold uppercase tracking-wider text-orange-600 mb-1">Best Pizza</p>
+        <p class="font-semibold text-stone-900 mb-1" style="font-family: var(--font-serif)">The Focacceria by Montelupo</p>
+        <p class="text-stone-500 text-sm">1613 SE Bybee Blvd, Portland</p>
+      </div>
+
+      <div class="bg-white rounded-2xl border border-stone-100 shadow-sm p-5">
+        <div class="text-2xl mb-2">🍦</div>
+        <p class="text-xs font-semibold uppercase tracking-wider text-orange-600 mb-1">Best Ice Cream</p>
+        <p class="font-semibold text-stone-900 mb-1" style="font-family: var(--font-serif)">Luna's Ice Cream</p>
+        <p class="text-stone-500 text-sm">10812 SE Oak St A, Milwaukie</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Map -->
+  <section class="mb-10">
+    <h2 class="text-sm font-semibold uppercase tracking-widest text-orange-600 mb-2">My Favorite Portland Spots</h2>
+    <p class="text-stone-500 text-sm mb-4">
+      Use the menu in the top-left of the map to show/hide layers and sort by category.
+      Places are marked as "well-known" or "hidden gem" based on how crowded they tend to be.
+    </p>
+    <div class="rounded-2xl overflow-hidden border border-stone-100 shadow-sm" style="height: 560px">
+      <iframe
+        src="https://www.google.com/maps/d/embed?mid=1PPFjj6o3PLraMpY1BxJsboW1ZiITlGI"
+        class="w-full h-full border-0"
+        loading="lazy"
+        title="Portland Favorites Map"
+      ></iframe>
+    </div>
+  </section>
+
+  <!-- Feedback form -->
+  <section>
+    <h2 class="text-sm font-semibold uppercase tracking-widest text-orange-600 mb-2">Have a Recommendation?</h2>
+    <p class="text-stone-500 text-sm mb-4">Know a place I should try? Send it my way.</p>
+    <div class="rounded-2xl overflow-hidden border border-stone-100 shadow-sm bg-white" style="height: 520px">
+      <iframe
+        src="https://docs.google.com/forms/d/e/1FAIpQLScfDTpCGNVIhQgvMdZyv8CPf4QK4oLNiHPv_CrtFAZsaCbsFQ/viewform?embedded=true"
+        class="w-full h-full border-0"
+        loading="lazy"
+        title="Portland Favorites Feedback Form"
+      ></iframe>
+    </div>
+  </section>
+
+</div>

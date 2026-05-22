@@ -1,0 +1,83 @@
+---
+interface Props {
+  backLink?: { href: string; label: string };
+}
+const { backLink } = Astro.props;
+---
+
+<div class="max-w-4xl mx-auto px-4 py-12">
+
+  {backLink && (
+    <a href={backLink.href} class="inline-flex items-center gap-1 text-sm text-stone-400 hover:text-orange-600 transition-colors mb-8">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+      </svg>
+      {backLink.label}
+    </a>
+  )}
+
+  <!-- Header -->
+  <header class="mb-8">
+    <h1 class="text-4xl font-semibold text-stone-900 mb-3 leading-tight" style="font-family: var(--font-serif)">Portland Pickup Soccer</h1>
+    <p class="text-stone-600 text-lg leading-relaxed max-w-2xl">
+      There is an incredible pickup soccer community in Portland, with games happening every day of the week. After 10 years of playing in Portland, I put together this calendar to help others find games — which can be hard to discover without existing connections.
+    </p>
+    <p class="text-stone-500 text-base leading-relaxed max-w-2xl mt-3">
+      The Facebook group is probably the best resource for finding games. Most games are open to anyone — just show up. Bring both a light and a dark shirt, and be respectful out there.
+    </p>
+  </header>
+
+  <!-- Links -->
+  <section class="mb-10 flex flex-wrap gap-3">
+    <a
+      href="https://www.facebook.com/groups/PortlandPickUpSoccerers"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97h-1.513c-1.491 0-1.956.93-1.956 1.886v2.267h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/>
+      </svg>
+      Join the Facebook Group
+    </a>
+    <a
+      href="https://calendar.google.com/calendar/u/1?cid=YWFmMjIwNWQ0ZTM0NGYzMmVlZTRkZWNkOWMyZWU3NjMyMDZjOWU3YjJkNDc1YWUzNDNjNTQwZWY4NjE2MWI2N0Bncm91cC5jYWxlbmRhci5nb29nbGUuY29t"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="inline-flex items-center gap-2 bg-white hover:bg-stone-50 text-stone-700 text-sm font-semibold px-5 py-2.5 rounded-xl border border-stone-200 shadow-sm transition-colors"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+      </svg>
+      Add to Google Calendar
+    </a>
+  </section>
+
+  <!-- Calendar -->
+  <section class="mb-10">
+    <h2 class="text-sm font-semibold uppercase tracking-widest text-orange-600 mb-3">Game Calendar</h2>
+    <div class="rounded-2xl overflow-hidden border border-stone-100 shadow-sm" style="height: 600px">
+      <iframe
+        src="https://calendar.google.com/calendar/embed?wkst=1&ctz=America%2FVancouver&showPrint=0&showDate=0&showCalendars=0&showTz=0&src=YWFmMjIwNWQ0ZTM0NGYzMmVlZTRkZWNkOWMyZWU3NjMyMDZjOWU3YjJkNDc1YWUzNDNjNTQwZWY4NjE2MWI2N0Bncm91cC5jYWxlbmRhci5nb29nbGUuY29t&color=%23795548"
+        class="w-full h-full border-0"
+        loading="lazy"
+        title="Portland Pickup Soccer Calendar"
+      ></iframe>
+    </div>
+  </section>
+
+  <!-- Feedback form -->
+  <section>
+    <h2 class="text-sm font-semibold uppercase tracking-widest text-orange-600 mb-2">Know of a Game?</h2>
+    <p class="text-stone-500 text-sm mb-4">Have a pickup game or regular run to add to the calendar? Send it my way.</p>
+    <div class="rounded-2xl overflow-hidden border border-stone-100 shadow-sm bg-white" style="height: 520px">
+      <iframe
+        src="https://docs.google.com/forms/d/e/1FAIpQLScfDTpCGNVIhQgvMdZyv8CPf4QK4oLNiHPv_CrtFAZsaCbsFQ/viewform?embedded=true"
+        class="w-full h-full border-0"
+        loading="lazy"
+        title="Portland Pickup Soccer Feedback Form"
+      ></iframe>
+    </div>
+  </section>
+
+</div>

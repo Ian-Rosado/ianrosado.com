@@ -7,6 +7,17 @@ import EventsCalendars from '../../src/components/pdx/EventsCalendars.astro';
   title="PDX Events"
   description="A curated Portland events calendar — things to do in Portland, OR including farmers markets, trivia nights, Pedalpalooza, and local staples. Updated regularly."
   pageClass="page-events"
+  ogImage="/images/IMG_1945.jpg"
 >
+  <!-- Hero image -->
+  <div class="w-full" style="height: 420px; overflow: hidden;">
+    <img
+      src="/images/IMG_1945.jpg"
+      alt="Portland, Oregon"
+      class="w-full h-full object-cover"
+      loading="eager"
+    />
+  </div>
+
   <EventsCalendars />
 </Layout>

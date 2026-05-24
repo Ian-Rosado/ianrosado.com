@@ -74,18 +74,10 @@ const { backLink } = Astro.props;
     </div>
   </section>
 
-  <!-- Feedback form -->
-  <section>
-    <h2 class="text-sm font-semibold uppercase tracking-widest text-orange-600 mb-2">Have a Recommendation?</h2>
-    <p class="text-stone-500 text-sm mb-4">Know a place I should try? Send it my way.</p>
-    <div class="rounded-2xl overflow-hidden border border-stone-100 shadow-sm bg-white" style="height: 520px">
-      <iframe
-        src="https://docs.google.com/forms/d/e/1FAIpQLScfDTpCGNVIhQgvMdZyv8CPf4QK4oLNiHPv_CrtFAZsaCbsFQ/viewform?embedded=true"
-        class="w-full h-full border-0"
-        loading="lazy"
-        title="Portland Favorites Feedback Form"
-      ></iframe>
-    </div>
+  <!-- Feedback -->
+  <section class="bg-white rounded-2xl border border-stone-100 shadow-sm p-6">
+    <h2 class="text-lg font-semibold text-stone-900 mb-1" style="font-family: var(--font-serif)">Know something I'm missing?</h2>
+    <p class="text-stone-500 text-sm">If you have a suggestion for an event, calendar, or place to add, use <a href="https://docs.google.com/forms/d/e/1FAIpQLScfDTpCGNVIhQgvMdZyv8CPf4QK4oLNiHPv_CrtFAZsaCbsFQ/viewform" target="_blank" rel="noopener" class="text-orange-600 hover:text-orange-700 underline underline-offset-2">this form</a>.</p>
   </section>
 
 </div>

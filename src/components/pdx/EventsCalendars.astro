@@ -40,20 +40,6 @@ function calUrl(src: string | string[], mobile = false, opts: { color?: string; 
     </p>
   </header>
 
-  <!-- Resources -->
-  <div class="mb-10 p-5 bg-white rounded-2xl border border-stone-100 shadow-sm">
-    <h2 class="text-xs font-semibold uppercase tracking-widest text-stone-400 mb-3">Good sources for more</h2>
-    <ul class="flex flex-wrap gap-x-6 gap-y-2 text-sm text-stone-600">
-      <li><a href="https://everout.com/portland/" target="_blank" rel="noopener" class="hover:text-orange-600 underline underline-offset-2">EverOut</a></li>
-      <li><a href="https://www.instagram.com/michelevenlee/" target="_blank" rel="noopener" class="hover:text-orange-600 underline underline-offset-2">@michelevenlee on Instagram</a></li>
-      <li><a href="https://www.travelportland.com/events/" target="_blank" rel="noopener" class="hover:text-orange-600 underline underline-offset-2">Travel Portland</a></li>
-      <li><a href="https://portlandlivingonthecheap.com/" target="_blank" rel="noopener" class="hover:text-orange-600 underline underline-offset-2">Portland Living on the Cheap</a></li>
-      <li><a href="https://www.pdxpipeline.com/" target="_blank" rel="noopener" class="hover:text-orange-600 underline underline-offset-2">PDX Pipeline</a></li>
-      <li><a href="https://pc-pdx.com/show-guide/" target="_blank" rel="noopener" class="hover:text-orange-600 underline underline-offset-2">PC-PDX</a></li>
-      <li><a href="https://pdxparent.com/" target="_blank" rel="noopener" class="hover:text-orange-600 underline underline-offset-2">PDX Parent</a></li>
-    </ul>
-  </div>
-
   <!-- Portland Events + Farmers Markets -->
   {calendars.map(cal => (
     <section class="mb-12">
@@ -86,14 +72,19 @@ function calUrl(src: string | string[], mobile = false, opts: { color?: string; 
     </div>
   </section>
 
-  <!-- Portland Favorites Map -->
-  <section class="mb-12">
-    <h2 class="text-2xl font-semibold text-stone-900 mb-2" style="font-family: var(--font-serif)">Portland Favorites Map</h2>
-    <p class="text-stone-500 text-sm mb-4">A map of places I like around the city.</p>
-    <div class="cal-frame relative w-full rounded-2xl overflow-hidden border border-stone-100 shadow-sm">
-      <iframe class="absolute top-0 left-0 w-full h-full" src="https://www.google.com/maps/d/u/0/embed?mid=1PPFjj6o3PLraMpY1BxJsboW1ZiITlGI&ehbc=2E312F&noprof=1" style="border: 0" frameborder="0" scrolling="no"></iframe>
-    </div>
-  </section>
+  <!-- Resources -->
+  <div class="mb-10 p-5 bg-white rounded-2xl border border-stone-100 shadow-sm">
+    <h2 class="text-xs font-semibold uppercase tracking-widest text-stone-400 mb-3">Good sources for more</h2>
+    <ul class="flex flex-wrap gap-x-6 gap-y-2 text-sm text-stone-600">
+      <li><a href="https://everout.com/portland/" target="_blank" rel="noopener" class="hover:text-orange-600 underline underline-offset-2">EverOut</a></li>
+      <li><a href="https://www.instagram.com/michelevenlee/" target="_blank" rel="noopener" class="hover:text-orange-600 underline underline-offset-2">@michelevenlee on Instagram</a></li>
+      <li><a href="https://www.travelportland.com/events/" target="_blank" rel="noopener" class="hover:text-orange-600 underline underline-offset-2">Travel Portland</a></li>
+      <li><a href="https://portlandlivingonthecheap.com/" target="_blank" rel="noopener" class="hover:text-orange-600 underline underline-offset-2">Portland Living on the Cheap</a></li>
+      <li><a href="https://www.pdxpipeline.com/" target="_blank" rel="noopener" class="hover:text-orange-600 underline underline-offset-2">PDX Pipeline</a></li>
+      <li><a href="https://pc-pdx.com/show-guide/" target="_blank" rel="noopener" class="hover:text-orange-600 underline underline-offset-2">PC-PDX</a></li>
+      <li><a href="https://pdxparent.com/" target="_blank" rel="noopener" class="hover:text-orange-600 underline underline-offset-2">PDX Parent</a></li>
+    </ul>
+  </div>
 
   <!-- Feedback -->
   <section class="bg-white rounded-2xl border border-stone-100 shadow-sm overflow-hidden">

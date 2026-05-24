@@ -7,6 +7,7 @@ import sitemap from '@astrojs/sitemap';
 export default defineConfig({
   site: 'https://www.pdx-events.com',
   srcDir: './src-pdx-events',
+  publicDir: './public-pdx-events',
   integrations: [sitemap()],
   vite: {
     plugins: [tailwindcss()]

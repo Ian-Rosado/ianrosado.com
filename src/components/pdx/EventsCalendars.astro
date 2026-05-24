@@ -32,14 +32,6 @@ function calUrl(src: string | string[], mobile = false, opts: { color?: string; 
 ---
 
 <div class="max-w-5xl mx-auto px-4 py-12">
-  <header class="mb-10">
-    <h1 class="text-4xl font-semibold text-stone-900 mb-3" style="font-family: var(--font-serif)">Portland Events</h1>
-    <p class="text-stone-500 text-lg max-w-2xl">
-      A curated set of calendars for things happening around Portland, Oregon — events I find interesting,
-      farmers markets, trivia nights by neighborhood, and more. Portland staples (like the Naked Bike Ride and Adult Soapbox Derby) are marked in purple.
-    </p>
-  </header>
-
   <!-- Portland Events + Farmers Markets -->
   {calendars.map(cal => (
     <section class="mb-12">

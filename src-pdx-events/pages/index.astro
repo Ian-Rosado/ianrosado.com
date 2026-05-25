@@ -10,13 +10,19 @@ import EventsCalendars from '../../src/components/pdx/EventsCalendars.astro';
   ogImage="/images/IMG_1945.jpg"
 >
   <!-- Hero image -->
-  <div class="w-full" style="height: 420px; overflow: hidden;">
+  <div class="w-full relative" style="height: 420px; overflow: hidden;">
     <img
       src="/images/IMG_1945.jpg"
-      alt="Portland, Oregon"
+      alt="Portland, Oregon skyline and cityscape"
       class="w-full h-full object-cover"
       loading="eager"
     />
+    <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent flex items-end">
+      <div class="px-6 pb-8 max-w-5xl mx-auto w-full">
+        <h1 class="text-4xl font-semibold text-white drop-shadow" style="font-family: var(--font-serif)">Portland Events</h1>
+        <p class="text-white/80 text-lg mt-2 max-w-xl drop-shadow">Curated calendars for things happening around Portland — events, markets, trivia, rides, and more.</p>
+      </div>
+    </div>
   </div>
 
   <EventsCalendars />

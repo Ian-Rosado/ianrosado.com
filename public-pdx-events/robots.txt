@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://www.pdx-events.com/sitemap-index.xml

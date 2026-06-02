@@ -2,14 +2,20 @@
 const calendars = [
   {
     title: 'Portland Events',
-    description: 'A hand-curated calendar of interesting events happening around Portland — festivals, markets, performances, and one-of-a-kind local happenings. Annual Portland staples like the World Naked Bike Ride and Adult Soapbox Derby are marked in purple so you never miss them. You can add any of these calendars to your own Google Calendar using the + button in the bottom-right corner of the embed.',
-    src: '6218570f10546f6f03748bbd25adcde299bfd55ef4741d8d1520e79653d9c9f6%40group.calendar.google.com',
+    description: 'A hand-curated calendar of interesting events happening around Portland — festivals, markets, performances, and one-of-a-kind local happenings. Annual Portland staples like the World Naked Bike Ride and Adult Soapbox Derby are marked in purple so you never miss them. Includes a karaoke calendar. You can add any of these calendars to your own Google Calendar using the + button in the bottom-right corner of the embed.',
+    src: [
+      '6218570f10546f6f03748bbd25adcde299bfd55ef4741d8d1520e79653d9c9f6%40group.calendar.google.com',
+      'e911229a59a93265f26cc81a1cbd2c3be4300fad84e935846ddb8fa7909f42fb%40group.calendar.google.com',
+    ],
     color: '%23F4511E',
   },
   {
-    title: 'Live Music',
-    description: 'Live music events around Portland — concerts, shows, and performances across the city. Spun off from the main events calendar to keep things from getting crowded.',
-    src: '34ae96ffcf119eb4dbf6acf86b0886273efeb8a702ed6e9267ef3d24f0e9a1f7%40group.calendar.google.com',
+    title: 'Live Music & Comedy',
+    description: 'Live music and comedy events around Portland — concerts, shows, stand-up, open mics, and performances across the city. Toggle between music and comedy using the checkboxes in the bottom-left of the embed.',
+    src: [
+      '34ae96ffcf119eb4dbf6acf86b0886273efeb8a702ed6e9267ef3d24f0e9a1f7%40group.calendar.google.com',
+      '94a06447d97328f27a5e219c8e01c42be692998a7573738132a4405a739efec4%40group.calendar.google.com',
+    ],
     color: '%23F6BF26',
   },
   {
@@ -29,6 +35,24 @@ const triviaSrcs = [
 
 const pedalpalozzaSrc = 'd11s65r5vlq540k2aicdm8c7ndrp6dsl%40import.calendar.google.com';
 
+const allCalendarSrcs = [
+  // Portland Events + Karaoke
+  '6218570f10546f6f03748bbd25adcde299bfd55ef4741d8d1520e79653d9c9f6%40group.calendar.google.com',
+  'e911229a59a93265f26cc81a1cbd2c3be4300fad84e935846ddb8fa7909f42fb%40group.calendar.google.com',
+  // Live Music + Comedy
+  '34ae96ffcf119eb4dbf6acf86b0886273efeb8a702ed6e9267ef3d24f0e9a1f7%40group.calendar.google.com',
+  '94a06447d97328f27a5e219c8e01c42be692998a7573738132a4405a739efec4%40group.calendar.google.com',
+  // Farmers Markets
+  '560e859bd2c7b5dfd2262cb6f28389921434606cec955e7ec75f02df9fd2138a%40group.calendar.google.com',
+  // Trivia Nights
+  '561e4a90958248768cba407c23d37f1293e28f3749bc14de503d258fc03a48c7%40group.calendar.google.com',
+  '088af359972350285c1e5bccda5fb38c349d0597d7c795ef3d1c21d7b973e457%40group.calendar.google.com',
+  '441feafdb38c603cde09cd9a60e4f8ed10be90a21eb26dee01db64d0c8594a88%40group.calendar.google.com',
+  'ac0a6fedb05274655f5e68e9ec26c3f9b341866ae0feed97dd703e94f164a0bf%40group.calendar.google.com',
+  // Pedalpalooza
+  'd11s65r5vlq540k2aicdm8c7ndrp6dsl%40import.calendar.google.com',
+];
+
 function calUrl(src: string | string[], mobile = false, opts: { color?: string; showTitle?: boolean } = {}) {
   const srcParams = Array.isArray(src) ? src.map(s => `&src=${s}`).join('') : `&src=${src}`;
   const colorParam = opts.color ? `&color=${opts.color}` : '';
@@ -42,7 +66,8 @@ function calUrl(src: string | string[], mobile = false, opts: { color?: string; 
   {calendars.map(cal => (
     <section class="mb-12">
       <h2 class="text-2xl font-semibold text-stone-900 mb-2" style="font-family: var(--font-serif)">{cal.title}</h2>
-      {cal.description && <p class="text-stone-500 text-sm mb-4">{cal.description}</p>}
+      {cal.description && <p class="text-stone-500 text-sm mb-3">{cal.description}</p>}
+      <p class="text-stone-400 text-xs mb-4">Click any event → <span class="font-medium">More details</span> to see the full description and links.</p>
       <div class="cal-frame relative w-full rounded-2xl overflow-hidden border border-stone-100 shadow-sm">
         <iframe class="hidden md:block absolute top-0 left-0 w-full h-full" src={calUrl(cal.src, false, { color: cal.color })} style="border: 0" frameborder="0" scrolling="no"></iframe>
         <iframe class="md:hidden absolute top-0 left-0 w-full h-full" src={calUrl(cal.src, true, { color: cal.color })} style="border: 0" frameborder="0" scrolling="no"></iframe>
@@ -67,6 +92,15 @@ function calUrl(src: string | string[], mobile = false, opts: { color?: string; 
     <div class="cal-frame relative w-full rounded-2xl overflow-hidden border border-stone-100 shadow-sm">
       <iframe class="hidden md:block absolute top-0 left-0 w-full h-full" src={calUrl(pedalpalozzaSrc)} style="border: 0" frameborder="0" scrolling="no"></iframe>
       <iframe class="md:hidden absolute top-0 left-0 w-full h-full" src={calUrl(pedalpalozzaSrc, true)} style="border: 0" frameborder="0" scrolling="no"></iframe>
+    </div>
+  </section>
+
+  <!-- All Calendars Combined -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-semibold text-stone-900 mb-2" style="font-family: var(--font-serif)">Everything</h2>
+    <p class="text-stone-500 text-sm mb-4">All calendars in one view — events, live music, comedy, karaoke, farmers markets, trivia, and Pedalpalooza. Toggle individual calendars on and off using the checkboxes in the bottom-left.</p>
+    <div class="cal-frame relative w-full rounded-2xl overflow-hidden border border-stone-100 shadow-sm">
+      <iframe class="absolute top-0 left-0 w-full h-full" src={calUrl(allCalendarSrcs, true, { showTitle: false })} style="border: 0" frameborder="0" scrolling="no"></iframe>
     </div>
   </section>
 

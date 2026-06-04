@@ -152,13 +152,22 @@ def event_date(ev) -> str:
 
 # ── Main backfill ───────────────────────────────────────────────────────────
 
+# Only backfill the near-future window the website actually shows. Without an
+# upper bound, singleEvents=True expands every recurring event (weekly markets,
+# trivia, annual events) into thousands of future instances.
+BACKFILL_DAYS_AHEAD = 60
+
+
 def fetch_upcoming(service, cal_id):
+    from datetime import timedelta
     events, page_token = [], None
-    now = datetime.now(timezone.utc).isoformat()
+    now = datetime.now(timezone.utc)
+    time_min = now.isoformat()
+    time_max = (now + timedelta(days=BACKFILL_DAYS_AHEAD)).isoformat()
     while True:
         resp = service.events().list(
-            calendarId=cal_id, timeMin=now, maxResults=250,
-            singleEvents=True, pageToken=page_token,
+            calendarId=cal_id, timeMin=time_min, timeMax=time_max,
+            maxResults=250, singleEvents=True, pageToken=page_token,
         ).execute()
         events.extend(resp.get("items", []))
         page_token = resp.get("nextPageToken")
@@ -190,14 +199,23 @@ def backfill(dry_run=False, only_calendar=None):
 
     for cal_name, cal_id in targets.items():
         events = fetch_upcoming(service, cal_id)
-        print(f"\n{cal_name}: {len(events)} upcoming events")
+        print(f"\n{cal_name}: {len(events)} upcoming event instances")
         updated = skipped = errors = matched = fallback = 0
+        seen_targets = set()  # dedupe recurring masters + repeats
 
         for ev in events:
             title = ev.get("summary", "")
             desc = ev.get("description", "")
-            key = (norm_title(title), event_date(ev))
 
+            # For a recurring instance, patch the MASTER once (so all instances
+            # inherit the facets and we don't create per-instance exceptions).
+            target_id = ev.get("recurringEventId") or ev["id"]
+            if target_id in seen_targets:
+                skipped += 1
+                continue
+            seen_targets.add(target_id)
+
+            key = (norm_title(title), event_date(ev))
             row = lookup.get(key)
             if row:
                 new_shared = shared_from_sheet(row, cal_name)
@@ -214,14 +232,15 @@ def backfill(dry_run=False, only_calendar=None):
 
             if dry_run:
                 src = "sheet" if row else "derived"
+                rec = " (recurring master)" if ev.get("recurringEventId") else ""
                 facet_str = ", ".join(f"{k}={v}" for k, v in new_shared.items())
-                print(f"  [DRY/{src}] {title[:42]:<42} -> {facet_str}")
+                print(f"  [DRY/{src}] {title[:42]:<42} -> {facet_str}{rec}")
                 updated += 1
                 continue
 
             try:
                 service.events().patch(
-                    calendarId=cal_id, eventId=ev["id"],
+                    calendarId=cal_id, eventId=target_id,
                     body={"extendedProperties": {"shared": merged}},
                     sendUpdates="none",
                 ).execute()

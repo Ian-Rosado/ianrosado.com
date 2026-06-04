@@ -13,7 +13,13 @@ const displayDate = formatDisplayDate(e.date);
 const link = e.url || e.googleUrl;
 ---
 
-<article class="flex gap-4 py-4 border-b border-stone-100 last:border-0">
+<article
+  class="event-card flex gap-4 py-4 border-b border-stone-100 last:border-0"
+  data-cost={e.costClass}
+  data-category={e.calendarSlug}
+  data-title={e.title.toLowerCase()}
+  data-location={(e.location || '').toLowerCase()}
+>
   <!-- Date badge: "Jun / 7 / Sat" -->
   <div class="flex-shrink-0 w-12 text-center pt-0.5">
     <div class="text-xs text-stone-400 uppercase tracking-wide leading-none">
@@ -45,9 +51,11 @@ const link = e.url || e.googleUrl;
       {e.location && (
         <span class="truncate max-w-[200px]" title={e.location}>📍 {e.location}</span>
       )}
-      {e.cost && (
+      {e.costClass === 'free' ? (
+        <span class="font-semibold text-green-700 bg-green-50 px-1.5 rounded">Free</span>
+      ) : e.cost ? (
         <span class="font-medium text-stone-600">{e.cost}</span>
-      )}
+      ) : null}
       {showCalendar && (
         <span class={`${colors.text} font-medium`}>{e.calendarName}</span>
       )}

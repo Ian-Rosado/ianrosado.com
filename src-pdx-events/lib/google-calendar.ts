@@ -3,6 +3,8 @@ const BASE = 'https://www.googleapis.com/calendar/v3/calendars';
 const TZ = 'America/Los_Angeles';
 const DAYS_AHEAD = 45;
 
+export type CostClass = 'free' | 'paid' | 'unknown';
+
 export interface CalEvent {
   id: string;
   title: string;
@@ -12,11 +14,23 @@ export interface CalEvent {
   allDay: boolean;
   location: string;
   cost: string;
+  costClass: CostClass; // free | paid | unknown — for filtering
   url: string;         // source URL (from description line 2)
   googleUrl: string;   // link to Google Calendar event
   calendarName: string;
   calendarSlug: string;
   color: string;
+}
+
+// Classify a cost string into a filterable bucket
+export function classifyCost(cost: string): CostClass {
+  const c = (cost || '').trim().toLowerCase();
+  if (!c) return 'unknown';
+  // Free signals
+  if (/\bfree\b|no cover|\$0\b|donation|pwyc|pay what|by donation/.test(c)) return 'free';
+  // Paid signals — any dollar amount > 0
+  if (/\$\s?\d/.test(c)) return 'paid';
+  return 'unknown';
 }
 
 // Strip HTML tags and decode common entities
@@ -105,6 +119,7 @@ function toCalEvent(
     allDay,
     location: item.location?.trim() ?? '',
     cost,
+    costClass: classifyCost(cost),
     url,
     googleUrl: item.htmlLink ?? '',
     calendarName,

@@ -2,7 +2,23 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Portland Events – Week of May 25–31</title>
+<!--
+  EVENTS OF THE WEEK — reusable template (Mon–Sun roundup)
+  ----------------------------------------------------------------------------
+  HOW TO USE
+  1. Copy this file to  instagram/portland_events_week_<dates>.html
+  2. Edit the .week-label and keep the title "Events of the <span>Week</span>".
+  3. Fill the 7 .row blocks (Mon–Sun). Each row = a .day badge + a ☀ Day tile +
+     a 🌙 Night tile. The .grid is flexbox (flex:1 rows) so 7 rows auto-fit.
+  4. Swap the BACKGROUND THEME (the 5 vars marked  <<THEME>>  below) to the next
+     unused color in the rotation — see SKILL.md. Ships green by default.
+  5. Render to PNG with the Playwright snippet in SKILL.md (screenshot .post).
+
+  TILE LAYOUT: half-width tiles stack vertically (type / name / meta). This is
+  the week-grid layout; the weekend template uses a wider title-left/meta-right
+  tile instead, because it has full-width rows.
+-->
+<title>Portland Events – Events of the Week</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;900&family=DM+Serif+Display&display=swap" rel="stylesheet">
 <style>
@@ -18,7 +34,7 @@
   .post {
     width: 1080px;
     height: 1080px;
-    background: #0d2b1a;
+    background: #0d2b1a;          /* <<THEME>> canvas background */
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
@@ -33,7 +49,7 @@
     font-weight: 700;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: #5cdc80;
+    color: #5cdc80;              /* <<THEME>> accent */
     margin-bottom: 4px;
   }
   .title {
@@ -42,7 +58,7 @@
     color: #fff;
     line-height: 1.05;
   }
-  .title span { color: #5cdc80; }
+  .title span { color: #5cdc80; }  /* <<THEME>> accent */
   .logo {
     position: absolute;
     top: 36px;
@@ -53,7 +69,7 @@
   .divider {
     height: 3px;
     margin: 0 48px;
-    background: linear-gradient(90deg, #5cdc80, #3ecfb0, #5ca8ff, transparent);
+    background: linear-gradient(90deg, #5cdc80, #3ecfb0, #5ca8ff, transparent);  /* <<THEME>> gradient */
     border-radius: 2px;
     flex-shrink: 0;
   }
@@ -125,6 +141,7 @@
     color: #fff;
     line-height: 1.2;
   }
+  /* tile color classes — rotate for variety, no adjacent repeats. Unchanged by theme. */
   .green  { background: #0a3520; } .green  .tile-type { color: #5cdc80; }
   .teal   { background: #003d35; } .teal   .tile-type { color: #3ecfb0; }
   .blue   { background: #0a2050; } .blue   .tile-type { color: #5ca8ff; }
@@ -140,7 +157,7 @@
     flex-shrink: 0;
   }
   .footer-cta { font-size: 22px; color: rgba(255,255,255,0.5); line-height: 1.5; }
-  .footer-cta strong { color: #5cdc80; display: block; font-size: 26px; }
+  .footer-cta strong { color: #5cdc80; display: block; font-size: 26px; }  /* <<THEME>> accent */
   .footer-handle { font-size: 20px; color: rgba(255,255,255,0.35); }
   .footer-tags { font-size: 20px; color: rgba(255,255,255,0.25); text-align: right; line-height: 1.7; }
 </style>
@@ -148,7 +165,7 @@
 <body>
 <div class="post">
   <div class="header">
-    <div class="week-label">This week in Portland · May 25–31</div>
+    <div class="week-label">This week in Portland · MON D–D</div>
     <div class="title">Events of the <span>Week</span></div>
     <svg class="logo" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
       <rect x="1" y="5" width="30" height="26" rx="4" fill="#F28C28"/>
@@ -167,101 +184,103 @@
   <div class="divider"></div>
   <div class="grid">
 
+    <!-- One .row per day, Mon–Sun. Cycle tile color classes; don't repeat adjacent. -->
+
     <div class="row">
-      <div class="day"><span class="day-name">Mon</span><span class="day-num">25</span></div>
-      <div class="tile teal">
-        <div class="tile-type">☀ Day</div>
-        <div class="tile-name">Wilheim's Mausoleum Tours</div>
-        <div class="tile-meta">SE 14th Ave · 9am–4pm · Free</div>
-      </div>
+      <div class="day"><span class="day-name">Mon</span><span class="day-num">D</span></div>
       <div class="tile green">
+        <div class="tile-type">☀ Day</div>
+        <div class="tile-name">Event Name</div>
+        <div class="tile-meta">Venue · Time · Cost</div>
+      </div>
+      <div class="tile teal">
         <div class="tile-type">🌙 Night</div>
-        <div class="tile-name">Curbside Serenade</div>
-        <div class="tile-meta">Mt Tabor Park · 6pm · Free</div>
+        <div class="tile-name">Event Name</div>
+        <div class="tile-meta">Venue · Time · Cost</div>
       </div>
     </div>
 
     <div class="row">
-      <div class="day"><span class="day-name">Tue</span><span class="day-num">26</span></div>
+      <div class="day"><span class="day-name">Tue</span><span class="day-num">D</span></div>
       <div class="tile amber">
         <div class="tile-type">☀ Day</div>
-        <div class="tile-name">Pablo Rivarola – Live</div>
-        <div class="tile-meta">Transit Mall · Noon · Free</div>
+        <div class="tile-name">Event Name</div>
+        <div class="tile-meta">Venue · Time · Cost</div>
       </div>
       <div class="tile blue">
         <div class="tile-type">🌙 Night</div>
-        <div class="tile-name">Junior Varsity</div>
-        <div class="tile-meta">Holocene · 7pm</div>
+        <div class="tile-name">Event Name</div>
+        <div class="tile-meta">Venue · Time · Cost</div>
       </div>
     </div>
 
     <div class="row">
-      <div class="day"><span class="day-name">Wed</span><span class="day-num">27</span></div>
+      <div class="day"><span class="day-name">Wed</span><span class="day-num">D</span></div>
       <div class="tile purple">
         <div class="tile-type">☀ Day</div>
-        <div class="tile-name">$6 Free Play</div>
-        <div class="tile-meta">Ground Kontrol · All day</div>
+        <div class="tile-name">Event Name</div>
+        <div class="tile-meta">Venue · Time · Cost</div>
       </div>
       <div class="tile coral">
         <div class="tile-type">🌙 Night</div>
-        <div class="tile-name">Tabor Dance</div>
-        <div class="tile-meta">Mt Tabor Park · 7pm · Free</div>
+        <div class="tile-name">Event Name</div>
+        <div class="tile-meta">Venue · Time · Cost</div>
       </div>
     </div>
 
     <div class="row">
-      <div class="day"><span class="day-name">Thu</span><span class="day-num">28</span></div>
+      <div class="day"><span class="day-name">Thu</span><span class="day-num">D</span></div>
       <div class="tile green">
         <div class="tile-type">☀ Day</div>
-        <div class="tile-name">Free Peony Fields</div>
-        <div class="tile-meta">Adelman Gardens · 9am–6pm · Free</div>
+        <div class="tile-name">Event Name</div>
+        <div class="tile-meta">Venue · Time · Cost</div>
       </div>
       <div class="tile teal">
         <div class="tile-type">🌙 Night</div>
-        <div class="tile-name">Trivia Night</div>
-        <div class="tile-meta">Space Room · 7pm · Free</div>
+        <div class="tile-name">Event Name</div>
+        <div class="tile-meta">Venue · Time · Cost</div>
       </div>
     </div>
 
     <div class="row">
-      <div class="day"><span class="day-name">Fri</span><span class="day-num">29</span></div>
+      <div class="day"><span class="day-name">Fri</span><span class="day-num">D</span></div>
       <div class="tile amber">
         <div class="tile-type">☀ Day</div>
-        <div class="tile-name">Butcher's Burger</div>
-        <div class="tile-meta">Proletariat Pizza · 4pm</div>
+        <div class="tile-name">Event Name</div>
+        <div class="tile-meta">Venue · Time · Cost</div>
       </div>
       <div class="tile pink">
         <div class="tile-type">🌙 Night</div>
-        <div class="tile-name">2000s Dance Flashback</div>
-        <div class="tile-meta">Lola's Room · 9pm</div>
+        <div class="tile-name">Event Name</div>
+        <div class="tile-meta">Venue · Time · Cost</div>
       </div>
     </div>
 
     <div class="row">
-      <div class="day"><span class="day-name">Sat</span><span class="day-num">30</span></div>
+      <div class="day"><span class="day-name">Sat</span><span class="day-num">D</span></div>
       <div class="tile blue">
         <div class="tile-type">☀ Day</div>
-        <div class="tile-name">Piedmont Yard Sale</div>
-        <div class="tile-meta">Piedmont neighborhood · 9am–3pm · Free</div>
+        <div class="tile-name">Event Name</div>
+        <div class="tile-meta">Venue · Time · Cost</div>
       </div>
       <div class="tile coral">
         <div class="tile-type">🌙 Night</div>
-        <div class="tile-name">America 250 Fireworks</div>
-        <div class="tile-meta">Tom McCall Waterfront · 9:45pm · Free</div>
+        <div class="tile-name">Event Name</div>
+        <div class="tile-meta">Venue · Time · Cost</div>
       </div>
     </div>
 
     <div class="row">
-      <div class="day"><span class="day-name">Sun</span><span class="day-num">31</span></div>
+      <div class="day"><span class="day-name">Sun</span><span class="day-num">D</span></div>
       <div class="tile purple">
         <div class="tile-type">☀ Day</div>
-        <div class="tile-name">Food Court 5000</div>
-        <div class="tile-meta">Lloyd Center · 11am · Free</div>
+        <div class="tile-name">Event Name</div>
+        <div class="tile-meta">Venue · Time · Cost</div>
       </div>
       <div class="tile green">
         <div class="tile-type">🌙 Night</div>
-        <div class="tile-name">Kristina Wong</div>
-        <div class="tile-meta">Portland Center Stage · 7pm · $20–45</div>
+        <div class="tile-name">Event Name</div>
+        <div class="tile-meta">Venue · Time · Cost</div>
       </div>
     </div>
 

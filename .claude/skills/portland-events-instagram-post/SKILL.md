@@ -11,16 +11,19 @@ description: >
 
 # Portland Events — Instagram Post
 
-Two post types share one HTML template:
+Two post types, each with its own reusable template in `instagram/templates/`:
 
-| Post | Days | Title | Rows |
-|---|---|---|---|
-| Events of the Week | Mon–Sun | "Events of the **Week**" | 7 |
-| Plan Your Weekend | Fri–Sun | "Plan Your **Weekend**" | 3 |
+| Post | Days | Title | Layout | Template to copy |
+|---|---|---|---|---|
+| Events of the Week | Mon–Sun | "Events of the **Week**" | 7 rows, each = day badge + ☀ Day tile + 🌙 Night tile (tiles stack type/name/meta) | `instagram/templates/events_of_the_week.template.html` |
+| Plan Your Weekend | Fri–Sun | "Plan Your **Weekend**" | one row per event, sorted by start time; full-width tile with big title left + details right | `instagram/templates/plan_your_weekend.template.html` |
 
-Template + examples live in `instagram/`. The canonical template to copy is
-**`instagram/portland_events_week_may25_31.html`**. See `portland-events-context`
-for voice/hashtag guidance and account details.
+**Always start from the matching `*.template.html`** — never from a previous dated
+post. The templates ship in the green theme with placeholder content and `<<THEME>>`
+markers; copy one to `instagram/<post>_<dates>.html` and fill it in. Earlier dated
+files in `instagram/` are finished examples for reference only. If you improve the
+layout while building a post, fold the change back into the template so it persists.
+See `portland-events-context` for voice/hashtag guidance and account details.
 
 ## The flow
 
@@ -109,52 +112,71 @@ If a pasted ID isn't found, tell Ian which one so he can correct it.
 
 ---
 
-## Step 2 — Map events to day/night slots
+## Step 2 — Arrange the events
 
-Ian's table indicates the day and (usually) whether each is the ☀ Day or 🌙 Night
-pick. If a slot isn't specified, infer: Day = before ~4pm, Night = evening. Build
-each tile's `name` and `meta` (`Venue · Time · Cost`) from the looked-up details:
-- Trim long titles to ~1–2 lines
-- Lead the meta with "Free" when the cost is free
-- One ☀ Day + one 🌙 Night tile per day row
+Build each tile's `name` and `meta` from the looked-up details. General rules:
+- Keep titles short so they stay big — shorten wording rather than letting it wrap
+  (e.g. "Oregon Ren Faire" not "Oregon Renaissance Faire"). The weekend tile
+  ellipsizes a too-long title.
+- Lead the meta with "Free" when the cost is free.
+- Use a short category label in `tile-type` (e.g. `🎭 Theater`, `🌮 Food`).
+
+**Events of the Week:** one row per day (Mon–Sun). Ian's table says the day and
+usually whether each is the ☀ Day or 🌙 Night pick; if not, infer Day = before ~4pm,
+Night = evening. One ☀ Day + one 🌙 Night tile per row.
+
+**Plan Your Weekend:** one row per event, **sorted by start date/time**. Each row's
+`tile-type` is the category (not Day/Night). Single-day events use a `Day Num`
+badge; multi-day / all-weekend events use the text-only `.day.span` badge
+(e.g. "Sat & Sun", "All Week").
 
 ---
 
 ## Step 3 — Fill the HTML template
 
-Copy `instagram/portland_events_week_may25_31.html` to a new file
-(`instagram/plan_your_weekend_<dates>.html` or `portland_events_week_<dates>.html`)
-and edit:
+Copy the matching template (see the table at the top) to a dated file:
+- Weekend → `instagram/templates/plan_your_weekend.template.html` →
+  `instagram/plan_your_weekend_<dates>.html`
+- Week → `instagram/templates/events_of_the_week.template.html` →
+  `instagram/portland_events_week_<dates>.html`
 
-**Header**
-```html
-<div class="week-label">This week in Portland · May 29–31</div>   <!-- or "This weekend in Portland · …" -->
-<div class="title">Plan Your <span>Weekend</span></div>            <!-- or "Events of the <span>Week</span>" -->
-```
+Then edit:
 
-**Rows** — one `.row` per day. Each row = a `.day` badge + two `.tile`s
-(Day then Night):
+**Header** — set the `.week-label` date range; leave the title wording as the
+template ships it.
+
+**Rows** — each template has placeholder `.row` blocks with inline comments. Fill
+them in:
+
+*Events of the Week* — one `.row` per day = a `.day` badge + a Day tile + a Night tile:
 ```html
-<div class="row">
-  <div class="day"><span class="day-name">Fri</span><span class="day-num">29</span></div>
-  <div class="tile amber">
-    <div class="tile-type">☀ Day</div>
-    <div class="tile-name">Event Name</div>
-    <div class="tile-meta">Venue · Time · Cost</div>
-  </div>
-  <div class="tile pink">
-    <div class="tile-type">🌙 Night</div>
-    <div class="tile-name">Event Name</div>
-    <div class="tile-meta">Venue · Time · Cost</div>
-  </div>
+<div class="tile amber">
+  <div class="tile-type">☀ Day</div>
+  <div class="tile-name">Event Name</div>
+  <div class="tile-meta">Venue · Time · Cost</div>
 </div>
 ```
 
+*Plan Your Weekend* — one `.row` per event; tile splits into a big title (left) and
+right-aligned details. Use a `<br>` in the meta to stack venue over time/cost:
+```html
+<div class="tile amber">
+  <div class="tile-main">
+    <div class="tile-type">🎭 Theater</div>
+    <div class="tile-name">Event Name</div>
+  </div>
+  <div class="tile-meta">Venue<br>Time · Cost</div>
+</div>
+```
+Multi-day events use the text-only badge: `<div class="day span"><span class="day-name">Sat<br>&amp; Sun</span></div>`.
+
 **Tile colors** — rotate the per-tile classes for visual variety; don't repeat the
 same color adjacently: `green`, `teal`, `blue`, `amber`, `coral`, `purple`, `pink`.
-(These tile classes stay the same regardless of the background theme below.)
+(These tile classes stay the same regardless of the background theme below — but
+avoid the tile color that matches the current canvas theme, e.g. skip `coral` tiles
+on the Maroon theme, so they don't blend in.)
 
-**Footer** — leave as-is (portland-events.com, @portland_events_calendar, hashtags).
+**Footer** — leave as-is (pdx-events.com, @portland_events_calendar, hashtags).
 
 ### Background theme — rotate it each post
 
@@ -174,7 +196,7 @@ values in the copied file:
 | Green  | `#0d2b1a` | `#5cdc80` | `#5cdc80, #3ecfb0, #5ca8ff` | may25–31 (week) |
 | Navy   | `#0a1a3a` | `#5ca8ff` | `#5ca8ff, #3ecfb0, #b39dff` | jun1–7 (week) |
 | Plum   | `#1a0e2e` | `#f07ad8` | `#f07ad8, #b39dff, #f0a500` | may29–31 (weekend) |
-| Maroon | `#2a0e14` | `#ff7a5c` | `#ff7a5c, #f0a500, #f07ad8` | — |
+| Maroon | `#2a0e14` | `#ff7a5c` | `#ff7a5c, #f0a500, #f07ad8` | jun4–7 (weekend) |
 | Teal   | `#062a2a` | `#3ecfb0` | `#3ecfb0, #5cdc80, #5ca8ff` | — |
 
 The accent also lightly tints `.week-label`, the title highlight word, the divider,

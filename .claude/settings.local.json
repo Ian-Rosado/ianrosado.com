@@ -27,7 +27,22 @@
       "PowerShell($env:PATH = \"C:\\\\Program Files\\\\nodejs;\" + [System.Environment]::GetEnvironmentVariable\\(\"PATH\", \"Machine\"\\) + \";\" + [System.Environment]::GetEnvironmentVariable\\(\"PATH\", \"User\"\\); Set-Location \"C:\\\\Users\\\\ianpr\\\\Documents\\\\GitHub\\\\ianrosado.com\"; & \"C:\\\\Users\\\\ianpr\\\\Documents\\\\GitHub\\\\ianrosado.com\\\\node_modules\\\\.bin\\\\astro.cmd\" dev 2>&1 | Select-Object -First 50)",
       "PowerShell($env:PATH = \"C:\\\\Program Files\\\\nodejs;\" + [System.Environment]::GetEnvironmentVariable\\(\"PATH\", \"Machine\"\\) + \";\" + [System.Environment]::GetEnvironmentVariable\\(\"PATH\", \"User\"\\); Set-Location \"C:\\\\Users\\\\ianpr\\\\Documents\\\\GitHub\\\\ianrosado.com\"; & \"C:\\\\Users\\\\ianpr\\\\Documents\\\\GitHub\\\\ianrosado.com\\\\node_modules\\\\.bin\\\\astro.cmd\" dev 2>&1 | Select-Object -First 30)",
       "mcp__Claude_in_Chrome__tabs_create_mcp",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(python -c ' *)",
+      "Bash(python run_all.py --days 30)",
+      "Bash(python -m scrapers.pdx_after_dark)",
+      "Bash(python -c \"import sys,json; data=json.load\\(sys.stdin\\); [print\\(f'{e[\\\\\"title\\\\\"]} | {e[\\\\\"location\\\\\"]} | {e[\\\\\"time\\\\\"]}'\\) for e in data]\")",
+      "Bash(python run_all.py --no-csv)",
+      "mcp__Claude_in_Chrome__read_network_requests",
+      "Bash(python)",
+      "Bash(python -m scrapers.wweek)",
+      "mcp__2ec34e47-6499-4c4c-bf43-6ab9ce2ef93d__read_file_content",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); [print\\(k,':',v\\) for k,v in d.get\\('scripts',{}\\).items\\(\\)]\")",
+      "Bash(git push *)",
+      "PowerShell($env:PATH = \"C:\\\\Program Files\\\\nodejs;\" + $env:PATH; cd \"C:\\\\Users\\\\nai19\\\\Documents\\\\GitHub\\\\ianrosado.com\"; npm run build:pdx-events 2>&1 | Select-Object -Last 25)",
+      "Bash(python -m scrapers.pdx_pipeline)",
+      "Bash(python -m scrapers.bandsintown)",
+      "Bash(python -m scrapers.nearhear)"
     ]
   }
 }

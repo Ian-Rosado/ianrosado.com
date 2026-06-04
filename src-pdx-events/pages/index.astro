@@ -1,189 +1,64 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import EventCard from '../components/EventCard.astro';
-import { CALENDARS, TRIVIA_GROUP, TRIVIA_CALENDARS, PEDALPALOOZA_CALENDAR, ALL_CALENDAR_PAGES, COLOR_MAP } from '../lib/calendars';
-import { fetchCalendarEvents, fetchMultipleCalendars, groupByDate, formatDisplayDate } from '../lib/google-calendar';
-
-// Fetch all calendars in parallel
-const [eventsEvents, musicEvents, comedyEvents, karaokeEvents, marketsEvents, triviaEvents, pedalaEvents] =
-  await Promise.all([
-    fetchCalendarEvents(CALENDARS[0].id, CALENDARS[0].name, CALENDARS[0].slug, CALENDARS[0].color),
-    fetchCalendarEvents(CALENDARS[1].id, CALENDARS[1].name, CALENDARS[1].slug, CALENDARS[1].color),
-    fetchCalendarEvents(CALENDARS[2].id, CALENDARS[2].name, CALENDARS[2].slug, CALENDARS[2].color),
-    fetchCalendarEvents(CALENDARS[3].id, CALENDARS[3].name, CALENDARS[3].slug, CALENDARS[3].color),
-    fetchCalendarEvents(CALENDARS[4].id, CALENDARS[4].name, CALENDARS[4].slug, CALENDARS[4].color),
-    fetchMultipleCalendars(TRIVIA_CALENDARS.map(c => ({ id: c.id, name: c.name, slug: c.slug, color: c.color }))),
-    fetchCalendarEvents(PEDALPALOOZA_CALENDAR.id, PEDALPALOOZA_CALENDAR.name, PEDALPALOOZA_CALENDAR.slug, PEDALPALOOZA_CALENDAR.color),
-  ]);
-
-const sections = [
-  { config: CALENDARS[0], events: eventsEvents },
-  { config: CALENDARS[1], events: musicEvents },
-  { config: CALENDARS[2], events: comedyEvents },
-  { config: CALENDARS[3], events: karaokeEvents },
-  { config: CALENDARS[4], events: marketsEvents },
-  { config: TRIVIA_GROUP,  events: triviaEvents },
-  { config: PEDALPALOOZA_CALENDAR, events: pedalaEvents },
-];
-
-// All events combined for Schema.org
-const allEvents = sections.flatMap(s => s.events);
+import EventsCalendars from '../../src/components/pdx/EventsCalendars.astro';
 ---
 
 <Layout
   title="PDX Events"
-  description="A curated Portland events calendar — things to do in Portland, OR including live music, comedy, farmers markets, trivia nights, Pedalpalooza, and local staples. Updated regularly."
+  description="A curated Portland events calendar — things to do in Portland, OR including farmers markets, trivia nights, Pedalpalooza, and local staples. Updated regularly."
+  pageClass="page-events"
   ogImage="/images/IMG_1945.jpg"
 >
-  <!-- Hero -->
-  <div class="w-full relative" style="height: 320px; overflow: hidden;">
+  <!-- Hero image -->
+  <div class="w-full relative" style="height: 420px; overflow: hidden;">
     <img
       src="/images/IMG_1945.jpg"
-      alt="Portland, Oregon cityscape"
+      alt="Portland, Oregon skyline and cityscape"
       class="w-full h-full object-cover"
       loading="eager"
     />
-    <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end">
+    <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent flex items-end">
       <div class="px-6 pb-8 max-w-5xl mx-auto w-full">
         <h1 class="text-4xl font-semibold text-white drop-shadow" style="font-family: var(--font-serif)">Portland Events</h1>
-        <p class="text-white/80 text-lg mt-2 max-w-xl drop-shadow">Curated calendars for things happening around Portland — updated weekly.</p>
+        <p class="text-white/80 text-lg mt-2 max-w-xl drop-shadow">Curated calendars for things happening around Portland — events, markets, trivia, rides, and more.</p>
       </div>
     </div>
   </div>
 
-  <div class="max-w-5xl mx-auto px-4 py-10">
+  <EventsCalendars />
 
-    <!-- Calendar nav pills -->
-    <div class="flex flex-wrap gap-2 mb-10">
-      {ALL_CALENDAR_PAGES.map(cal => {
-        const c = COLOR_MAP[cal.color] ?? COLOR_MAP['orange'];
-        return (
-          <a href={`/calendar/${cal.slug}`}
-             class={`text-xs px-3 py-1.5 rounded-full border font-medium ${c.border} ${c.text} ${c.bg} hover:opacity-80 transition-opacity`}>
-            {cal.name}
-          </a>
-        );
-      })}
-      <a href="/events.json"
-         class="text-xs px-3 py-1.5 rounded-full border border-stone-200 text-stone-400 bg-stone-50 hover:opacity-80 transition-opacity ml-auto">
-        events.json ↗
-      </a>
-    </div>
+  <!-- FAQ — gives AI search engines and Google text content to index -->
+  <div class="max-w-5xl mx-auto px-4 pb-16">
+    <section class="bg-white rounded-2xl border border-stone-100 shadow-sm p-6">
+      <h2 class="text-lg font-semibold text-stone-900 mb-6" style="font-family: var(--font-serif)">Frequently Asked Questions</h2>
+      <dl class="space-y-6">
 
-    <!-- Calendar sections -->
-    {sections.map(({ config, events }) => {
-      const colors = COLOR_MAP[config.color] ?? COLOR_MAP['orange'];
-      const grouped = groupByDate(events);
-      const preview = [...grouped.entries()].slice(0, 5); // show first 5 dates on homepage
-      const totalCount = events.length;
+        <div>
+          <dt class="font-semibold text-stone-800 mb-1">What's happening in Portland this weekend?</dt>
+          <dd class="text-stone-500 text-sm leading-relaxed">The Portland Events calendar is updated regularly with festivals, markets, performances, and local happenings. For last-minute options, the Portland Events and Farmers Markets calendars are the best starting points — something is almost always going on.</dd>
+        </div>
 
-      return (
-        <section class="mb-12" id={config.slug}>
-          <!-- Section header -->
-          <div class="flex items-center justify-between mb-4">
-            <div class="flex items-center gap-2">
-              <span class={`w-2.5 h-2.5 rounded-full ${colors.dot}`}></span>
-              <h2 class="text-xl font-semibold text-stone-900" style="font-family: var(--font-serif)">
-                {config.name}
-              </h2>
-            </div>
-            <a href={`/calendar/${config.slug}`}
-               class={`text-xs font-medium ${colors.text} hover:opacity-70 transition-opacity`}>
-              All {totalCount} events →
-            </a>
-          </div>
-          {config.description && (
-            <p class="text-stone-500 text-xs mb-4 ml-4">{config.description}</p>
-          )}
+        <div>
+          <dt class="font-semibold text-stone-800 mb-1">When do Portland farmers markets run?</dt>
+          <dd class="text-stone-500 text-sm leading-relaxed">Portland farmers markets run nearly every day of the week across the metro area, from spring through fall. The PSU Saturday Market in the South Park Blocks is the largest, but neighborhood markets in Beaverton, Hillsboro, Lake Oswego, and beyond run throughout the week. The Farmers Markets calendar above shows them all.</dd>
+        </div>
 
-          {events.length === 0 ? (
-            <p class="text-stone-400 text-sm ml-4">No upcoming events.</p>
-          ) : (
-            <div>
-              {preview.map(([date, dayEvents]) => (
-                <div class="mb-4">
-                  <h3 class={`text-xs font-semibold uppercase tracking-widest ${colors.text} mb-1 ml-1`}>
-                    {formatDisplayDate(date)}
-                  </h3>
-                  <div class={`rounded-xl border ${colors.border} ${colors.bg} px-4`}>
-                    {dayEvents.slice(0, 4).map(event => (
-                      <EventCard event={event} showCalendar={config.slug === 'trivia'} />
-                    ))}
-                    {dayEvents.length > 4 && (
-                      <p class="text-xs text-stone-400 py-2">
-                        +{dayEvents.length - 4} more on this day →
-                        <a href={`/calendar/${config.slug}`} class={`ml-1 ${colors.text} hover:opacity-70`}>view all</a>
-                      </p>
-                    )}
-                  </div>
-                </div>
-              ))}
-              {grouped.size > 5 && (
-                <a href={`/calendar/${config.slug}`}
-                   class={`block text-center text-xs font-medium ${colors.text} mt-2 hover:opacity-70 transition-opacity`}>
-                  Show all {totalCount} events →
-                </a>
-              )}
-            </div>
-          )}
-        </section>
-      );
-    })}
+        <div>
+          <dt class="font-semibold text-stone-800 mb-1">Where can I find trivia nights in Portland?</dt>
+          <dd class="text-stone-500 text-sm leading-relaxed">Portland has a thriving pub quiz scene, with weekly trivia nights at bars and venues across N/NE, NW/SW, SE Portland, and surrounding areas. The Trivia Nights calendar shows them all in one view — you can toggle by neighborhood using the checkboxes in the embed. Spots fill up fast, so arrive early.</dd>
+        </div>
 
-    <!-- FAQ -->
-    <div class="mt-4 pb-16">
-      <section class="bg-white rounded-2xl border border-stone-100 shadow-sm p-6">
-        <h2 class="text-lg font-semibold text-stone-900 mb-6" style="font-family: var(--font-serif)">Frequently Asked Questions</h2>
-        <dl class="space-y-6">
-          <div>
-            <dt class="font-semibold text-stone-800 mb-1">What's happening in Portland this weekend?</dt>
-            <dd class="text-stone-500 text-sm leading-relaxed">The Portland Events calendar is updated regularly with festivals, markets, performances, and local happenings. For last-minute options, the Portland Events and Farmers Markets calendars are the best starting points — something is almost always going on.</dd>
-          </div>
-          <div>
-            <dt class="font-semibold text-stone-800 mb-1">When do Portland farmers markets run?</dt>
-            <dd class="text-stone-500 text-sm leading-relaxed">Portland farmers markets run nearly every day of the week across the metro area, from spring through fall. The PSU Saturday Market in the South Park Blocks is the largest, but neighborhood markets in Beaverton, Hillsboro, Lake Oswego, and beyond run throughout the week.</dd>
-          </div>
-          <div>
-            <dt class="font-semibold text-stone-800 mb-1">Where can I find trivia nights in Portland?</dt>
-            <dd class="text-stone-500 text-sm leading-relaxed">Portland has a thriving pub quiz scene, with weekly trivia nights at bars and venues across N/NE, NW/SW, SE Portland, and surrounding areas. Spots fill up fast, so arrive early.</dd>
-          </div>
-          <div>
-            <dt class="font-semibold text-stone-800 mb-1">What is Pedalpalooza?</dt>
-            <dd class="text-stone-500 text-sm leading-relaxed">Pedalpalooza is Portland's annual celebration of cycling culture, organized by the Shift community. It features hundreds of themed bike rides over several weeks each summer.</dd>
-          </div>
-          <div>
-            <dt class="font-semibold text-stone-800 mb-1">Are these events free?</dt>
-            <dd class="text-stone-500 text-sm leading-relaxed">Most events on these calendars are free or low-cost. Farmers markets are free to browse, trivia nights are typically free to play, and most Pedalpalooza rides are open to anyone with a bike. Paid events are noted on the individual entries.</dd>
-          </div>
-        </dl>
-      </section>
-    </div>
+        <div>
+          <dt class="font-semibold text-stone-800 mb-1">What is Pedalpalooza?</dt>
+          <dd class="text-stone-500 text-sm leading-relaxed">Pedalpalooza is Portland's annual celebration of cycling culture, organized by the Shift community. It features hundreds of themed bike rides over several weeks each summer. The calendar above tracks Shift bike events year-round — not just during Pedalpalooza season.</dd>
+        </div>
 
+        <div>
+          <dt class="font-semibold text-stone-800 mb-1">Are these events free?</dt>
+          <dd class="text-stone-500 text-sm leading-relaxed">Most events on these calendars are free or low-cost. Farmers markets are free to browse, trivia nights are typically free to play, and most Pedalpalooza and Shift rides are open to anyone with a bike. Paid events are noted on the individual calendar entries.</dd>
+        </div>
+
+      </dl>
+    </section>
   </div>
-
-  <!-- Schema.org: all events as an ItemList -->
-  <script type="application/ld+json" set:html={JSON.stringify({
-    "@context": "https://schema.org",
-    "@type": "ItemList",
-    "name": "Upcoming Portland Events",
-    "description": "Curated upcoming events in Portland, Oregon.",
-    "url": "https://www.pdx-events.com",
-    "itemListElement": allEvents.slice(0, 100).map((e, i) => ({
-      "@type": "ListItem",
-      "position": i + 1,
-      "item": {
-        "@type": "Event",
-        "name": e.title,
-        "startDate": e.date,
-        "location": e.location ? {
-          "@type": "Place",
-          "name": e.location,
-          "address": { "@type": "PostalAddress", "addressLocality": "Portland", "addressRegion": "OR" }
-        } : undefined,
-        "url": e.url || e.googleUrl || `https://www.pdx-events.com/calendar/${e.calendarSlug}`,
-        "organizer": { "@type": "Organization", "name": "PDX Events", "url": "https://www.pdx-events.com" },
-      }
-    }))
-  })} />
-
 </Layout>

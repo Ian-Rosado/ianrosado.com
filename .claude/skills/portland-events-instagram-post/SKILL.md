@@ -2,10 +2,11 @@
 name: portland-events-instagram-post
 description: >
   Create a Portland Events Instagram graphic — either the weekly "Events of the
-  Week" (Mon–Sun) or the "Plan Your Weekend" (Fri–Sun) post. Use whenever asked
-  to make an Instagram post, weekend roundup, or events graphic. Walks through
-  pulling events from the sheet/calendar, curating day + night picks, filling the
-  HTML template, and rendering it to a 1080×1080 PNG.
+  Week" (Mon–Sun) or the "Plan Your Weekend" (Fri–Sun) post. Use whenever Ian
+  pastes a table of selected events (with Google Calendar event IDs) and asks for
+  an Instagram post, weekend roundup, or events graphic. Looks up each event's
+  details from the calendar, fills the HTML template, renders a 1080×1080 PNG,
+  then iterates.
 ---
 
 # Portland Events — Instagram Post
@@ -21,45 +22,83 @@ Template + examples live in `instagram/`. The canonical template to copy is
 **`instagram/portland_events_week_may25_31.html`**. See `portland-events-context`
 for voice/hashtag guidance and account details.
 
+## The flow
+
+**Ian curates, you build.** The flow is:
+1. **Ian pastes a table of chosen events**, each with its Google Calendar **event ID**
+   (he has already picked the day/night events — you are not curating).
+2. **You look up each event's full details** from the calendar by ID (title, date,
+   time, location, cost, description).
+3. **You substitute them into the HTML template** and render the PNG.
+4. **You iterate with Ian** on wording, colors, and layout until it's right.
+
 ---
 
-## Step 1 — Pull the events
+## Step 1 — Look up the pasted events by ID
 
-Pull candidate events for the target dates from the **Inbox** sheet (richest data:
-title, date, time, location, cost, tags, calendar). Filter to the date range and
-`include == y`.
+Ian's table has one row per chosen event with its calendar event ID (and usually
+which day/slot it's for). Fetch full details from the Portland calendars by ID.
+
+Robust approach: pull all events from the Portland calendars over the target week
+into an `{id: event}` map, then look up each pasted ID (handles not knowing which
+calendar each ID is on).
 
 ```python
-import gspread, sys
+import sys
+from datetime import datetime, timezone
 from google.oauth2.credentials import Credentials
+from googleapiclient.discovery import build
 sys.stdout.reconfigure(encoding="utf-8")
 
-SHEET_ID = "1mx4U8klkuTeR1E7lmChABlShfE_kVwAFaV37gAjoId4"
-TOKEN = r"C:\Users\nai19\Documents\GitHub\ianrosado.com\scripts\event-scrapers\credentials\token.json"
-creds = Credentials.from_authorized_user_file(TOKEN, ["https://www.googleapis.com/auth/spreadsheets"])
-ws = gspread.authorize(creds).open_by_key(SHEET_ID).worksheet("Inbox")
-rows = [r for r in ws.get_all_records(default_blank="")
-        if r.get("include","").lower() == "y"
-        and "2026-05-29" <= str(r.get("Date","")) <= "2026-05-31"]  # <-- target range
-for r in rows:
-    print(r["Date"], r.get("Time",""), "|", r["Title"], "|", r.get("Location",""), "|", r.get("Cost",""), "|", r.get("Calendar",""))
+# Calendar token (has calendar scope) — written by the add-to-calendar script
+TOKEN = r"C:\Users\nai19\Documents\GitHub\ianrosado.com\scripts\add-to-calendar\token.json"
+creds = Credentials.from_authorized_user_file(TOKEN, ["https://www.googleapis.com/auth/calendar"])
+svc = build("calendar", "v3", credentials=creds)
+
+CALENDARS = {
+    "Portland Events":        "6218570f10546f6f03748bbd25adcde299bfd55ef4741d8d1520e79653d9c9f6@group.calendar.google.com",
+    "Portland Live Music":    "34ae96ffcf119eb4dbf6acf86b0886273efeb8a702ed6e9267ef3d24f0e9a1f7@group.calendar.google.com",
+    "Portland Comedy":        "94a06447d97328f27a5e219c8e01c42be692998a7573738132a4405a739efec4@group.calendar.google.com",
+    "Portland Karaoke":       "e911229a59a93265f26cc81a1cbd2c3be4300fad84e935846ddb8fa7909f42fb@group.calendar.google.com",
+    "Portland Farmers Markets":"560e859bd2c7b5dfd2262cb6f28389921434606cec955e7ec75f02df9fd2138a@group.calendar.google.com",
+}
+
+# Option A — direct get when you know the calendar:
+#   ev = svc.events().get(calendarId=CAL_ID, eventId=EVENT_ID).execute()
+
+# Option B — build an id->event map across all calendars for the week:
+by_id = {}
+for cal_id in CALENDARS.values():
+    page = None
+    while True:
+        resp = svc.events().list(
+            calendarId=cal_id, timeMin="2026-05-29T00:00:00-07:00",
+            timeMax="2026-06-01T00:00:00-07:00", singleEvents=True,
+            maxResults=250, pageToken=page,
+        ).execute()
+        for ev in resp.get("items", []):
+            by_id[ev["id"]] = ev
+        page = resp.get("nextPageToken")
+        if not page:
+            break
+
+# Then for each pasted id: ev = by_id.get(event_id)
+# Pull: ev["summary"], ev["start"]["dateTime"], ev.get("location"), ev.get("description")
+# Cost is the first line of the description ("cost\nurl").
 ```
 
-(If the Inbox has been cleared since the events were added, read the calendars
-instead via the Google Calendar API for the same date range.)
+If a pasted ID isn't found, tell Ian which one so he can correct it.
 
 ---
 
-## Step 2 — Curate: one Day + one Night pick per day
+## Step 2 — Map events to day/night slots
 
-For each day pick **two** events: a **☀ Day** (morning/afternoon) and a
-**🌙 Night** (evening). Aim for:
-- **Variety** across days — mix music, comedy, markets, festivals, food, free stuff
-- **Free or notable** events favored (lead with "Free" in meta when applicable)
-- Day = roughly before ~4pm; Night = evening
-- Short, punchy names (trim long titles); keep meta to `Venue · Time · Cost`
-
-Confirm the picks with the user before rendering if there's any ambiguity.
+Ian's table indicates the day and (usually) whether each is the ☀ Day or 🌙 Night
+pick. If a slot isn't specified, infer: Day = before ~4pm, Night = evening. Build
+each tile's `name` and `meta` (`Venue · Time · Cost`) from the looked-up details:
+- Trim long titles to ~1–2 lines
+- Lead the meta with "Free" when the cost is free
+- One ☀ Day + one 🌙 Night tile per day row
 
 ---
 

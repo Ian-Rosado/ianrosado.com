@@ -31,3 +31,9 @@ nul
 
 # large image sets — hosted separately, not in git
 public/images/sabbatical-from-site/
+
+# HEIC/MOV originals — converted to web formats; originals don't belong in git
+*.heic
+*.HEIC
+*.mov
+*.MOV

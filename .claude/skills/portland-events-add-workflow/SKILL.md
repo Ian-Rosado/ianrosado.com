@@ -2,11 +2,13 @@
 name: portland-events-add-workflow
 description: >
   Assist with the Portland Events add-to-calendar workflow: categorizing events
-  to the right Google Calendar and flagging duplicates. Use whenever asked to
-  fill in the Categorize tab (assign calendars), the Dedup tab (mark duplicates),
-  or otherwise help run `scripts/add-to-calendar/portland_events_add.py`. Contains
-  valid calendars, routing rules, a venue→trivia-neighborhood lookup, fuzzy
-  duplicate-matching logic, and the exact method for reading/writing each tab.
+  to the right Google Calendar, flagging duplicates, and resolving venue URLs.
+  Use whenever asked to fill in the Categorize tab (assign calendars), the Dedup
+  tab (mark duplicates), the Review step, or to add venue→URL mappings, or
+  otherwise help run `scripts/add-to-calendar/portland_events_add.py`. Contains
+  valid calendars, routing rules, source-mislabel caveats, a venue→trivia-neighborhood
+  lookup, fuzzy duplicate-matching logic with false-positive guards, how venues.json
+  resolves event URLs, and the exact method for reading/writing each tab.
 ---
 
 # Portland Events — Add-to-Calendar Workflow
@@ -80,6 +82,35 @@ leave blank to keep the "Current Calendar" value.
 > The script auto-detects most comedy/karaoke by title keyword before writing the
 > tab, so many are already correct in "Current Calendar". Focus on the misses.
 
+### Source-based mislabels (the #1 error source — check these every run)
+
+The script's "Current Calendar" guess leans heavily on the **source**, and several
+sources are noisy. Don't trust the bucket — scan for these patterns:
+
+- **PDX After Dark** and **Community Playlist** tag *everything* `nightlife, music`,
+  so the script dumps them into **Portland Live Music**. The Live Music bucket from
+  these two is unreliable: it sweeps in venue **History & Art tours** (Crystal
+  Ballroom, Mission Theater), **movie nights**, **D&D nights**, **bingo**, **drag
+  brunch**, **classes/workshops**, **book trades**, and **poetry readings**. Scan
+  Live Music from these sources and move the non-music ones to **Portland Events**.
+- **Laughs PDX** is a comedy-only source → every event is **Portland Comedy**, but
+  they often land in **Portland Events**. Re-route them all.
+- **Comedians slip in by name.** Keyword matching can't catch a comedian whose show
+  title has no comedy word (e.g. *Jacqueline Novak*, *Chelsea Handler* came through
+  as Live Music "…Tour"). Eyeball "…Tour" events at music venues; if the headliner
+  is a known comedian → **Portland Comedy**.
+- **Ambiguous solo-name "tours" can be neither.** A "Tour" can be a speaker/author/
+  podcast, not music or comedy (e.g. *Lue Elizondo*, *Dominick Antonelli*). Those go
+  to **Portland Events**, not Live Music.
+- **"Tour" is a false friend** the other way too: *History & Art Tour*, *Bloom Tour*,
+  guided tours = **Portland Events**, not music.
+
+### Market sub-classification
+
+`Portland Farmers Markets` is for **produce/farmers markets** specifically. Arts/craft
+or food-vendor markets (e.g. *Portland Saturday Market*, vegan pop-up markets, a
+"Black & Indigenous Market") belong in **Portland Events**. When unsure, ask.
+
 ### Categorize tab columns (0-indexed)
 
 | Col | Idx | Field |
@@ -97,6 +128,16 @@ updates = [{"range": f"G{idx + 3}", "values": [["Portland Comedy"]]} for idx in 
 ws.batch_update(updates)
 ```
 
+### Trivia routing
+
+**Parse the title first.** Many trivia listings (esp. PDX Pipeline / Bridgetown)
+state the neighborhood right in the title — "Free Trivia **in NE Portland** w/
+Bridgetown @ …", "**in SE Portland**", "**in St Johns**", "**in Troutdale**",
+"**in Downtown** Portland". Map that directly (Downtown → NW/SW; anywhere outside
+Portland proper like Troutdale/McMinnville → Further Out) **before** consulting the
+venue table. Only fall back to the venue table when the title gives no neighborhood.
+If neither resolves it, **leave blank + flag**.
+
 ### Trivia venue → neighborhood (grows over time)
 
 **Add new venues here as you classify them** so future runs are automatic.
@@ -106,10 +147,30 @@ ws.batch_update(updates)
 | Back 2 Earth | Trivia Nights - N/NE |
 | The Snug | Trivia Nights - N/NE |
 | Alberta Street Pub | Trivia Nights - N/NE |
+| Arbor Beer Lodge | Trivia Nights - N/NE |
+| Hollywood Q | Trivia Nights - N/NE |
+| Chapel Pub (McMenamins) | Trivia Nights - N/NE |
+| Broadway Pub | Trivia Nights - N/NE |
+| Sticky Wicket (St Johns) | Trivia Nights - N/NE |
+| Waypost | Trivia Nights - N/NE |
+| The Paladins League | Trivia Nights - N/NE |
+| The EastBurn Public House | Trivia Nights - N/NE |
+| Migration Brewing (Glisan) | Trivia Nights - N/NE |
 | Covert Cafe | Trivia Nights - SE |
 | No Fun Bar | Trivia Nights - SE |
+| Dots Cafe | Trivia Nights - SE |
+| 503 Distilling | Trivia Nights - SE |
+| Space Room | Trivia Nights - SE |
+| Wayfinder Bar | Trivia Nights - SE |
+| Gift Bar | Trivia Nights - SE |
+| BareBones | Trivia Nights - SE |
+| Beer Bunker Bar (Montavilla) | Trivia Nights - SE |
 | Mission Theater | Trivia Nights - NW/SW |
+| Ringlers Pub (Downtown) | Trivia Nights - NW/SW |
+| The Pharmacy (NW 21st) | Trivia Nights - NW/SW |
 | Cascade Bar & Grill | Trivia Nights - Further Out |
+| Highlands Carts (Troutdale) | Trivia Nights - Further Out |
+| The Pub at Grounded Table (McMinnville) | Trivia Nights - Further Out |
 
 ---
 
@@ -166,7 +227,34 @@ for inc in incoming:
 ws.batch_update([{"range": f"G{i+3}", "values": [["y"]]} for i in dup_idx])
 ```
 
-After writing, tell the user how many you flagged. They press Enter to continue.
+The code above is a starting point — **review its output before writing**, don't
+flag blindly. The guards below caught real false positives in past runs.
+
+### False-positive guards (be conservative — a wrong skip permanently drops a real event)
+
+- **Trivia is venue-blind and over-flags.** Existing calendar trivia entries are
+  often generic brand titles with **no venue** ("Bridgetown Trivia", "Shanrock
+  Trivia"), and those brands run at *many* venues on the same night. Title+date
+  alone will match a Troutdale event to a downtown one. **Only skip a trivia event
+  when the venue is confirmed** — i.e. the existing title names the same venue, or
+  the title is distinctively venue-specific ("…on the Heated Patio!", "Star Trek
+  Trivia", "Small Batch Trivia"). Generic brand-title matches → leave for manual
+  review.
+- **Generic-title collisions.** Short generic titles ("Comedy Show", "Comedy Open
+  Mic", bare "Karaoke") hit the ≥0.8 overlap rule against unrelated events. Don't
+  skip on overlap alone when the shorter title is ≤2 generic words and the venue
+  differs or is unknown. (A specific show like "Conversational Lube" matching a
+  generic "Comedy Show" is a false positive.)
+- **Verify, then subtract.** Compute matches, print them grouped by reason
+  (exact / prefix / overlap), eyeball the overlap and low-word-count ones, then
+  remove false positives from the skip set before the single `batch_update`.
+
+### Intra-batch duplicates
+
+The same event often arrives from **multiple sources** in one batch (e.g. a show
+listed by both PDX After Dark and PDX Pipeline; "68 with Nate Bergman" appeared 5×).
+Dedup matches against the *existing calendar*, not within the incoming batch, so
+these survive to Step 3 — call them out there for the user to mark `n`.
 
 ---
 
@@ -176,3 +264,24 @@ The user marks Include `y`/`n` and may edit Date, Time, Calendar, Title, Locatio
 Cost, Tags, or URL — those edits flow to the calendar write. If asked, you can
 help spot remaining cross-source duplicates here (same date + similar title from
 two different sources) and suggest which to mark `n`.
+
+### Venue → URL mappings live in `venues.json` (NOT this skill)
+
+When an event's source URL is a generic listing page, the script links to the
+venue's official site instead, looked up in **`scripts/add-to-calendar/venues.json`**.
+Events with no match get a red "look up venue" note. To fix those, add the venue
+to `venues.json` — **do not** put URLs in this skill file; the script never reads it.
+
+- **Format:** `"venue name": "https://…"`. The key can be any human-readable form
+  of the venue name — the script normalizes both the key and the event location the
+  same way before matching, so you don't have to pre-normalize.
+- **`normalize_venue` already handles** (so one entry covers many source spellings):
+  curly→straight apostrophes, text after the first comma, parentheticals `(NW 21st)`,
+  trailing street addresses (`1800 E Burnside St.`), `on <street>` qualifiers, and a
+  leading `The`. So `The Pharmacy (NW 21st), Portland, OR` and
+  `The Pharmacy on NW 21st Ave, …` both resolve from a single `"The Pharmacy"` entry.
+- **What it deliberately does NOT do:** expand `St.`→`Street` (would corrupt Saint
+  names like *St. Johns Pub*). For abbreviation variants, add an explicit **alias**
+  entry (e.g. both `"Clinton Street Theater"` and `"Clinton St Theater"` → same URL).
+- After adding venues, re-run the resolver mentally or in a quick Python check to
+  confirm the batch's actual location strings resolve.

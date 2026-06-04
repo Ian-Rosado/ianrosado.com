@@ -533,10 +533,41 @@ def is_generic_url(url):
 
 
 def normalize_venue(location):
-    """Normalize a location string to a venue key: name before first comma, lowercased."""
+    """Normalize a location string to a stable venue key.
+
+    Source feeds describe the same venue inconsistently (curly vs straight
+    apostrophes, a leading "The", trailing street addresses, parenthetical or
+    "on <street>" qualifiers, ", United States", etc.). We strip those so that,
+    e.g., "The Pharmacy (NW 21st), Portland, OR" and
+    "The Pharmacy on NW 21st Ave, Portland, OR" both reduce to "pharmacy".
+
+    The SAME function is applied to venues.json keys at load time (see
+    load_venue_map), so both sides of the lookup are normalized identically.
+    """
     if not location:
         return ""
-    return location.split(",")[0].strip().lower()
+    s = location
+    # Normalize smart punctuation to ASCII so apostrophes/dashes match.
+    s = s.translate(str.maketrans({
+        "’": "'", "‘": "'", "ʼ": "'",
+        "“": '"', "”": '"',
+        "–": "-", "—": "-",
+    }))
+    # Keep only the part before the first comma (drops city/state/country).
+    s = s.split(",")[0].lower().strip()
+    # Drop parenthetical/bracket qualifiers, e.g. "(NW 21st)".
+    s = re.sub(r"[\(\[].*?[\)\]]", " ", s)
+    # Drop a trailing street address: a space-delimited number and everything after.
+    s = re.sub(r"\s+\d{1,6}\s+.*$", "", s)
+    # Drop a trailing "on <street>" qualifier, e.g. "pharmacy on nw 21st ave".
+    s = re.sub(r"\s+on\s+\w+.*$", "", s)
+    # Drop a leading article.
+    s = re.sub(r"^the\s+", "", s)
+    # Strip stray punctuation but keep & / ' - which appear in real venue names.
+    s = re.sub(r"[^\w'&/ -]", " ", s)
+    # Collapse whitespace.
+    s = re.sub(r"\s+", " ", s).strip()
+    return s
 
 
 _VENUE_MAP_CACHE = None
@@ -552,7 +583,7 @@ def load_venue_map():
         try:
             raw = json.loads(path.read_text(encoding="utf-8"))
             mapping = {
-                k.strip().lower(): v
+                normalize_venue(k): v
                 for k, v in raw.items()
                 if not k.startswith("_") and v
             }

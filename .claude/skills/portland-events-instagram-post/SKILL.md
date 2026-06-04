@@ -39,6 +39,24 @@ for voice/hashtag guidance and account details.
 Ian's table has one row per chosen event with its calendar event ID (and usually
 which day/slot it's for). Fetch full details from the Portland calendars by ID.
 
+**Parsing the ID out of an event-edit URL.** Ian usually pastes the Google Calendar
+**edit URL** (easier for him to grab) rather than the bare ID, e.g.:
+`https://calendar.google.com/calendar/u/0/r/eventedit/<BLOB>`. The `<BLOB>` after
+`/eventedit/` is URL-safe base64 that decodes to `"<eventId> <calendarId>"` (space-
+separated). Take the **first token as the event ID** and **ignore the decoded
+calendar ID** — it's truncated (ends `@g`, not `@group.calendar.google.com`), so
+look the ID up against the known `CALENDARS` instead (Option B below handles this).
+Remember to pad the base64 before decoding.
+
+```python
+import base64
+def event_id_from_url(url_or_blob):
+    blob = url_or_blob.rsplit("/eventedit/", 1)[-1].strip()
+    blob += "=" * (-len(blob) % 4)                       # restore base64 padding
+    return base64.urlsafe_b64decode(blob).decode("utf-8", "replace").split(" ")[0]
+# Recurring instances decode to e.g. "abc123_20260605T030000Z" — use the whole token as-is.
+```
+
 Robust approach: pull all events from the Portland calendars over the target week
 into an `{id: event}` map, then look up each pasted ID (handles not knowing which
 calendar each ID is on).
@@ -132,10 +150,39 @@ and edit:
 </div>
 ```
 
-**Tile colors** — rotate for visual variety; don't repeat the same color adjacently:
-`green`, `teal`, `blue`, `amber`, `coral`, `purple`, `pink`.
+**Tile colors** — rotate the per-tile classes for visual variety; don't repeat the
+same color adjacently: `green`, `teal`, `blue`, `amber`, `coral`, `purple`, `pink`.
+(These tile classes stay the same regardless of the background theme below.)
 
 **Footer** — leave as-is (portland-events.com, @portland_events_calendar, hashtags).
+
+### Background theme — rotate it each post
+
+Every post uses a different dark **canvas background + matching accent color** so
+consecutive posts look distinct. The template ships with the green theme; swap in
+the next theme in the rotation (don't reuse the previous week's). Change these CSS
+values in the copied file:
+
+- `.post { background: <bg> }`
+- `.week-label { color: <accent> }`
+- `.title span { color: <accent> }`
+- `.footer-cta strong { color: <accent> }`
+- `.divider { background: linear-gradient(90deg, <grad>, transparent) }`
+
+| Theme | `<bg>` | `<accent>` | `<grad>` (divider) | Used by |
+|---|---|---|---|---|
+| Green  | `#0d2b1a` | `#5cdc80` | `#5cdc80, #3ecfb0, #5ca8ff` | may25–31 (week) |
+| Navy   | `#0a1a3a` | `#5ca8ff` | `#5ca8ff, #3ecfb0, #b39dff` | jun1–7 (week) |
+| Plum   | `#1a0e2e` | `#f07ad8` | `#f07ad8, #b39dff, #f0a500` | may29–31 (weekend) |
+| Maroon | `#2a0e14` | `#ff7a5c` | `#ff7a5c, #f0a500, #f07ad8` | — |
+| Teal   | `#062a2a` | `#3ecfb0` | `#3ecfb0, #5cdc80, #5ca8ff` | — |
+
+The accent also lightly tints `.week-label`, the title highlight word, the divider,
+and the footer CTA — keep all of those on the same accent so the post reads as one
+color story. Tile background colors are unchanged; they sit on top of any canvas.
+
+Pick the theme that hasn't been used recently (check the most recent files in
+`instagram/`), or whichever Ian requests.
 
 Notes:
 - The `.grid` uses flexbox with `flex: 1` rows, so it auto-fits whether there are

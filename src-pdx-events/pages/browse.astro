@@ -36,6 +36,21 @@ const categories = [
 
 const totalCount = allEvents.length;
 const freeCount = allEvents.filter(e => e.costClass === 'free').length;
+
+// Build genre + age facet options from whatever the data actually contains.
+// (Populates once events are added with extendedProperties; empty otherwise.)
+const genreCounts = new Map<string, number>();
+const ageSet = new Set<string>();
+for (const e of allEvents) {
+  for (const g of e.genres) genreCounts.set(g, (genreCounts.get(g) ?? 0) + 1);
+  if (e.age) ageSet.add(e.age);
+}
+// Top genres only, to keep the bar manageable
+const topGenres = [...genreCounts.entries()]
+  .sort((a, b) => b[1] - a[1])
+  .slice(0, 12)
+  .map(([g]) => g);
+const ages = [...ageSet].sort();
 ---
 
 <Layout
@@ -68,7 +83,7 @@ const freeCount = allEvents.filter(e => e.costClass === 'free').length;
       </div>
 
       <!-- Category toggles -->
-      <div class="flex flex-wrap items-center gap-2">
+      <div class="flex flex-wrap items-center gap-2 mb-2">
         <span class="text-xs font-semibold text-stone-400 uppercase tracking-wide mr-1">Type</span>
         <button class="filter-pill" data-filter="category" data-value="all" aria-pressed="true">All</button>
         {categories.map(cat => (
@@ -77,6 +92,26 @@ const freeCount = allEvents.filter(e => e.costClass === 'free').length;
           </button>
         ))}
       </div>
+
+      {ages.length > 0 && (
+        <div class="flex flex-wrap items-center gap-2 mb-2">
+          <span class="text-xs font-semibold text-stone-400 uppercase tracking-wide mr-1">Age</span>
+          <button class="filter-pill" data-filter="age" data-value="all" aria-pressed="true">All</button>
+          {ages.map(a => (
+            <button class="filter-pill" data-filter="age" data-value={a} aria-pressed="false">{a}</button>
+          ))}
+        </div>
+      )}
+
+      {topGenres.length > 0 && (
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="text-xs font-semibold text-stone-400 uppercase tracking-wide mr-1">Genre</span>
+          <button class="filter-pill" data-filter="genre" data-value="all" aria-pressed="true">All</button>
+          {topGenres.map(g => (
+            <button class="filter-pill" data-filter="genre" data-value={g} aria-pressed="false">{g}</button>
+          ))}
+        </div>
+      )}
     </div>
 
     <!-- Events grouped by date -->
@@ -120,7 +155,7 @@ const freeCount = allEvents.filter(e => e.costClass === 'free').length;
   </style>
 
   <script>
-    const state = { cost: 'all', category: 'all', search: '' };
+    const state = { cost: 'all', category: 'all', age: 'all', genre: 'all', search: '' };
     const cards = Array.from(document.querySelectorAll<HTMLElement>('.event-card'));
     const groups = Array.from(document.querySelectorAll<HTMLElement>('.date-group'));
     const countEl = document.getElementById('result-count');
@@ -132,15 +167,19 @@ const freeCount = allEvents.filter(e => e.costClass === 'free').length;
       for (const card of cards) {
         const cost = card.dataset.cost ?? 'unknown';
         const category = card.dataset.category ?? '';
+        const age = card.dataset.age ?? '';
+        const genres = (card.dataset.genres ?? '').split(',').filter(Boolean);
         const title = card.dataset.title ?? '';
         const location = card.dataset.location ?? '';
 
         const okCost = state.cost === 'all' || cost === state.cost;
         const okCat = state.category === 'all' || category === state.category;
+        const okAge = state.age === 'all' || age === state.age;
+        const okGenre = state.genre === 'all' || genres.includes(state.genre);
         const okSearch = !state.search ||
           title.includes(state.search) || location.includes(state.search);
 
-        const show = okCost && okCat && okSearch;
+        const show = okCost && okCat && okAge && okGenre && okSearch;
         card.style.display = show ? '' : 'none';
         if (show) visible++;
       }
@@ -161,7 +200,7 @@ const freeCount = allEvents.filter(e => e.costClass === 'free').length;
     // Pill buttons
     document.querySelectorAll<HTMLElement>('.filter-pill').forEach(btn => {
       btn.addEventListener('click', () => {
-        const filter = btn.dataset.filter as 'cost' | 'category';
+        const filter = btn.dataset.filter as 'cost' | 'category' | 'age' | 'genre';
         const value = btn.dataset.value!;
         state[filter] = value;
         // Update pressed state within the same filter group
@@ -180,7 +219,7 @@ const freeCount = allEvents.filter(e => e.costClass === 'free').length;
 
     // Clear filters
     document.getElementById('clear-filters')?.addEventListener('click', () => {
-      state.cost = 'all'; state.category = 'all'; state.search = '';
+      state.cost = 'all'; state.category = 'all'; state.age = 'all'; state.genre = 'all'; state.search = '';
       if (searchInput) searchInput.value = '';
       document.querySelectorAll<HTMLElement>('.filter-pill').forEach(b =>
         b.setAttribute('aria-pressed', String(b.dataset.value === 'all')));

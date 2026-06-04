@@ -17,6 +17,9 @@ const link = e.url || e.googleUrl;
   class="event-card flex gap-4 py-4 border-b border-stone-100 last:border-0"
   data-cost={e.costClass}
   data-category={e.calendarSlug}
+  data-genres={(e.genres || []).join(',')}
+  data-age={e.age || ''}
+  data-neighborhood={e.neighborhood || ''}
   data-title={e.title.toLowerCase()}
   data-location={(e.location || '').toLowerCase()}
 >

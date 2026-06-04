@@ -15,6 +15,10 @@ export interface CalEvent {
   location: string;
   cost: string;
   costClass: CostClass; // free | paid | unknown — for filtering
+  genres: string[];     // from extendedProperties.shared.genres
+  age: string;          // from extendedProperties.shared.age
+  neighborhood: string; // from extendedProperties.shared.neighborhood
+  tags: string[];       // full tag list from extendedProperties.shared.tags
   url: string;         // source URL (from description line 2)
   googleUrl: string;   // link to Google Calendar event
   calendarName: string;
@@ -110,6 +114,17 @@ function toCalEvent(
 
   const { cost, url } = parseDescription(item.description ?? '');
 
+  // Facets written by the add-to-calendar script via extendedProperties.shared
+  const shared = item.extendedProperties?.shared ?? {};
+  const splitList = (s?: string) =>
+    (s ?? '').split(',').map((x: string) => x.trim()).filter(Boolean);
+  const genres = splitList(shared.genres);
+  const tags = splitList(shared.tags);
+  const age = (shared.age ?? '').trim();
+  const neighborhood = (shared.neighborhood ?? '').trim();
+  // Prefer the stored cost class; fall back to parsing the cost text
+  const costClass = (shared.cost as CostClass) || classifyCost(cost);
+
   return {
     id: item.id,
     title,
@@ -119,7 +134,11 @@ function toCalEvent(
     allDay,
     location: item.location?.trim() ?? '',
     cost,
-    costClass: classifyCost(cost),
+    costClass,
+    genres,
+    age,
+    neighborhood,
+    tags,
     url,
     googleUrl: item.htmlLink ?? '',
     calendarName,

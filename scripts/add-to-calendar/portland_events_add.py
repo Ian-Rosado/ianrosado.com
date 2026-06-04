@@ -578,6 +578,66 @@ def resolve_event_url(url, location):
     return "", NOTE_LOOKUP_VENUE
 
 
+# ─── Facet classification (for calendar extendedProperties) ──────────────────
+
+AGE_TAGS = {"all-ages", "21+", "18+", "19+", "16+"}
+NEIGHBORHOOD_TAGS = {
+    "se", "ne", "nw", "sw", "n", "downtown", "pearl", "alberta", "hawthorne",
+    "belmont", "division", "mississippi", "sellwood", "hollywood", "st johns",
+    "st-johns", "foster", "burnside", "goose hollow", "nob hill", "82nd",
+    "montavilla", "woodstock", "kenton", "old town", "central eastside",
+    "laurelhurst", "beaverton", "hillsboro", "vancouver", "troutdale",
+}
+
+
+def classify_cost(cost):
+    """Bucket a cost string into 'free' | 'paid' | 'unknown'."""
+    c = (cost or "").strip().lower()
+    if not c:
+        return "unknown"
+    if re.search(r"\bfree\b|no cover|\$0\b|donation|pwyc|pay what", c):
+        return "free"
+    if re.search(r"\$\s?\d", c):
+        return "paid"
+    return "unknown"
+
+
+def classify_facets(tags_str):
+    """Split a comma-separated tag string into typed facets.
+    Returns (genres:list, age:str, neighborhood:str, all_tags:list).
+    """
+    tags = [t.strip().lower() for t in (tags_str or "").split(",") if t.strip()]
+    genres, age, hood = [], "", ""
+    for t in tags:
+        if t in AGE_TAGS and not age:
+            age = t
+        elif t in NEIGHBORHOOD_TAGS and not hood:
+            hood = t
+        else:
+            genres.append(t)
+    return genres, age, hood, tags
+
+
+def build_extended_properties(cost, tags_str, source):
+    """Build extendedProperties.shared for a calendar event so the website
+    can filter by cost/genre/age/neighborhood. Only non-empty keys are included.
+    Uses 'shared' (not 'private') so an API-key reader can see them.
+    """
+    genres, age, hood, all_tags = classify_facets(tags_str)
+    shared = {"cost": classify_cost(cost)}
+    if genres:
+        shared["genres"] = ",".join(genres)
+    if age:
+        shared["age"] = age
+    if hood:
+        shared["neighborhood"] = hood
+    if all_tags:
+        shared["tags"] = ",".join(all_tags)
+    if source:
+        shared["source"] = source
+    return {"shared": shared}
+
+
 # ─── Description and title builders ──────────────────────────────────────────
 
 def build_description(cost, url, note=""):
@@ -622,10 +682,12 @@ REVIEW_HEADERS = [
     "Title", "Location", "Cost", "Tags", "Source", "URL", "Calendar Link",
 ]
 REVIEW_INSTRUCTIONS = (
-    "Type 'y' in the Include column to add an event to the calendar, 'n' to skip. "
-    "Suggested duplicates are pre-filled with 'n' (highlighted). "
-    "'Calendar Link' shows what link the event will get — rows flagged 'look up venue' "
-    "have no specific link; add the venue to venues.json to fix. "
+    "Type 'y' in the Include column to add an event, 'n' to skip. "
+    "You can also EDIT any of Date, Time, Calendar, Title, Location, Cost, Tags, URL — "
+    "your edits are written to the calendar. "
+    "Suggested duplicates are pre-filled 'n' (highlighted). "
+    "'Calendar Link' shows the link the event will get; rows flagged 'look up venue' "
+    "have no specific link (add the venue to venues.json, or paste a URL in the URL column). "
     "When done, return to the terminal and press Enter."
 )
 
@@ -714,19 +776,30 @@ def write_review_tab(events):
 
 
 def read_review_tab(ws):
-    """Read back the Include and Calendar columns from the Review tab.
+    """Read back the Include column plus all editable fields from the Review tab.
+
+    Any edits you make in the sheet to Date, Time, Calendar, Title, Location,
+    Cost, Tags, or URL are read back and applied before the calendar write.
+
+    Column layout (0-indexed):
+      0 Include | 1 # | 2 Date | 3 Time | 4 Calendar | 5 Title
+      6 Location | 7 Cost | 8 Tags | 9 Source | 10 URL | 11 Calendar Link
+
     Returns:
         include_indices: set of original indices marked 'y'
-        calendar_overrides: dict of {idx: calendar_name} for manually edited calendars
+        overrides: dict {idx: {field: value}} of the current cell values
     """
     all_values = ws.get_all_values()
     include_indices = set()
-    calendar_overrides = {}
+    overrides = {}
+
+    def cell(row, i):
+        return row[i].strip() if len(row) > i else ""
 
     for sheet_row in all_values[2:]:  # skip header + instructions
         if not sheet_row:
             continue
-        include_flag = sheet_row[0].strip().lower() if len(sheet_row) > 0 else ""
+        include_flag = cell(sheet_row, 0).lower()
         if include_flag != "y":
             continue
         try:
@@ -734,13 +807,25 @@ def read_review_tab(ws):
         except (ValueError, IndexError):
             continue
         include_indices.add(idx)
-        # Column E (index 4) is Calendar — respect manual edits
-        if len(sheet_row) > 4:
-            cal_override = sheet_row[4].strip()
-            canonical = CALENDAR_ALIASES.get(cal_override.lower(), cal_override)
-            if canonical in CALENDARS:
-                calendar_overrides[idx] = canonical
-    return include_indices, calendar_overrides
+
+        ov = {
+            "date":     cell(sheet_row, 2),
+            "time":     cell(sheet_row, 3),
+            "title":    cell(sheet_row, 5),
+            "location": cell(sheet_row, 6),
+            "cost":     cell(sheet_row, 7),
+            "tags":     cell(sheet_row, 8),
+            "url":      cell(sheet_row, 10),
+        }
+        # Calendar must be a valid calendar name
+        cal_raw = cell(sheet_row, 4)
+        canonical = CALENDAR_ALIASES.get(cal_raw.lower(), cal_raw)
+        if canonical in CALENDARS:
+            ov["calendar"] = canonical
+
+        overrides[idx] = ov
+
+    return include_indices, overrides
 
 
 # ─── Read already-filled Categorize and Dedup tabs ───────────────────────────
@@ -1128,15 +1213,29 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
 
     # ── Write Review tab, wait for disposition ───────────────────────────────
     review_ws = write_review_tab(review_events)
-    include_indices, calendar_overrides = read_review_tab(review_ws)
+    include_indices, overrides = read_review_tab(review_ws)
 
-    # Apply any manual calendar edits made in the Review tab
+    # Apply any manual field edits made in the Review tab. Any of these columns
+    # can be edited in the sheet and the edit flows to the calendar write.
+    EDITABLE_FIELDS = ["date", "time", "calendar", "title", "location", "cost", "tags", "url"]
     review_by_index = {e["index"]: e for e in review_events}
-    if calendar_overrides:
-        print(f"  {len(calendar_overrides)} calendar override(s) from Review tab applied")
-        for idx, cal in calendar_overrides.items():
-            if idx in review_by_index:
-                review_by_index[idx]["calendar"] = cal
+    edited_count = 0
+    for idx, ov in overrides.items():
+        e = review_by_index.get(idx)
+        if not e:
+            continue
+        row_edited = False
+        for field in EDITABLE_FIELDS:
+            new_val = ov.get(field, "")
+            # calendar only present in ov when valid; skip empty values so a
+            # blank cell never wipes a field
+            if new_val and str(e.get(field, "")) != str(new_val):
+                e[field] = new_val
+                row_edited = True
+        if row_edited:
+            edited_count += 1
+    if edited_count:
+        print(f"  {edited_count} event(s) had manual edits from the Review tab applied")
 
     # ── Update blocklist with user-skipped events ────────────────────────────
     # Only add events the user actively chose to skip — not ones already flagged
@@ -1195,6 +1294,8 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
         loc          = e["location"]
         cost         = e["cost"]
         url          = e["url"]
+        tags         = e.get("tags", "")
+        source       = e.get("source", "")
         end_time_str = get(row, "End Time", "end_time", "EndTime")
         duration_str = get(row, "Duration (min)", "duration", "Duration")
 
@@ -1232,6 +1333,7 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
             "location":    loc,
             "start": {"dateTime": start_dt, "timeZone": TIMEZONE} if not all_day else {"date": date_str},
             "end":   {"dateTime": end_dt,   "timeZone": TIMEZONE} if not all_day else {"date": next_day},
+            "extendedProperties": build_extended_properties(cost, tags, source),
         }
 
         if dry_run:

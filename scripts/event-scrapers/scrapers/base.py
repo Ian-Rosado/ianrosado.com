@@ -34,6 +34,67 @@ CALENDAR_COMEDY = "comedy"
 CALENDAR_KARAOKE = "karaoke"
 
 
+# ── Tag normalization ──────────────────────────────────────────────────────
+# Maps messy/variant tags to canonical labels so filtering is consistent.
+# Applied automatically by make_event() to every scraper's output.
+
+# variant -> canonical
+TAG_CANON = {
+    # genres
+    "live jazz": "jazz", "experimental jazz": "jazz", "jazz fusion": "jazz",
+    "live jazz music": "jazz", "improvised music": "jazz",
+    "indie rock": "indie", "alternative rock": "rock", "rock music": "rock",
+    "alternative": "rock", "hard rock": "rock",
+    "indie folk": "folk", "folk rock": "folk", "singer-songwriter": "folk",
+    "singer songwriter": "folk", "americana": "folk",
+    "punk rock": "punk",
+    "pop punk": "pop-punk",
+    "hip hop": "hip-hop", "hiphop": "hip-hop", "rap": "hip-hop",
+    "drum and bass": "dnb", "drum & bass": "dnb",
+    "tech house": "house", "deep house": "house", "progressive house": "house",
+    "electro house": "house",
+    "synth pop": "synthpop",
+    "dark wave": "darkwave", "goth-industrial": "darkwave", "gothic": "goth",
+    "r&b": "soul", "rnb": "soul",
+    "electronica": "electronic", "edm": "electronic",
+    "post punk": "post-punk",
+    # ages
+    "all ages": "all-ages", "all age": "all-ages", "all-age": "all-ages",
+    # neighborhoods (light touch)
+    "n/ne": "ne", "nw/sw": "nw",
+}
+
+# Tags that are too generic to be useful facets — dropped.
+TAG_DROP = {"music", "event", "events", "local", "misc", "show", "live", "more"}
+
+MAX_TAGS = 6
+
+
+def normalize_tags(tags):
+    """Clean, canonicalize, and dedupe a raw tag list.
+    - lowercases and trims
+    - maps variants to canonical labels (TAG_CANON)
+    - drops generic noise (TAG_DROP)
+    - dedupes preserving order, caps at MAX_TAGS
+    """
+    if not tags:
+        return []
+    seen = set()
+    out = []
+    for raw in tags:
+        if not raw:
+            continue
+        t = str(raw).strip().lower()
+        t = TAG_CANON.get(t, t)
+        if not t or t in TAG_DROP or t in seen:
+            continue
+        seen.add(t)
+        out.append(t)
+        if len(out) >= MAX_TAGS:
+            break
+    return out
+
+
 def make_event(
     title="",
     date="",
@@ -68,7 +129,7 @@ def make_event(
         "location": location,
         "cost": cost,
         "url": url,
-        "tags": tags or [],
+        "tags": normalize_tags(tags),
         "calendar": calendar,
         "source": source,
     }

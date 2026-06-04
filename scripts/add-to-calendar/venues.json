@@ -1,0 +1,19 @@
+{
+  "_comment": "Map of venue name (lowercase, name before first comma) -> official website. Grows over time. When an event's source URL is just a generic listing page, the calendar event links here instead. Add rows as you review events.",
+  "revolution hall": "https://revolutionhall.com",
+  "holocene": "https://holocene.org",
+  "mississippi studios": "https://mississippistudios.com",
+  "doug fir lounge": "https://dougfirlounge.com",
+  "star theater": "https://www.startheaterportland.com",
+  "aladdin theater": "https://aladdin-theater.com",
+  "crystal ballroom": "https://www.crystalballroompdx.com",
+  "wonder ballroom": "https://www.wonderballroom.com",
+  "roseland theater": "https://roselandpdx.com",
+  "the goodfoot": "https://thegoodfoot.com",
+  "dante's": "https://www.danteslive.com",
+  "kelly's olympian": "https://kellysolympian.com",
+  "jack london revue": "https://jacklondonrevue.com",
+  "alberta rose theatre": "https://albertarosetheatre.com",
+  "polaris hall": "https://www.polarishall.com",
+  "the get down": "https://thegetdownpdx.com"
+}

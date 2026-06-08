@@ -15,7 +15,7 @@ Two post types, each with its own reusable template in `instagram/templates/`:
 
 | Post | Days | Title | Layout | Template to copy |
 |---|---|---|---|---|
-| Events of the Week | Mon–Sun | "Events of the **Week**" | 7 rows, each = day badge + ☀ Day tile + 🌙 Night tile (tiles stack type/name/meta) | `instagram/templates/events_of_the_week.template.html` |
+| Events of the Week | Mon–Sun | "Events of the **Week**" | "Day"/"Night" as column headers; 7 rows of day badge + a Day tile + a Night tile (each tile = name + meta, 30px title) | `instagram/templates/events_of_the_week.template.html` |
 | Plan Your Weekend | Fri–Sun | "Plan Your **Weekend**" | one row per event, sorted by start time; full-width tile with big title left + details right | `instagram/templates/plan_your_weekend.template.html` |
 
 **Always start from the matching `*.template.html`** — never from a previous dated
@@ -148,10 +148,10 @@ template ships it.
 **Rows** — each template has placeholder `.row` blocks with inline comments. Fill
 them in:
 
-*Events of the Week* — one `.row` per day = a `.day` badge + a Day tile + a Night tile:
+*Events of the Week* — "☀ Day"/"🌙 Night" are stated once in the `.col-head` row at
+the top; each `.row` is a `.day` badge + a Day tile + a Night tile (tile = name + meta):
 ```html
 <div class="tile amber">
-  <div class="tile-type">☀ Day</div>
   <div class="tile-name">Event Name</div>
   <div class="tile-meta">Venue · Time · Cost</div>
 </div>
@@ -197,7 +197,7 @@ values in the copied file:
 | Navy   | `#0a1a3a` | `#5ca8ff` | `#5ca8ff, #3ecfb0, #b39dff` | jun1–7 (week) |
 | Plum   | `#1a0e2e` | `#f07ad8` | `#f07ad8, #b39dff, #f0a500` | may29–31 (weekend) |
 | Maroon | `#2a0e14` | `#ff7a5c` | `#ff7a5c, #f0a500, #f07ad8` | jun4–7 (weekend) |
-| Teal   | `#062a2a` | `#3ecfb0` | `#3ecfb0, #5cdc80, #5ca8ff` | — |
+| Teal   | `#062a2a` | `#3ecfb0` | `#3ecfb0, #5cdc80, #5ca8ff` | jun8–14 (week) |
 
 The accent also lightly tints `.week-label`, the title highlight word, the divider,
 and the footer CTA — keep all of those on the same accent so the post reads as one

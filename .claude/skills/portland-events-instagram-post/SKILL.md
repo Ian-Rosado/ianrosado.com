@@ -15,7 +15,7 @@ Two post types, each with its own reusable template in `instagram/templates/`:
 
 | Post | Days | Title | Layout | Template to copy |
 |---|---|---|---|---|
-| Events of the Week | Mon–Sun | "Events of the **Week**" | 7 rows, each = day badge + ☀ Day tile + 🌙 Night tile (tiles stack type/name/meta) | `instagram/templates/events_of_the_week.template.html` |
+| Events of the Week | Mon–Sun | "Events of the **Week**" | "Day"/"Night" as column headers; 7 rows of day badge + a Day tile + a Night tile (each tile = name + meta, 30px title) | `instagram/templates/events_of_the_week.template.html` |
 | Plan Your Weekend | Fri–Sun | "Plan Your **Weekend**" | one row per event, sorted by start time; full-width tile with big title left + details right | `instagram/templates/plan_your_weekend.template.html` |
 
 **Always start from the matching `*.template.html`** — never from a previous dated
@@ -46,19 +46,31 @@ which day/slot it's for). Fetch full details from the Portland calendars by ID.
 **edit URL** (easier for him to grab) rather than the bare ID, e.g.:
 `https://calendar.google.com/calendar/u/0/r/eventedit/<BLOB>`. The `<BLOB>` after
 `/eventedit/` is URL-safe base64 that decodes to `"<eventId> <calendarId>"` (space-
-separated). Take the **first token as the event ID** and **ignore the decoded
-calendar ID** — it's truncated (ends `@g`, not `@group.calendar.google.com`), so
-look the ID up against the known `CALENDARS` instead (Option B below handles this).
-Remember to pad the base64 before decoding.
+separated). The decoded calendar ID's **domain is truncated** (ends `@g`, not
+`@group.calendar.google.com`), but the **hex prefix before the `@` is complete** —
+so reconstruct the full ID as `<hexprefix>@group.calendar.google.com` and do a
+**direct `events().get(calendarId=…, eventId=…)`**. This is the most robust path:
+it works for *any* group calendar, including ones NOT in the `CALENDARS` map below
+(e.g. this skill's posts have pulled events off a third-party trivia calendar that
+isn't listed). Remember to pad the base64 before decoding.
 
 ```python
 import base64
-def event_id_from_url(url_or_blob):
+def parse_event_url(url_or_blob):
+    """Return (event_id, reconstructed_calendar_id) from an eventedit URL."""
     blob = url_or_blob.rsplit("/eventedit/", 1)[-1].strip()
     blob += "=" * (-len(blob) % 4)                       # restore base64 padding
-    return base64.urlsafe_b64decode(blob).decode("utf-8", "replace").split(" ")[0]
+    eid, cal_raw = base64.urlsafe_b64decode(blob).decode("utf-8", "replace").split(" ")
+    cal_id = cal_raw.split("@")[0] + "@group.calendar.google.com"  # un-truncate domain
+    return eid, cal_id
 # Recurring instances decode to e.g. "abc123_20260605T030000Z" — use the whole token as-is.
+# Fall back to scanning the known CALENDARS (Option B) only if a direct get 404s.
 ```
+
+**Sanity-check for duplicates.** Before building, confirm no two table rows decoded
+to the **same event ID** — a copy/paste slip (e.g. the same blob pasted into two
+cells) shows up as two slots resolving to identical title+date. Flag it to Ian and
+ask for the correct event rather than rendering the duplicate.
 
 Robust approach: pull all events from the Portland calendars over the target week
 into an `{id: event}` map, then look up each pasted ID (handles not knowing which
@@ -148,10 +160,10 @@ template ships it.
 **Rows** — each template has placeholder `.row` blocks with inline comments. Fill
 them in:
 
-*Events of the Week* — one `.row` per day = a `.day` badge + a Day tile + a Night tile:
+*Events of the Week* — "☀ Day"/"🌙 Night" are stated once in the `.col-head` row at
+the top; each `.row` is a `.day` badge + a Day tile + a Night tile (tile = name + meta):
 ```html
 <div class="tile amber">
-  <div class="tile-type">☀ Day</div>
   <div class="tile-name">Event Name</div>
   <div class="tile-meta">Venue · Time · Cost</div>
 </div>
@@ -197,7 +209,7 @@ values in the copied file:
 | Navy   | `#0a1a3a` | `#5ca8ff` | `#5ca8ff, #3ecfb0, #b39dff` | jun1–7 (week) |
 | Plum   | `#1a0e2e` | `#f07ad8` | `#f07ad8, #b39dff, #f0a500` | may29–31 (weekend) |
 | Maroon | `#2a0e14` | `#ff7a5c` | `#ff7a5c, #f0a500, #f07ad8` | jun4–7 (weekend) |
-| Teal   | `#062a2a` | `#3ecfb0` | `#3ecfb0, #5cdc80, #5ca8ff` | — |
+| Teal   | `#062a2a` | `#3ecfb0` | `#3ecfb0, #5cdc80, #5ca8ff` | jun8–14 (week) |
 
 The accent also lightly tints `.week-label`, the title highlight word, the divider,
 and the footer CTA — keep all of those on the same accent so the post reads as one

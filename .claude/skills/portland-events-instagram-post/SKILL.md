@@ -46,19 +46,31 @@ which day/slot it's for). Fetch full details from the Portland calendars by ID.
 **edit URL** (easier for him to grab) rather than the bare ID, e.g.:
 `https://calendar.google.com/calendar/u/0/r/eventedit/<BLOB>`. The `<BLOB>` after
 `/eventedit/` is URL-safe base64 that decodes to `"<eventId> <calendarId>"` (space-
-separated). Take the **first token as the event ID** and **ignore the decoded
-calendar ID** — it's truncated (ends `@g`, not `@group.calendar.google.com`), so
-look the ID up against the known `CALENDARS` instead (Option B below handles this).
-Remember to pad the base64 before decoding.
+separated). The decoded calendar ID's **domain is truncated** (ends `@g`, not
+`@group.calendar.google.com`), but the **hex prefix before the `@` is complete** —
+so reconstruct the full ID as `<hexprefix>@group.calendar.google.com` and do a
+**direct `events().get(calendarId=…, eventId=…)`**. This is the most robust path:
+it works for *any* group calendar, including ones NOT in the `CALENDARS` map below
+(e.g. this skill's posts have pulled events off a third-party trivia calendar that
+isn't listed). Remember to pad the base64 before decoding.
 
 ```python
 import base64
-def event_id_from_url(url_or_blob):
+def parse_event_url(url_or_blob):
+    """Return (event_id, reconstructed_calendar_id) from an eventedit URL."""
     blob = url_or_blob.rsplit("/eventedit/", 1)[-1].strip()
     blob += "=" * (-len(blob) % 4)                       # restore base64 padding
-    return base64.urlsafe_b64decode(blob).decode("utf-8", "replace").split(" ")[0]
+    eid, cal_raw = base64.urlsafe_b64decode(blob).decode("utf-8", "replace").split(" ")
+    cal_id = cal_raw.split("@")[0] + "@group.calendar.google.com"  # un-truncate domain
+    return eid, cal_id
 # Recurring instances decode to e.g. "abc123_20260605T030000Z" — use the whole token as-is.
+# Fall back to scanning the known CALENDARS (Option B) only if a direct get 404s.
 ```
+
+**Sanity-check for duplicates.** Before building, confirm no two table rows decoded
+to the **same event ID** — a copy/paste slip (e.g. the same blob pasted into two
+cells) shows up as two slots resolving to identical title+date. Flag it to Ian and
+ask for the correct event rather than rendering the duplicate.
 
 Robust approach: pull all events from the Portland calendars over the target week
 into an `{id: event}` map, then look up each pasted ID (handles not knowing which

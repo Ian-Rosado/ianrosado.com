@@ -156,6 +156,7 @@ If neither resolves it, **leave blank + flag**.
 | The Paladins League | Trivia Nights - N/NE |
 | The EastBurn Public House | Trivia Nights - N/NE |
 | Migration Brewing (Glisan) | Trivia Nights - N/NE |
+| Mississippi Pizza Pub | Trivia Nights - N/NE |
 | Covert Cafe | Trivia Nights - SE |
 | No Fun Bar | Trivia Nights - SE |
 | Dots Cafe | Trivia Nights - SE |
@@ -165,9 +166,12 @@ If neither resolves it, **leave blank + flag**.
 | Gift Bar | Trivia Nights - SE |
 | BareBones | Trivia Nights - SE |
 | Beer Bunker Bar (Montavilla) | Trivia Nights - SE |
+| The Lay Low | Trivia Nights - SE |
+| Peacock PDX | Trivia Nights - SE |
 | Mission Theater | Trivia Nights - NW/SW |
 | Ringlers Pub (Downtown) | Trivia Nights - NW/SW |
 | The Pharmacy (NW 21st) | Trivia Nights - NW/SW |
+| Dante's | Trivia Nights - NW/SW |
 | Cascade Bar & Grill | Trivia Nights - Further Out |
 | Highlands Carts (Troutdale) | Trivia Nights - Further Out |
 | The Pub at Grounded Table (McMinnville) | Trivia Nights - Further Out |
@@ -187,7 +191,7 @@ the same date.
 ### Dedup tab columns
 
 Incoming section (0-indexed): `0 #`, `1 Title`, `2 Date`, `3 Location`, `4 Source`,
-`5 Calendar`, `6 → Skip?` (write `y` here).
+`5 Calendar`, `6 → Skip?` (write `y` here), `7 Why (auto)` (read-only, auto-filled by script).
 Existing section: `0 Calendar`, `1 Existing Title`, `2 Date`.
 
 Sheet row for an incoming event = its `#` value + 3.
@@ -253,8 +257,11 @@ flag blindly. The guards below caught real false positives in past runs.
 
 The same event often arrives from **multiple sources** in one batch (e.g. a show
 listed by both PDX After Dark and PDX Pipeline; "68 with Nate Bergman" appeared 5×).
-Dedup matches against the *existing calendar*, not within the incoming batch, so
-these survive to Step 3 — call them out there for the user to mark `n`.
+The script runs `_fuzzy_dedup_incoming` **before** writing the Dedup tab and
+pre-fills the lower-priority duplicate rows with `y` in **→ Skip?** and a
+`"cross-source dup of #N"` note in **Why (auto)**. Source priority (winner
+preferred): PDX After Dark > PC-PDX > 19hz > Flyer Escape > others. These
+pre-fills are **editable** — clear the `y` to keep an event.
 
 ---
 

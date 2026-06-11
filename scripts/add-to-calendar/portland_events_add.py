@@ -284,17 +284,21 @@ def step1_categorize(rows):
 DEDUP_TAB = "Dedup"
 DEDUP_INCOMING_HEADERS = [
     "#", "Title", "Date", "Location", "Source", "Calendar",
-    "→ Skip? (type y to skip)",
+    "→ Skip? (type y to skip)", "Why (auto)",
 ]
 DEDUP_EXISTING_HEADERS = ["Calendar", "Existing Title", "Date"]
 DEDUP_INSTRUCTIONS = (
-    "Review incoming events against existing calendar events below. "
-    "Type 'y' in the '→ Skip?' column for any incoming event that duplicates an existing one. "
-    "Then return to the terminal and press Enter."
+    "Type 'y' in the '→ Skip?' column for any incoming event that duplicates another. "
+    "Rows already marked 'y' are auto-detected cross-source duplicates within this "
+    "batch (see 'Why (auto)') — clear the 'y' to keep one. Also flag any incoming "
+    "event that duplicates an EXISTING calendar event listed below. Then press Enter."
 )
 
 
-def step2_deduplicate(rows, existing_by_cal):
+def step2_deduplicate(rows, existing_by_cal, cross_source_skip=None, cross_source_dup_of=None):
+    cross_source_skip = cross_source_skip or set()
+    cross_source_dup_of = cross_source_dup_of or {}
+
     # Group incoming rows by calendar
     by_cal = {}
     for i, row in enumerate(rows):
@@ -308,8 +312,10 @@ def step2_deduplicate(rows, existing_by_cal):
         for cal_name in by_cal
         if cal_name in CALENDARS
     )
-    if not has_existing:
-        print("\nNo existing calendar events found — skipping dedup step.")
+    # Run the step if there are existing events to compare against OR intra-batch
+    # cross-source duplicates to surface for review.
+    if not has_existing and not cross_source_skip:
+        print("\nNo existing calendar events and no intra-batch duplicates — skipping dedup step.")
         return set()
 
     client = get_sheets_client()
@@ -319,27 +325,41 @@ def step2_deduplicate(rows, existing_by_cal):
     # ── Incoming events section ──
     ws.update([DEDUP_INCOMING_HEADERS, [DEDUP_INSTRUCTIONS] + [""] * (len(DEDUP_INCOMING_HEADERS) - 1)], "A1")
     ws.batch_format([
-        {"range": "A1:G1", "format": {"textFormat": {"bold": True}}},
-        {"range": "A2:G2", "format": {"textFormat": {"italic": True},
+        {"range": "A1:H1", "format": {"textFormat": {"bold": True}}},
+        {"range": "A2:H2", "format": {"textFormat": {"italic": True},
                                        "backgroundColor": {"red": 1.0, "green": 0.95, "blue": 0.8}}},
     ])
 
-    index_map = {}
+    # First pass: assign local indices in calendar-grouped order so we can
+    # reference the kept ("winner") row's local number in the auto note.
+    ordered = [(orig_idx, row, cal_name)
+               for cal_name, indexed_rows in by_cal.items()
+               for orig_idx, row in indexed_rows]
+    index_map = {local: orig for local, (orig, _, _) in enumerate(ordered)}
+    orig_to_local = {orig: local for local, (orig, _, _) in enumerate(ordered)}
+
     incoming_data = []
-    local_counter = 0
-    for cal_name, indexed_rows in by_cal.items():
-        for orig_idx, row in indexed_rows:
-            incoming_data.append([
-                local_counter,
-                get(row, "Title", "title", "summary"),
-                get(row, "Date", "date"),
-                get(row, "Location", "location", "Venue", "venue"),
-                get(row, "Source", "source"),
-                cal_name,
-                "",  # Skip? — user fills this in
-            ])
-            index_map[local_counter] = orig_idx
-            local_counter += 1
+    prefilled = 0
+    for local_counter, (orig_idx, row, cal_name) in enumerate(ordered):
+        is_dup = orig_idx in cross_source_skip
+        note = ""
+        if is_dup:
+            prefilled += 1
+            winner = cross_source_dup_of.get(orig_idx)
+            if winner is not None and winner in orig_to_local:
+                note = f"cross-source dup of #{orig_to_local[winner]}"
+            else:
+                note = "cross-source duplicate (auto)"
+        incoming_data.append([
+            local_counter,
+            get(row, "Title", "title", "summary"),
+            get(row, "Date", "date"),
+            get(row, "Location", "location", "Venue", "venue"),
+            get(row, "Source", "source"),
+            cal_name,
+            "y" if is_dup else "",  # Skip? — pre-filled for intra-batch dupes
+            note,
+        ])
 
     ws.append_rows(incoming_data, value_input_option="USER_ENTERED")
 
@@ -376,11 +396,15 @@ def step2_deduplicate(rows, existing_by_cal):
     print("── Paste this into Claude if you want help spotting duplicates: ──")
     print()
     print("Flag any INCOMING event that duplicates an EXISTING one (same event, different name/source).")
+    if prefilled:
+        print(f"NOTE: {prefilled} row(s) are pre-marked 'y' as cross-source duplicates within this")
+        print("      batch (shown as [DUP] below). Clear the 'y' on any you want to keep.")
     print("Reply with the index numbers to skip, e.g.: skip: 3, 17, 42")
     print()
     print("INCOMING:")
     for entry in incoming_data:
-        print(f'  {entry[0]:3d}. "{entry[1]}" on {entry[2]} @ {entry[3]} [{entry[5]}]')
+        flag = " [DUP]" if entry[6] == "y" else ""
+        print(f'  {entry[0]:3d}. "{entry[1]}" on {entry[2]} @ {entry[3]} [{entry[5]}]{flag}')
     print()
     print("EXISTING (sample):")
     for row in existing_data[:50]:
@@ -988,7 +1012,9 @@ def load_from_sheet():
 def _fuzzy_dedup_incoming(rows):
     """
     Find incoming events that are likely the same show scraped from two different
-    sources. Returns a set of row indices to flag as suggested duplicates.
+    sources. Returns (skip, dup_of):
+      - skip:   set of row indices to flag as intra-batch duplicates (the losers)
+      - dup_of: {loser_index: winner_index} — which kept event each duplicates
 
     Strategy: for each pair of events on the same date from different sources,
     compute word overlap of their titles. If overlap is high enough, flag the
@@ -1028,6 +1054,7 @@ def _fuzzy_dedup_incoming(rows):
             by_date.setdefault(date, []).append(i)
 
     skip = set()
+    dup_of = {}
     for date, indices in by_date.items():
         for a in range(len(indices)):
             for b in range(a + 1, len(indices)):
@@ -1049,12 +1076,13 @@ def _fuzzy_dedup_incoming(rows):
                     det_b = len(tb) + bool(get(rb, "Location", "location")) * 20
                     score_a = pri_a * 100 + det_a
                     score_b = pri_b * 100 + det_b
-                    loser = ib if score_a >= score_b else ia
+                    loser, winner = (ib, ia) if score_a >= score_b else (ia, ib)
                     skip.add(loser)
+                    dup_of[loser] = winner
 
     if skip:
         print(f"  Cross-source fuzzy dedup: {len(skip)} likely duplicates flagged")
-    return skip
+    return skip, dup_of
 
 
 # ─── Main ─────────────────────────────────────────────────────────────────────
@@ -1131,6 +1159,12 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
         if evs:
             print(f"  {cal_name}: {len(evs)} existing")
 
+    # ── Intra-batch cross-source dedup (computed up front) ───────────────────
+    # The same show scraped from two sources (slightly different caps / punctuation
+    # / partial lineup) is detected here so it can be surfaced in the Dedup step
+    # (pre-filled 'y') rather than only auto-applied at Review.
+    cross_source_skip, cross_source_dup_of = _fuzzy_dedup_incoming(rows)
+
     # ── Step 1: Categorize + Step 2: Deduplicate ─────────────────────────────
     if skip_to_review:
         # Read already-filled Categorize and Dedup tabs — skip interactive steps
@@ -1153,9 +1187,11 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
             row["_calendar_assigned"] = calendar_assignments[i]
 
         if no_ai:
-            ai_skip = set()
+            # No interactive dedup tab; still apply the auto intra-batch skips.
+            ai_skip = set(cross_source_skip)
         else:
-            ai_skip = step2_deduplicate(rows, existing_by_cal)
+            ai_skip = step2_deduplicate(rows, existing_by_cal,
+                                        cross_source_skip, cross_source_dup_of)
 
     # ── Exact-match dedup against existing calendar events ──────────────────
     exact_skip = set()
@@ -1172,11 +1208,6 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
         existing_titles = existing_titles_by_cal.get(cal_id, set())
         if title.lower().strip() in existing_titles or title_raw.lower().strip() in existing_titles:
             exact_skip.add(i)
-
-    # ── Fuzzy cross-source dedup within incoming batch ───────────────────────
-    # Catches the same show scraped from two different sources with slightly
-    # different titles (different capitalization, partial lineup, punctuation).
-    cross_source_skip = _fuzzy_dedup_incoming(rows)
 
     # ── Load blocklist ───────────────────────────────────────────────────────
     print("Loading blocklist...")
@@ -1223,7 +1254,9 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
             "tags":           tags,
             "source":         source,
             "url":            url,
-            "suggested_skip": (i in ai_skip or i in exact_skip or i in cross_source_skip
+            # ai_skip already includes intra-batch cross-source dupes (via the
+            # Dedup tab, or set(cross_source_skip) under --no-ai).
+            "suggested_skip": (i in ai_skip or i in exact_skip
                                or _norm_title(title) in blocklist
                                or "sold out" in title.lower()),
             # stash for later use

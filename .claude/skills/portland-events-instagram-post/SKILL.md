@@ -131,7 +131,9 @@ Build each tile's `name` and `meta` from the looked-up details. General rules:
   (e.g. "Oregon Ren Faire" not "Oregon Renaissance Faire"). The weekend tile
   ellipsizes a too-long title.
 - Lead the meta with "Free" when the cost is free.
-- Use a short category label in `tile-type` (e.g. `🎭 Theater`, `🌮 Food`).
+- Use a short category label in `tile-type` (e.g. `🎭 Theater`, `🌮 Food`). Stick to
+  **single-codepoint emoji** — the headless renderer drops ZWJ sequences (e.g. use
+  `🌈` for Pride, not `🏳️‍🌈`, which renders as a blank/plain flag).
 
 **Events of the Week:** one row per day (Mon–Sun). Ian's table says the day and
 usually whether each is the ☀ Day or 🌙 Night pick; if not, infer Day = before ~4pm,
@@ -190,12 +192,12 @@ on the Maroon theme, so they don't blend in.)
 
 **Footer** — leave as-is (pdx-events.com, @portland_events_calendar, hashtags).
 
-### Background theme — rotate it each post
+### Background theme — advance one step along the color wheel each post
 
-Every post uses a different dark **canvas background + matching accent color** so
-consecutive posts look distinct. The template ships with the green theme; swap in
-the next theme in the rotation (don't reuse the previous week's). Change these CSS
-values in the copied file:
+Each post uses a different dark **canvas background + matching accent color**. The
+themes are ordered **around the color wheel** so that posting them in sequence makes
+the Instagram profile's 3-column grid read as a smooth **gradient** as you scroll.
+Change these CSS values in the copied file:
 
 - `.post { background: <bg> }`
 - `.week-label { color: <accent> }`
@@ -203,20 +205,42 @@ values in the copied file:
 - `.footer-cta strong { color: <accent> }`
 - `.divider { background: linear-gradient(90deg, <grad>, transparent) }`
 
-| Theme | `<bg>` | `<accent>` | `<grad>` (divider) | Used by |
-|---|---|---|---|---|
-| Green  | `#0d2b1a` | `#5cdc80` | `#5cdc80, #3ecfb0, #5ca8ff` | may25–31 (week) |
-| Navy   | `#0a1a3a` | `#5ca8ff` | `#5ca8ff, #3ecfb0, #b39dff` | jun1–7 (week) |
-| Plum   | `#1a0e2e` | `#f07ad8` | `#f07ad8, #b39dff, #f0a500` | may29–31 (weekend) |
-| Maroon | `#2a0e14` | `#ff7a5c` | `#ff7a5c, #f0a500, #f07ad8` | jun4–7 (weekend) |
-| Teal   | `#062a2a` | `#3ecfb0` | `#3ecfb0, #5cdc80, #5ca8ff` | jun8–14 (week) |
+**Selection rule:** find the most recent post's theme (check the newest file in
+`instagram/`), then use the **next theme down this table** (wrapping Lime → Green).
+This advances one hue step per post so the grid gradients. Do NOT pick "least
+recently used" — that breaks the gradient. The cycle repeats colors over time; that
+is expected (a gradient loops). The `<grad>` divider for each theme previews the
+next two accents in the cycle, reinforcing the flow.
+
+**Serpentine for vertical continuity:** Instagram lays posts out 3-per-row,
+left→right. To make the gradient flow smoothly *down* the grid (not just across),
+post the hues in a **boustrophedon/snake order — reverse every other run of three**:
+posts 1-2-3 left→right, then 6-5-4, then 7-8-9, then 12-11-10 … So after finishing a
+row going up the wheel, the next three step *back down* it. That lines up the row
+turns (the gradient meets itself at alternating left/right edges) instead of jumping
+a column. Practically: count how many posts since the last "row start"; if you're in
+an even row of three, walk the table upward instead of downward.
+
+| # | Theme | `<bg>` | `<accent>` | `<grad>` (divider) | Used by |
+|---|---|---|---|---|---|
+| 1 | Green   | `#0d2b1a` | `#5cdc80` | `#5cdc80, #3ecfb0, #5ca8ff` | may25–31 (week) |
+| 2 | Teal    | `#062a2a` | `#3ecfb0` | `#3ecfb0, #5ca8ff, #8a9bff` | jun8–14 (week) |
+| 3 | Blue    | `#0a1f3a` | `#5ca8ff` | `#5ca8ff, #8a9bff, #b39dff` | jun12–14 (weekend) |
+| 4 | Indigo  | `#15163a` | `#8a9bff` | `#8a9bff, #b39dff, #f07ad8` | — |
+| 5 | Purple  | `#1c0e30` | `#b39dff` | `#b39dff, #f07ad8, #ff7a5c` | — |
+| 6 | Magenta | `#2a0e28` | `#f07ad8` | `#f07ad8, #ff7a5c, #f0a500` | (≈ old Plum) may29–31 (weekend) |
+| 7 | Coral   | `#2e1310` | `#ff7a5c` | `#ff7a5c, #f0a500, #c4dd5e` | (≈ old Maroon) jun4–7 (weekend) |
+| 8 | Amber   | `#2a1c06` | `#f0a500` | `#f0a500, #c4dd5e, #5cdc80` | — |
+| 9 | Lime    | `#20260a` | `#c4dd5e` | `#c4dd5e, #5cdc80, #3ecfb0` | — |
+
+(The earlier Navy `#0a1a3a`/`#5ca8ff` and Plum `#1a0e2e`/`#f07ad8` posts map onto
+Blue and Magenta respectively — close enough; the wheel is the source of truth now.)
 
 The accent also lightly tints `.week-label`, the title highlight word, the divider,
 and the footer CTA — keep all of those on the same accent so the post reads as one
-color story. Tile background colors are unchanged; they sit on top of any canvas.
-
-Pick the theme that hasn't been used recently (check the most recent files in
-`instagram/`), or whichever Ian requests.
+color story. Tile background colors are unchanged; they sit on top of any canvas —
+but still skip the tile class matching the current canvas (e.g. no `blue` tiles on
+the Blue theme) so it doesn't blend in.
 
 Notes:
 - The `.grid` uses flexbox with `flex: 1` rows, so it auto-fits whether there are

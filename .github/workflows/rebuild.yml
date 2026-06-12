@@ -1,0 +1,22 @@
+name: Scheduled rebuild
+
+# Rebuilds the site so the statically-rendered Portland Events page picks up
+# new/changed Google Calendar events. The site fetches the Calendar API at
+# build time, so it only refreshes when a deploy runs.
+
+on:
+  schedule:
+    # Four times a day, every 6 hours. Cron in GitHub Actions is always UTC.
+    # 1/7/13/19 UTC = roughly 12am / 6am / 12pm / 6pm Pacific (PDT).
+    - cron: "0 1,7,13,19 * * *"
+  workflow_dispatch: {} # allows a manual run from the Actions tab
+
+jobs:
+  trigger-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Vercel deploy hook
+        run: |
+          curl -fsS -X POST "$DEPLOY_HOOK_URL"
+        env:
+          DEPLOY_HOOK_URL: ${{ secrets.VERCEL_DEPLOY_HOOK_URL }}

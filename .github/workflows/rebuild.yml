@@ -1,8 +1,14 @@
 name: Scheduled rebuild
 
-# Rebuilds the site so the statically-rendered Portland Events page picks up
-# new/changed Google Calendar events. The site fetches the Calendar API at
-# build time, so it only refreshes when a deploy runs.
+# Rebuilds the sites so the statically-rendered Portland Events page picks up
+# new/changed Google Calendar events. The pages fetch the Calendar API at
+# build time, so they only refresh when a deploy runs.
+#
+# Deploy hooks are PER VERCEL PROJECT, so we trigger one hook per site:
+#   VERCEL_HOOK_IANROSADO   -> ianrosado.com project's deploy hook URL
+#   VERCEL_HOOK_PDX_EVENTS  -> pdx-events.com project's deploy hook URL
+# Each step is skipped (not failed) if its secret is missing, so partial
+# setup still works.
 
 on:
   schedule:
@@ -15,8 +21,22 @@ jobs:
   trigger-deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger Vercel deploy hook
-        run: |
-          curl -fsS -X POST "$DEPLOY_HOOK_URL"
+      - name: Trigger ianrosado.com deploy
         env:
-          DEPLOY_HOOK_URL: ${{ secrets.VERCEL_DEPLOY_HOOK_URL }}
+          HOOK: ${{ secrets.VERCEL_HOOK_IANROSADO }}
+        run: |
+          if [ -z "$HOOK" ]; then
+            echo "VERCEL_HOOK_IANROSADO not set — skipping ianrosado.com"
+          else
+            curl -fsS -X POST "$HOOK" && echo "Triggered ianrosado.com rebuild"
+          fi
+
+      - name: Trigger pdx-events.com deploy
+        env:
+          HOOK: ${{ secrets.VERCEL_HOOK_PDX_EVENTS }}
+        run: |
+          if [ -z "$HOOK" ]; then
+            echo "VERCEL_HOOK_PDX_EVENTS not set — skipping pdx-events.com"
+          else
+            curl -fsS -X POST "$HOOK" && echo "Triggered pdx-events.com rebuild"
+          fi

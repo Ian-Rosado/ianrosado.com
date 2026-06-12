@@ -72,14 +72,48 @@ function normalizeCost(raw: string): string {
   return '';
 }
 
-// Parse cost + source URL out of the description field
-// Format written by add-to-calendar script: "cost\nurl"
-function parseDescription(desc: string): { cost: string; url: string } {
-  const clean = stripHtml(desc || '');
-  const lines = clean.split('\n').map(l => l.trim()).filter(Boolean);
+// Tag classification — mirrors classify_facets() in portland_events_add.py so a
+// single embedded "Tags:" line yields genres / age / neighborhood at build time.
+const AGE_TAGS = new Set(['all-ages', '21+', '18+', '19+', '16+']);
+const NEIGHBORHOOD_TAGS = new Set([
+  'se', 'ne', 'nw', 'sw', 'n', 'downtown', 'pearl', 'alberta', 'hawthorne',
+  'belmont', 'division', 'mississippi', 'sellwood', 'hollywood', 'st johns',
+  'st-johns', 'foster', 'burnside', 'goose hollow', 'nob hill', '82nd',
+  'montavilla', 'woodstock', 'kenton', 'old town', 'central eastside',
+  'laurelhurst', 'beaverton', 'hillsboro', 'vancouver', 'troutdale',
+]);
+
+function classifyTags(tags: string[]): { genres: string[]; age: string; neighborhood: string } {
+  const genres: string[] = [];
+  let age = '';
+  let neighborhood = '';
+  for (const t of tags) {
+    if (AGE_TAGS.has(t) && !age) age = t;
+    else if (NEIGHBORHOOD_TAGS.has(t) && !neighborhood) neighborhood = t;
+    else genres.push(t);
+  }
+  return { genres, age, neighborhood };
+}
+
+// Parse cost + source URL + tags out of the description field.
+// Format written by the add-to-calendar script: "cost\nurl\nTags: a, b, c".
+// Split on real newlines (and <br>) BEFORE collapsing whitespace, so the line
+// structure survives — stripHtml flattens \n, so it must run per-line.
+function parseDescription(desc: string): { cost: string; url: string; tags: string[] } {
+  const lines = (desc || '')
+    .split(/\r?\n|<br\s*\/?>/i)
+    .map(l => stripHtml(l))
+    .filter(Boolean);
   let cost = '';
   let url = '';
+  let tags: string[] = [];
   for (const line of lines) {
+    // Tags line: "Tags: a, b, c" — the full facet list, parsed at build time
+    const tagMatch = line.match(/^tags:\s*(.+)$/i);
+    if (tagMatch) {
+      tags = tagMatch[1].split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
+      continue;
+    }
     // Extract any URL from the line (handles "text https://... more text")
     const urlMatch = line.match(/https?:\/\/\S+/);
     if (urlMatch && !url) {
@@ -89,7 +123,7 @@ function parseDescription(desc: string): { cost: string; url: string } {
       if (c) cost = c;
     }
   }
-  return { cost, url };
+  return { cost, url, tags };
 }
 
 function formatTime(iso: string): string {
@@ -124,18 +158,31 @@ function toCalEvents(
   const time    = allDay ? '' : formatTime(startRaw);
   const endTime = allDay ? '' : (endRaw ? formatTime(endRaw) : '');
 
-  const { cost, url } = parseDescription(item.description ?? '');
+  const { cost, url, tags: descTags } = parseDescription(item.description ?? '');
 
-  // Facets written by the add-to-calendar script via extendedProperties.shared
+  // Facets are primarily embedded in the description ("Tags:" line) so they're
+  // editable in the Google Calendar UI and present on manually-added events.
+  // Fall back to extendedProperties.shared for events not yet migrated.
   const shared = item.extendedProperties?.shared ?? {};
   const splitList = (s?: string) =>
     (s ?? '').split(',').map((x: string) => x.trim()).filter(Boolean);
-  const genres = splitList(shared.genres);
-  const tags = splitList(shared.tags);
-  const age = (shared.age ?? '').trim();
-  const neighborhood = (shared.neighborhood ?? '').trim();
-  // Prefer the stored cost class; fall back to parsing the cost text
-  const costClass = (shared.cost as CostClass) || classifyCost(cost);
+
+  let tags: string[];
+  let genres: string[];
+  let age: string;
+  let neighborhood: string;
+  if (descTags.length) {
+    tags = descTags;
+    ({ genres, age, neighborhood } = classifyTags(descTags));
+  } else {
+    tags = splitList(shared.tags);
+    genres = splitList(shared.genres);
+    age = (shared.age ?? '').trim();
+    neighborhood = (shared.neighborhood ?? '').trim();
+  }
+  // Prefer the (UI-editable) cost text; fall back to the stored class only when
+  // there's no cost line to read.
+  const costClass = cost ? classifyCost(cost) : ((shared.cost as CostClass) || 'unknown');
 
   // Determine the inclusive list of day-strings this event covers.
   // For all-day events Google's end.date is EXCLUSIVE, so the last day is end-1.

@@ -32,8 +32,8 @@ from datetime import datetime, timezone
 import portland_events_add as pea
 from portland_events_add import (
     CALENDARS, CALENDAR_ALIASES, SHEET_ID, INBOX_TAB,
-    classify_cost, build_extended_properties,
-    SCOPES_CALENDAR_AND_SHEETS,
+    classify_cost, build_extended_properties, build_description,
+    NOTE_LOOKUP_VENUE, SCOPES_CALENDAR_AND_SHEETS,
 )
 
 # Import the scraper-side tag normalizer so recovered tags get cleaned the
@@ -96,9 +96,19 @@ def genre_from_title(title: str) -> str:
 def parse_cost_from_description(desc: str) -> str:
     for line in (desc or "").split("\n"):
         line = line.strip()
-        if not line or line.startswith("http") or line.lower().startswith("look up venue"):
+        if (not line or line.startswith("http")
+                or line.lower().startswith("look up venue")
+                or line.lower().startswith("tags:")):
             continue
         return line
+    return ""
+
+
+def parse_url_from_description(desc: str) -> str:
+    for line in (desc or "").split("\n"):
+        m = re.search(r"https?://\S+", line)
+        if m:
+            return m.group(0)
     return ""
 
 
@@ -127,21 +137,17 @@ def load_sheet_lookup(creds):
 
 # ── Facet building ──────────────────────────────────────────────────────────
 
-def shared_from_sheet(row, cal_name):
-    """Full facets from a matched sheet row."""
+def facets_from_sheet(row):
+    """(cost, tags_str) recovered from a matched sheet row."""
     tags = normalize_tags([t.strip() for t in row["tags"].split(",") if t.strip()])
-    tags_str = ",".join(tags)
-    cost = row["cost"]
-    source = row["source"] or cal_name
-    return build_extended_properties(cost, tags_str, source)["shared"]
+    return row["cost"], ",".join(tags)
 
 
-def shared_from_event(title, description, cal_name):
-    """Fallback facets derived from the calendar event itself."""
+def facets_from_event(title, description):
+    """(cost, tags_str) derived from the calendar event itself (fallback)."""
     cost = parse_cost_from_description(description)
     genre = genre_from_title(title)
-    tags_str = genre if genre else ""
-    return build_extended_properties(cost, tags_str, cal_name)["shared"]
+    return cost, (genre if genre else "")
 
 
 def event_date(ev) -> str:
@@ -218,30 +224,49 @@ def backfill(dry_run=False, only_calendar=None):
             key = (norm_title(title), event_date(ev))
             row = lookup.get(key)
             if row:
-                new_shared = shared_from_sheet(row, cal_name)
+                cost, tags_str = facets_from_sheet(row)
+                source = row["source"] or cal_name
                 matched += 1
             else:
-                new_shared = shared_from_event(title, desc, cal_name)
+                cost, tags_str = facets_from_event(title, desc)
+                source = cal_name
                 fallback += 1
 
-            existing = ev.get("extendedProperties", {}).get("shared", {})
-            merged = {**existing, **new_shared}
-            if merged == existing:
+            # extendedProperties stays as a redundant index; the website now
+            # prefers the description, but keeping shared in sync is cheap.
+            new_shared = build_extended_properties(cost, tags_str, source)["shared"]
+            existing_shared = ev.get("extendedProperties", {}).get("shared", {})
+            merged_shared = {**existing_shared, **new_shared}
+
+            # Rebuild the description so the "Tags:" line is present/updated,
+            # preserving the existing event URL (or look-up-venue note).
+            url = parse_url_from_description(desc)
+            note = "" if url else (NOTE_LOOKUP_VENUE if "look up venue" in (desc or "").lower() else "")
+            new_desc = build_description(cost, url, note, tags_str)
+
+            shared_changed = merged_shared != existing_shared
+            desc_changed = new_desc.strip() != (desc or "").strip()
+            if not shared_changed and not desc_changed:
                 skipped += 1
                 continue
 
             if dry_run:
                 src = "sheet" if row else "derived"
                 rec = " (recurring master)" if ev.get("recurringEventId") else ""
-                facet_str = ", ".join(f"{k}={v}" for k, v in new_shared.items())
-                print(f"  [DRY/{src}] {title[:42]:<42} -> {facet_str}{rec}")
+                changes = "+".join(c for c, ch in (("desc", desc_changed), ("shared", shared_changed)) if ch)
+                print(f"  [DRY/{src}] {title[:40]:<40} [{changes}] cost={classify_cost(cost)} tags={tags_str or '-'}{rec}")
                 updated += 1
                 continue
 
+            body = {}
+            if shared_changed:
+                body["extendedProperties"] = {"shared": merged_shared}
+            if desc_changed:
+                body["description"] = new_desc
             try:
                 service.events().patch(
                     calendarId=cal_id, eventId=target_id,
-                    body={"extendedProperties": {"shared": merged}},
+                    body=body,
                     sendUpdates="none",
                 ).execute()
                 updated += 1

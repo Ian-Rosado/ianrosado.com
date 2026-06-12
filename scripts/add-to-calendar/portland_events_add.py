@@ -695,7 +695,13 @@ def build_extended_properties(cost, tags_str, source):
 
 # ─── Description and title builders ──────────────────────────────────────────
 
-def build_description(cost, url, note=""):
+def build_description(cost, url, note="", tags=""):
+    """Build the calendar event description. The website parses this at build
+    time, so it doubles as the facet store: a final "Tags:" line carries the
+    full tag list (genres/age/neighborhood are derived from it). Keeping facets
+    here — not just in extendedProperties — means events stay editable in the
+    Google Calendar UI and manually-added events get tagged too.
+    """
     lines = []
     if cost and cost.strip():
         lines.append(cost.strip())
@@ -703,6 +709,10 @@ def build_description(cost, url, note=""):
         lines.append(url.strip())
     elif note:
         lines.append(note)
+    tag_list = [t.strip().lower() for t in (tags or "").split(",") if t.strip()]
+    if tag_list:
+        # dict.fromkeys dedupes while preserving order
+        lines.append("Tags: " + ", ".join(dict.fromkeys(tag_list)))
     return "\n".join(lines)
 
 def build_title(title_raw, cal_name, tags):
@@ -1390,7 +1400,7 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
             all_day  = True
 
         resolved_url, url_note = resolve_event_url(url, loc)
-        description = build_description(cost, resolved_url, url_note)
+        description = build_description(cost, resolved_url, url_note, tags)
         event_body = {
             "summary":     title,
             "description": description,

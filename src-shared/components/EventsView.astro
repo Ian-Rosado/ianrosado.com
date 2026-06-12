@@ -1,0 +1,506 @@
+---
+import EventRow from './EventRow.astro';
+import { COLOR_MAP } from '../lib/calendars';
+import {
+  fetchAllEvents,
+  EVENT_CATEGORIES,
+} from '../lib/events';
+import { groupByDate, formatDisplayDate, type CalEvent } from '../lib/google-calendar';
+
+const TZ = 'America/Los_Angeles';
+
+const allEvents = await fetchAllEvents();
+const grouped = groupByDate(allEvents);
+
+const totalCount = allEvents.length;
+const freeCount = allEvents.filter((e) => e.costClass === 'free').length;
+
+// Date range for the list-view date picker
+const dateKeys = [...grouped.keys()].sort();
+const minDate = dateKeys[0] ?? '';
+const maxDate = dateKeys[dateKeys.length - 1] ?? '';
+
+// ---- Calendar grid construction (desktop only) -------------------------
+// Build one month grid (Sun–Sat weeks) per calendar month that has events,
+// from the current Pacific month through the furthest event.
+const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: TZ }); // YYYY-MM-DD
+
+function ymKey(d: Date) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+}
+
+// Parse a YYYY-MM-DD string into a local Date at noon (TZ-edge-safe).
+function parseDay(s: string) {
+  return new Date(s + 'T12:00:00');
+}
+
+const today = parseDay(todayStr);
+const lastEventDate = allEvents.length
+  ? parseDay(allEvents[allEvents.length - 1].date)
+  : today;
+
+interface DayCell {
+  date: string; // YYYY-MM-DD, or '' for padding cells
+  day: number;
+  inMonth: boolean;
+  isToday: boolean;
+  events: CalEvent[];
+}
+interface MonthGrid {
+  key: string; // YYYY-MM
+  label: string; // "June 2026"
+  weeks: DayCell[][];
+}
+
+function buildMonth(year: number, month: number): MonthGrid {
+  const first = new Date(year, month, 1);
+  const label = first.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  const startPad = first.getDay(); // 0=Sun
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  const cells: DayCell[] = [];
+  // Leading padding
+  for (let i = 0; i < startPad; i++) {
+    cells.push({ date: '', day: 0, inMonth: false, isToday: false, events: [] });
+  }
+  for (let d = 1; d <= daysInMonth; d++) {
+    const ds = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    cells.push({
+      date: ds,
+      day: d,
+      inMonth: true,
+      isToday: ds === todayStr,
+      events: grouped.get(ds) ?? [],
+    });
+  }
+  // Trailing padding to complete the last week
+  while (cells.length % 7 !== 0) {
+    cells.push({ date: '', day: 0, inMonth: false, isToday: false, events: [] });
+  }
+  const weeks: DayCell[][] = [];
+  for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7));
+  return { key: ymKey(first), label, weeks };
+}
+
+const months: MonthGrid[] = [];
+{
+  const cursor = new Date(today.getFullYear(), today.getMonth(), 1);
+  const end = new Date(lastEventDate.getFullYear(), lastEventDate.getMonth(), 1);
+  while (cursor <= end) {
+    months.push(buildMonth(cursor.getFullYear(), cursor.getMonth()));
+    cursor.setMonth(cursor.getMonth() + 1);
+  }
+}
+
+const weekdayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const MAX_CHIPS = 4; // events shown in a day cell before "+N more"
+---
+
+<div class="events-view max-w-3xl lg:max-w-5xl mx-auto px-4 py-8">
+  <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+    <p class="text-stone-500 text-sm">
+      <span id="result-count">{totalCount}</span> upcoming events · {freeCount} free
+    </p>
+
+    <!-- View toggle (calendar option hidden on small screens) -->
+    <div class="hidden lg:inline-flex rounded-lg border border-stone-200 overflow-hidden text-sm">
+      <button id="view-list" class="view-btn px-3 py-1.5 font-medium" aria-pressed="true">List</button>
+      <button id="view-calendar" class="view-btn px-3 py-1.5 font-medium border-l border-stone-200" aria-pressed="false">Calendar</button>
+    </div>
+  </div>
+
+  <!-- Filter bar -->
+  <div class="sticky top-0 z-40 bg-white/95 backdrop-blur py-3 -mx-4 px-4 border-b border-stone-100 mb-6">
+    <input
+      type="search"
+      id="search-input"
+      placeholder="Search events or venues…"
+      class="w-full mb-3 px-3 py-2 text-sm rounded-lg border border-stone-200 focus:outline-none focus:ring-2 focus:ring-orange-300"
+    />
+    <div class="flex flex-wrap items-center gap-2 mb-2">
+      <span class="text-xs font-semibold text-stone-400 uppercase tracking-wide mr-1">Cost</span>
+      <button class="filter-pill" data-filter="cost" data-value="all" aria-pressed="true">All</button>
+      <button class="filter-pill" data-filter="cost" data-value="free" aria-pressed="false">Free only</button>
+      <button class="filter-pill" data-filter="cost" data-value="paid" aria-pressed="false">Paid</button>
+
+      <!-- Date picker (list view): jump/filter to a chosen day -->
+      <div id="date-filter-group" class="flex items-center gap-1.5 ml-auto">
+        <label for="date-input" class="text-xs font-semibold text-stone-400 uppercase tracking-wide">Date</label>
+        <input
+          type="date"
+          id="date-input"
+          min={minDate}
+          max={maxDate}
+          class="px-2 py-1 text-xs rounded-lg border border-stone-200 text-stone-600 focus:outline-none focus:ring-2 focus:ring-orange-300"
+        />
+        <button id="date-clear" class="hidden filter-pill" aria-label="Clear date filter">Clear</button>
+      </div>
+    </div>
+    <div class="flex flex-wrap items-center gap-2">
+      <span class="text-xs font-semibold text-stone-400 uppercase tracking-wide mr-1">Type</span>
+      <button class="filter-pill" data-filter="category" data-value="all" aria-pressed="true">All</button>
+      {EVENT_CATEGORIES.map((cat) => (
+        <button class="filter-pill flex items-center gap-1.5" data-filter="category" data-value={cat.slug} aria-pressed="false">
+          <span class={`w-2 h-2 rounded-full ${(COLOR_MAP[cat.color] ?? COLOR_MAP['orange']).dot}`}></span>
+          {cat.label}
+        </button>
+      ))}
+    </div>
+  </div>
+
+  <!-- ===================== LIST VIEW ===================== -->
+  <div id="list-view">
+    {[...grouped.entries()].map(([date, dayEvents]) => (
+      <section class="date-group mb-5" data-date={date}>
+        <h2 class="date-heading text-xs font-semibold uppercase tracking-widest text-stone-500 mb-1.5 sticky top-[120px] bg-white/90 backdrop-blur py-0.5">
+          {formatDisplayDate(date)}
+        </h2>
+        <ul class="divide-y divide-stone-50">
+          {dayEvents.map((event) => <EventRow event={event} />)}
+        </ul>
+      </section>
+    ))}
+    <p id="no-results" class="hidden text-center text-stone-400 text-sm py-12">
+      No events match your filters.
+      <button id="clear-filters" class="text-orange-600 underline">Clear filters</button>
+    </p>
+  </div>
+
+  <!-- ===================== CALENDAR VIEW (desktop only) ===================== -->
+  <div id="calendar-view" class="hidden">
+    <!-- Month nav -->
+    <div class="flex items-center justify-center gap-4 mb-4">
+      <button id="cal-prev" class="px-2 py-1 rounded hover:bg-stone-100 text-stone-500" aria-label="Previous month">‹</button>
+      <h2 id="cal-month-label" class="text-lg font-semibold text-stone-900 w-48 text-center" style="font-family: var(--font-serif)"></h2>
+      <button id="cal-next" class="px-2 py-1 rounded hover:bg-stone-100 text-stone-500" aria-label="Next month">›</button>
+    </div>
+
+    {months.map((m, i) => (
+      <div class="month-grid" data-month={m.key} data-label={m.label} style={i === 0 ? '' : 'display:none'}>
+        <div class="grid grid-cols-7 text-center text-xs font-semibold uppercase tracking-wide text-stone-400 mb-1">
+          {weekdayLabels.map((w) => <div class="py-1">{w}</div>)}
+        </div>
+        <div class="grid grid-cols-7 gap-px bg-stone-100 border border-stone-100 rounded-lg overflow-hidden">
+          {m.weeks.flat().map((cell) => (
+            <div
+              class={`cal-cell relative bg-white min-h-[110px] p-1.5 text-left align-top ${cell.inMonth ? '' : 'bg-stone-50/50'} ${cell.events.length ? 'cursor-pointer hover:bg-orange-50/40' : ''}`}
+              data-date={cell.date}
+            >
+              {cell.inMonth && (
+                <div class={`text-xs mb-1 ${cell.isToday ? 'font-bold text-white bg-orange-600 rounded-full w-5 h-5 inline-flex items-center justify-center' : 'text-stone-400'}`}>
+                  {cell.day}
+                </div>
+              )}
+              <div class="space-y-0.5">
+                {cell.events.slice(0, MAX_CHIPS).map((ev) => {
+                  const c = COLOR_MAP[ev.color] ?? COLOR_MAP['orange'];
+                  return (
+                    <div
+                      class="cal-chip flex items-center gap-1 text-[11px] leading-tight truncate"
+                      data-category={ev.calendarSlug}
+                      data-cost={ev.costClass}
+                      data-title={ev.title.toLowerCase()}
+                      data-location={(ev.location || '').toLowerCase()}
+                    >
+                      <span class={`flex-shrink-0 w-1.5 h-1.5 rounded-full ${c.dot}`}></span>
+                      <span class="truncate text-stone-700">{ev.allDay ? '' : ev.time + ' '}{ev.title}</span>
+                    </div>
+                  );
+                })}
+                {cell.events.length > MAX_CHIPS && (
+                  <div class="cal-more text-[11px] text-stone-400 pl-2.5">+{cell.events.length - MAX_CHIPS} more</div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    ))}
+
+    <!-- Single shared popover, positioned + populated on day click -->
+    <div id="cal-popover" class="hidden fixed z-50 w-80 max-h-96 overflow-y-auto bg-white rounded-xl border border-stone-200 shadow-xl p-3">
+      <div id="cal-popover-date" class="text-xs font-semibold uppercase tracking-widest text-stone-500 mb-2"></div>
+      <ul id="cal-popover-list" class="divide-y divide-stone-50"></ul>
+    </div>
+  </div>
+</div>
+
+<!-- Day → events data island for the calendar popover (avoids duplicating
+     all event DOM into every cell) -->
+<script type="application/json" id="day-events-data" set:html={JSON.stringify(
+  Object.fromEntries(
+    [...grouped.entries()].map(([date, evs]) => [
+      date,
+      evs.map((e) => ({
+        title: e.title,
+        time: e.allDay ? 'all day' : e.time,
+        location: e.location,
+        cost: e.cost,
+        costClass: e.costClass,
+        dot: (COLOR_MAP[e.color] ?? COLOR_MAP['orange']).dot,
+        link: e.url || e.googleUrl,
+        category: e.calendarSlug,
+        title_lc: e.title.toLowerCase(),
+        location_lc: (e.location || '').toLowerCase(),
+      })),
+    ]),
+  ),
+)} />
+<script type="application/json" id="day-labels-data" set:html={JSON.stringify(
+  Object.fromEntries([...grouped.keys()].map((d) => [d, formatDisplayDate(d)]))
+)} />
+
+<style>
+  .filter-pill {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    border: 1px solid rgb(231 229 228);
+    color: rgb(120 113 108);
+    background: white;
+    transition: all 0.12s;
+    cursor: pointer;
+  }
+  .filter-pill:hover { border-color: rgb(251 146 60); color: rgb(234 88 12); }
+  .filter-pill[aria-pressed="true"] {
+    background: rgb(234 88 12);
+    border-color: rgb(234 88 12);
+    color: white;
+  }
+  .filter-pill[aria-pressed="true"] .w-2 { background: white !important; }
+  .view-btn[aria-pressed="true"] { background: rgb(234 88 12); color: white; }
+  .view-btn[aria-pressed="false"] { background: white; color: rgb(120 113 108); }
+
+  /* iOS Safari auto-zooms when focusing an input with font-size < 16px and
+     doesn't zoom back out. Force 16px on touch devices to prevent it. */
+  @media (pointer: coarse) {
+    .events-view input[type="search"],
+    .events-view input[type="date"] {
+      font-size: 16px;
+    }
+  }
+</style>
+
+<script>
+  // ---- Filtering (shared by both views) --------------------------------
+  // `date` is a list-view-only filter (YYYY-MM-DD, '' = all dates).
+  const state = { cost: 'all', category: 'all', search: '', date: '' };
+
+  const rows = Array.from(document.querySelectorAll<HTMLElement>('.event-row'));
+  const groups = Array.from(document.querySelectorAll<HTMLElement>('.date-group'));
+  const chips = Array.from(document.querySelectorAll<HTMLElement>('.cal-chip'));
+  const countEl = document.getElementById('result-count');
+  const noResults = document.getElementById('no-results');
+  const listView = document.getElementById('list-view');
+
+  function matches(el: HTMLElement): boolean {
+    const cost = el.dataset.cost ?? 'unknown';
+    const category = el.dataset.category ?? '';
+    const title = el.dataset.title ?? '';
+    const location = el.dataset.location ?? '';
+    const okCost = state.cost === 'all' || cost === state.cost;
+    const okCat = state.category === 'all' || category === state.category;
+    const okSearch = !state.search || title.includes(state.search) || location.includes(state.search);
+    return okCost && okCat && okSearch;
+  }
+
+  function apply() {
+    let visible = 0;
+    // Iterate by group so the date filter can short-circuit whole days.
+    for (const group of groups) {
+      const dateOk = !state.date || group.dataset.date === state.date;
+      let anyVisible = false;
+      for (const row of group.querySelectorAll<HTMLElement>('.event-row')) {
+        const show = dateOk && matches(row);
+        row.style.display = show ? '' : 'none';
+        if (show) { visible++; anyVisible = true; }
+      }
+      group.style.display = anyVisible ? '' : 'none';
+    }
+    // Calendar chips filter independently (date filter is list-only)
+    for (const chip of chips) chip.style.display = matches(chip) ? '' : 'none';
+
+    if (countEl) countEl.textContent = String(visible);
+    if (noResults) noResults.classList.toggle('hidden', visible !== 0);
+  }
+
+  document.querySelectorAll<HTMLElement>('.filter-pill').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const filter = btn.dataset.filter as 'cost' | 'category' | undefined;
+      if (!filter) return; // e.g. the date-clear button reuses .filter-pill styling
+      const value = btn.dataset.value!;
+      state[filter] = value;
+      document.querySelectorAll<HTMLElement>(`.filter-pill[data-filter="${filter}"]`)
+        .forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.value === value)));
+      apply();
+    });
+  });
+
+  const searchInput = document.getElementById('search-input') as HTMLInputElement | null;
+  searchInput?.addEventListener('input', () => {
+    state.search = searchInput.value.trim().toLowerCase();
+    apply();
+  });
+
+  // ---- Date picker (list view only) ------------------------------------
+  const dateInput = document.getElementById('date-input') as HTMLInputElement | null;
+  const dateClear = document.getElementById('date-clear');
+  function setDate(value: string) {
+    state.date = value;
+    if (dateInput) dateInput.value = value;
+    dateClear?.classList.toggle('hidden', !value);
+    apply();
+    if (value) {
+      // Scroll the chosen day into view under the sticky filter bar.
+      document.querySelector<HTMLElement>(`.date-group[data-date="${value}"]`)
+        ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+  dateInput?.addEventListener('change', () => setDate(dateInput.value));
+  dateClear?.addEventListener('click', () => setDate(''));
+
+  document.getElementById('clear-filters')?.addEventListener('click', () => {
+    state.cost = 'all'; state.category = 'all'; state.search = ''; state.date = '';
+    if (searchInput) searchInput.value = '';
+    if (dateInput) dateInput.value = '';
+    dateClear?.classList.add('hidden');
+    document.querySelectorAll<HTMLElement>('.filter-pill')
+      .forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.value === 'all')));
+    apply();
+  });
+
+  // ---- View toggle (List / Calendar) -----------------------------------
+  const listViewEl = document.getElementById('list-view');
+  const calendarViewEl = document.getElementById('calendar-view');
+  const btnList = document.getElementById('view-list');
+  const btnCal = document.getElementById('view-calendar');
+
+  const dateFilterGroup = document.getElementById('date-filter-group');
+  function setView(view: 'list' | 'calendar') {
+    const isList = view === 'list';
+    listViewEl?.classList.toggle('hidden', !isList);
+    calendarViewEl?.classList.toggle('hidden', isList);
+    btnList?.setAttribute('aria-pressed', String(isList));
+    btnCal?.setAttribute('aria-pressed', String(!isList));
+    // Date picker only makes sense in list view
+    dateFilterGroup?.classList.toggle('hidden', !isList);
+  }
+  btnList?.addEventListener('click', () => setView('list'));
+  btnCal?.addEventListener('click', () => setView('calendar'));
+
+  // Calendar view is desktop-only — force list below the lg breakpoint
+  const lgQuery = window.matchMedia('(min-width: 1024px)');
+  function enforceBreakpoint() {
+    if (!lgQuery.matches) setView('list');
+  }
+  lgQuery.addEventListener('change', enforceBreakpoint);
+  enforceBreakpoint();
+
+  // ---- Calendar month navigation ---------------------------------------
+  const monthGrids = Array.from(document.querySelectorAll<HTMLElement>('.month-grid'));
+  const monthLabel = document.getElementById('cal-month-label');
+  let monthIdx = 0;
+
+  function showMonth(idx: number) {
+    if (idx < 0 || idx >= monthGrids.length) return;
+    monthIdx = idx;
+    monthGrids.forEach((g, i) => (g.style.display = i === idx ? '' : 'none'));
+    if (monthLabel) monthLabel.textContent = monthGrids[idx]?.dataset.label ?? '';
+    const prev = document.getElementById('cal-prev') as HTMLButtonElement | null;
+    const next = document.getElementById('cal-next') as HTMLButtonElement | null;
+    if (prev) prev.disabled = idx === 0;
+    if (next) next.disabled = idx === monthGrids.length - 1;
+    if (prev) prev.style.opacity = idx === 0 ? '0.3' : '1';
+    if (next) next.style.opacity = idx === monthGrids.length - 1 ? '0.3' : '1';
+  }
+  document.getElementById('cal-prev')?.addEventListener('click', () => showMonth(monthIdx - 1));
+  document.getElementById('cal-next')?.addEventListener('click', () => showMonth(monthIdx + 1));
+  if (monthGrids.length) showMonth(0);
+
+  // ---- Day popover (single shared element, built from JSON data island) -
+  interface DayEvent {
+    title: string; time: string; location: string; cost: string;
+    costClass: string; dot: string; link: string; category: string;
+    title_lc: string; location_lc: string;
+  }
+  const dayData: Record<string, DayEvent[]> = JSON.parse(
+    document.getElementById('day-events-data')?.textContent || '{}',
+  );
+  const dayLabels: Record<string, string> = JSON.parse(
+    document.getElementById('day-labels-data')?.textContent || '{}',
+  );
+
+  const popover = document.getElementById('cal-popover');
+  const popDate = document.getElementById('cal-popover-date');
+  const popList = document.getElementById('cal-popover-list');
+  let openCell: HTMLElement | null = null;
+
+  function matchesEvent(ev: DayEvent): boolean {
+    const okCost = state.cost === 'all' || ev.costClass === state.cost;
+    const okCat = state.category === 'all' || ev.category === state.category;
+    const okSearch = !state.search || ev.title_lc.includes(state.search) || ev.location_lc.includes(state.search);
+    return okCost && okCat && okSearch;
+  }
+
+  function escapeHtml(s: string): string {
+    return s.replace(/[&<>"']/g, (c) => (
+      { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string
+    ));
+  }
+
+  function closePopover() {
+    popover?.classList.add('hidden');
+    openCell = null;
+  }
+
+  function openPopover(cell: HTMLElement, date: string) {
+    const events = (dayData[date] || []).filter(matchesEvent);
+    if (!events.length || !popover || !popDate || !popList) return;
+    popDate.textContent = dayLabels[date] || date;
+    popList.innerHTML = events.map((ev) => {
+      const titleHtml = ev.link
+        ? `<a href="${escapeHtml(ev.link)}" target="_blank" rel="noopener noreferrer" class="text-stone-900 hover:text-orange-600 font-medium">${escapeHtml(ev.title)}</a>`
+        : `<span class="text-stone-900 font-medium">${escapeHtml(ev.title)}</span>`;
+      const loc = ev.location ? `<span class="text-stone-400"> · ${escapeHtml(ev.location)}</span>` : '';
+      const cost = ev.costClass === 'free'
+        ? '<span class="flex-shrink-0 text-xs font-semibold text-green-700">Free</span>'
+        : ev.cost ? `<span class="flex-shrink-0 text-xs text-stone-500">${escapeHtml(ev.cost)}</span>` : '';
+      return `<li class="flex items-baseline gap-2 py-1.5">
+        <span class="mt-1.5 flex-shrink-0 w-2 h-2 rounded-full ${ev.dot}"></span>
+        <span class="flex-shrink-0 w-16 text-xs tabular-nums text-stone-400 text-right">${escapeHtml(ev.time)}</span>
+        <span class="flex-1 min-w-0 text-sm leading-snug">${titleHtml}${loc}</span>
+        ${cost}
+      </li>`;
+    }).join('');
+
+    // Position near the clicked cell, clamped to viewport
+    const r = cell.getBoundingClientRect();
+    popover.classList.remove('hidden');
+    const pw = popover.offsetWidth, ph = popover.offsetHeight;
+    let left = r.left;
+    let top = r.bottom + 4;
+    if (left + pw > window.innerWidth - 8) left = window.innerWidth - pw - 8;
+    if (top + ph > window.innerHeight - 8) top = Math.max(8, r.top - ph - 4);
+    popover.style.left = `${Math.max(8, left)}px`;
+    popover.style.top = `${top}px`;
+    openCell = cell;
+  }
+
+  document.querySelectorAll<HTMLElement>('.cal-cell').forEach((cell) => {
+    const date = cell.dataset.date;
+    if (!date || !(dayData[date]?.length)) return;
+    cell.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (openCell === cell) { closePopover(); return; }
+      openPopover(cell, date);
+    });
+  });
+  popover?.addEventListener('click', (e) => e.stopPropagation());
+  document.addEventListener('click', closePopover);
+  // Close when the page scrolls (fixed popover would detach from its cell),
+  // but ignore scrolling *inside* the popover's own scrollable list.
+  window.addEventListener('scroll', (e) => {
+    if (popover && !popover.classList.contains('hidden') && popover.contains(e.target as Node)) return;
+    closePopover();
+  }, true);
+</script>

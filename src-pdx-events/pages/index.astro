@@ -1,6 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import EventsCalendars from '../../src/components/pdx/EventsCalendars.astro';
+import EventsView from '../../src-shared/components/EventsView.astro';
 ---
 
 <Layout
@@ -25,7 +25,7 @@ import EventsCalendars from '../../src/components/pdx/EventsCalendars.astro';
     </div>
   </div>
 
-  <EventsCalendars />
+  <EventsView />
 
   <!-- FAQ — gives AI search engines and Google text content to index -->
   <div class="max-w-5xl mx-auto px-4 pb-16">
@@ -45,7 +45,7 @@ import EventsCalendars from '../../src/components/pdx/EventsCalendars.astro';
 
         <div>
           <dt class="font-semibold text-stone-800 mb-1">Where can I find trivia nights in Portland?</dt>
-          <dd class="text-stone-500 text-sm leading-relaxed">Portland has a thriving pub quiz scene, with weekly trivia nights at bars and venues across N/NE, NW/SW, SE Portland, and surrounding areas. The Trivia Nights calendar shows them all in one view — you can toggle by neighborhood using the checkboxes in the embed. Spots fill up fast, so arrive early.</dd>
+          <dd class="text-stone-500 text-sm leading-relaxed">Portland has a thriving pub quiz scene, with weekly trivia nights at bars and venues across N/NE, NW/SW, SE Portland, and surrounding areas. Use the Trivia filter to see them all in one view, or switch to the calendar view to browse by night. Spots fill up fast, so arrive early.</dd>
         </div>
 
         <div>

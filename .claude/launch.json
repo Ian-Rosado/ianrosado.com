@@ -4,8 +4,14 @@
     {
       "name": "ianrosado.com",
       "runtimeExecutable": "cmd.exe",
-      "runtimeArgs": ["/c", "set PATH=C:\\Program Files\\nodejs;%PATH% && C:\\Users\\ianpr\\Documents\\GitHub\\ianrosado.com\\node_modules\\.bin\\astro.cmd dev"],
+      "runtimeArgs": ["/c", "set PATH=C:\\Program Files\\nodejs;%PATH% && npx astro dev"],
       "port": 4321
+    },
+    {
+      "name": "pdx-events.com",
+      "runtimeExecutable": "cmd.exe",
+      "runtimeArgs": ["/c", "set PATH=C:\\Program Files\\nodejs;%PATH% && npx astro dev --config astro.pdx-events.config.mjs --port 4322"],
+      "port": 4322
     }
   ]
 }

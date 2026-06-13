@@ -63,5 +63,5 @@ export async function fetchAllEvents(): Promise<CalEvent[]> {
     ...marketsEvents,
     ...triviaEvents,
     ...pedalaEvents,
-  ].sort((a, b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time));
+  ].sort((a, b) => a.date.localeCompare(b.date) || a.sortKey - b.sortKey);
 }

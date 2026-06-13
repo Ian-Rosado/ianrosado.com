@@ -25,6 +25,7 @@ error, delete token.json and re-run.
 
 import re
 import sys
+import html
 import argparse
 from pathlib import Path
 from datetime import datetime, timezone
@@ -93,23 +94,53 @@ def genre_from_title(title: str) -> str:
     return "" if tag == "comedy" else tag
 
 
+def _desc_lines(desc: str):
+    """Split a description into clean text lines.
+
+    Google Calendar's web editor linkifies plain URLs into <a href> anchors and
+    stores HTML, so once an event has been touched in the UI the description is
+    no longer plain text. Split on real newlines AND <br>, then strip tags and
+    decode entities per line (mirrors stripHtml in google-calendar.ts) so the
+    parsers below see the same clean text the website does.
+    """
+    parts = re.split(r"\r?\n|<br\s*/?>", desc or "", flags=re.I)
+    out = []
+    for p in parts:
+        line = html.unescape(re.sub(r"<[^>]+>", " ", p))
+        line = re.sub(r"\s+", " ", line).strip()
+        if line:
+            out.append(line)
+    return out
+
+
 def parse_cost_from_description(desc: str) -> str:
-    for line in (desc or "").split("\n"):
-        line = line.strip()
-        if (not line or line.startswith("http")
-                or line.lower().startswith("look up venue")
-                or line.lower().startswith("tags:")):
+    for line in _desc_lines(desc):
+        low = line.lower()
+        if line.startswith("http") or low.startswith("look up venue") or low.startswith("tags:"):
             continue
-        return line
+        # Some sources put cost and URL on one line ("Free. https://…"); keep
+        # only the cost text so it doesn't get duplicated into the URL line.
+        line = re.sub(r"https?://\S+", "", line).strip(" .|-")
+        if line:
+            return line
     return ""
 
 
 def parse_url_from_description(desc: str) -> str:
-    for line in (desc or "").split("\n"):
+    for line in _desc_lines(desc):
         m = re.search(r"https?://\S+", line)
         if m:
-            return m.group(0)
+            return re.sub(r"[.,)>'\"]+$", "", m.group(0))  # strip trailing punctuation
     return ""
+
+
+def parse_tags_from_description(desc: str):
+    """Existing 'Tags:' / 'tags:' line (case-insensitive) as a list, or []."""
+    for line in _desc_lines(desc):
+        m = re.match(r"tags:\s*(.+)$", line, flags=re.I)
+        if m:
+            return [t.strip().lower() for t in m.group(1).split(",") if t.strip()]
+    return []
 
 
 # ── Load sheet lookup ───────────────────────────────────────────────────────
@@ -144,10 +175,19 @@ def facets_from_sheet(row):
 
 
 def facets_from_event(title, description):
-    """(cost, tags_str) derived from the calendar event itself (fallback)."""
+    """(cost, tags_str) derived from the calendar event itself (fallback).
+
+    Preserves any tags already embedded in the description (e.g. on manually
+    added events) so backfill never drops them, and folds in a genre parsed
+    from a '[genre]' title prefix.
+    """
     cost = parse_cost_from_description(description)
+    tags = parse_tags_from_description(description)
     genre = genre_from_title(title)
-    return cost, (genre if genre else "")
+    if genre:
+        tags.append(genre)
+    # dedupe while preserving order
+    return cost, ",".join(dict.fromkeys(tags))
 
 
 def event_date(ev) -> str:
@@ -221,6 +261,8 @@ def backfill(dry_run=False, only_calendar=None):
                 continue
             seen_targets.add(target_id)
 
+            existing_shared = ev.get("extendedProperties", {}).get("shared", {})
+
             key = (norm_title(title), event_date(ev))
             row = lookup.get(key)
             if row:
@@ -232,10 +274,15 @@ def backfill(dry_run=False, only_calendar=None):
                 source = cal_name
                 fallback += 1
 
+            # Make the description self-contained: if there's no cost line but a
+            # prior run stored cost=free, write a "Free" line so the description
+            # alone classifies correctly (we can't recover an exact price).
+            if not cost and existing_shared.get("cost") == "free":
+                cost = "Free"
+
             # extendedProperties stays as a redundant index; the website now
             # prefers the description, but keeping shared in sync is cheap.
             new_shared = build_extended_properties(cost, tags_str, source)["shared"]
-            existing_shared = ev.get("extendedProperties", {}).get("shared", {})
             merged_shared = {**existing_shared, **new_shared}
 
             # Rebuild the description so the "Tags:" line is present/updated,
@@ -255,6 +302,12 @@ def backfill(dry_run=False, only_calendar=None):
                 rec = " (recurring master)" if ev.get("recurringEventId") else ""
                 changes = "+".join(c for c, ch in (("desc", desc_changed), ("shared", shared_changed)) if ch)
                 print(f"  [DRY/{src}] {title[:40]:<40} [{changes}] cost={classify_cost(cost)} tags={tags_str or '-'}{rec}")
+                if desc_changed:
+                    # Show the rewrite so destructive/mangled cases are visible.
+                    old1 = " | ".join(_desc_lines(desc)) or "(empty)"
+                    new1 = " | ".join(new_desc.split("\n")) or "(empty)"
+                    print(f"             old: {old1[:120]}")
+                    print(f"             new: {new1[:120]}")
                 updated += 1
                 continue
 

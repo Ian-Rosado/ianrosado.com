@@ -21,6 +21,7 @@ export interface CalEvent {
   date: string;        // YYYY-MM-DD (Pacific)
   time: string;        // h:mm AM/PM, or '' for all-day
   endTime: string;     // h:mm AM/PM, or ''
+  sortKey: number;     // minutes since midnight (Pacific) for chronological sort; -1 for all-day
   allDay: boolean;
   location: string;
   cost: string;
@@ -104,6 +105,17 @@ function formatDate(iso: string): string {
   return d.toLocaleDateString('en-CA', { timeZone: TZ }); // YYYY-MM-DD
 }
 
+// Minutes since midnight (Pacific) for a timed event's start. Used for
+// chronological sorting — the display `time` string ("10:00 AM") can't be
+// compared lexically (it would sort after "1:00 PM").
+function minutesOfDay(iso: string): number {
+  const hhmm = new Date(iso).toLocaleTimeString('en-GB', {
+    hour: '2-digit', minute: '2-digit', hour12: false, timeZone: TZ,
+  }); // e.g. "21:00"
+  const [h, m] = hhmm.split(':').map(Number);
+  return h * 60 + m;
+}
+
 // Returns one CalEvent per day the event occupies. Single-day events yield a
 // one-element array; multi-day all-day events (e.g. festivals) are expanded
 // across each day they span, clipped to [today, horizon].
@@ -123,6 +135,7 @@ function toCalEvents(
   const allDay = !item.start?.dateTime;
   const time    = allDay ? '' : formatTime(startRaw);
   const endTime = allDay ? '' : (endRaw ? formatTime(endRaw) : '');
+  const sortKey = allDay ? -1 : minutesOfDay(startRaw);
 
   const { cost, url } = parseDescription(item.description ?? '');
 
@@ -162,6 +175,7 @@ function toCalEvents(
     date,
     time,
     endTime,
+    sortKey,
     allDay,
     location: item.location?.trim() ?? '',
     cost,
@@ -225,7 +239,7 @@ export async function fetchMultipleCalendars(
   const results = await Promise.all(
     calendars.map(c => fetchCalendarEvents(c.id, c.name, c.slug, c.color))
   );
-  return results.flat().sort((a, b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time));
+  return results.flat().sort((a, b) => a.date.localeCompare(b.date) || a.sortKey - b.sortKey);
 }
 
 // Format date for display: "Sat, Jun 7"

@@ -180,9 +180,17 @@ function toCalEvents(
     age = (shared.age ?? '').trim();
     neighborhood = (shared.neighborhood ?? '').trim();
   }
-  // Prefer the (UI-editable) cost text; fall back to the stored class only when
-  // there's no cost line to read.
-  const costClass = cost ? classifyCost(cost) : ((shared.cost as CostClass) || 'unknown');
+  // Cost class precedence:
+  //  1. an explicit price on the cost line always wins (→ paid)
+  //  2. otherwise a "Free" cost line OR a `free` tag → free
+  //  3. otherwise fall back to the stored facet, else unknown
+  // This lets the `free` tag promote an event with no/ambiguous cost line to
+  // free, without letting it override a real price.
+  const ccText = cost ? classifyCost(cost) : 'unknown';
+  let costClass: CostClass;
+  if (ccText === 'paid') costClass = 'paid';
+  else if (ccText === 'free' || tags.includes('free')) costClass = 'free';
+  else costClass = (shared.cost as CostClass) || 'unknown';
 
   // Determine the inclusive list of day-strings this event covers.
   // For all-day events Google's end.date is EXCLUSIVE, so the last day is end-1.

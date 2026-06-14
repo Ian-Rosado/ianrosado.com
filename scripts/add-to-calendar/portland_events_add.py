@@ -53,6 +53,17 @@ CALENDARS = {
     "Portland Farmers Markets":    "560e859bd2c7b5dfd2262cb6f28389921434606cec955e7ec75f02df9fd2138a@group.calendar.google.com",
 }
 
+# Calendars whose events are free by default (no cost unless a price is stated).
+# Mirrors FREE_DEFAULT_SLUGS in src-shared/lib/google-calendar.ts. (Bike rides
+# live on the imported Pedalpalooza calendar, which isn't written by this script.)
+FREE_DEFAULT_CALENDARS = {
+    "Portland Farmers Markets",
+    "Trivia Nights - SE",
+    "Trivia Nights - N/NE",
+    "Trivia Nights - NW/SW",
+    "Trivia Nights - Further Out",
+}
+
 CALENDAR_ALIASES = {
     "portland events":             "Portland Events",
     "main":                        "Portland Events",
@@ -1372,6 +1383,12 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
         source       = e.get("source", "")
         end_time_str = get(row, "End Time", "end_time", "EndTime")
         duration_str = get(row, "Duration (min)", "duration", "Duration")
+
+        # Farmers markets and trivia are free by default — only carry a cost when
+        # a price is explicitly stated. (The website applies the same default at
+        # read time, incl. for the imported Pedalpalooza bike calendar.)
+        if cal_name in FREE_DEFAULT_CALENDARS and classify_cost(cost) != "paid":
+            cost = "Free"
 
         cal_id = CALENDARS[cal_name]
 

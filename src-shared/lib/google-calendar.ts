@@ -78,6 +78,13 @@ function normalizeCost(raw: string): string {
   return '';
 }
 
+// Calendars whose events are free by default — farmers markets, trivia nights,
+// and Pedalpalooza/Shift bike rides. These only carry a cost when a price is
+// explicitly stated; otherwise they classify as free. (Pedalpalooza is an
+// imported, read-only calendar, so this read-time default is the only place it
+// can be applied.)
+const FREE_DEFAULT_SLUGS = new Set(['farmers-markets', 'trivia', 'pedalpalooza']);
+
 // Tag classification — mirrors classify_facets() in portland_events_add.py so a
 // single embedded "Tags:" line yields genres / age / neighborhood at build time.
 const AGE_TAGS = new Set(['all-ages', '21+', '18+', '19+', '16+']);
@@ -201,13 +208,15 @@ function toCalEvents(
   // Cost class precedence:
   //  1. an explicit price on the cost line always wins (→ paid)
   //  2. otherwise a "Free" cost line OR a `free` tag → free
-  //  3. otherwise fall back to the stored facet, else unknown
+  //  3. otherwise free-by-default calendars (markets/trivia/bike rides) → free
+  //  4. otherwise fall back to the stored facet, else unknown
   // This lets the `free` tag promote an event with no/ambiguous cost line to
   // free, without letting it override a real price.
   const ccText = cost ? classifyCost(cost) : 'unknown';
   let costClass: CostClass;
   if (ccText === 'paid') costClass = 'paid';
   else if (ccText === 'free' || tags.includes('free')) costClass = 'free';
+  else if (FREE_DEFAULT_SLUGS.has(calendarSlug)) costClass = 'free';
   else costClass = (shared.cost as CostClass) || 'unknown';
 
   // Determine the inclusive list of day-strings this event covers.

@@ -1,0 +1,924 @@
+[
+  {
+    "venue": "Ringos Bar and Grill",
+    "address": "3655 SW Hall Blvd, Beaverton, OR 97005",
+    "company": "Last Call Trivia",
+    "company_url": "https://lastcalltrivia.com",
+    "day": "SU",
+    "time": "18:30",
+    "calendar": "Trivia Nights - Further Out"
+  },
+  {
+    "venue": "Murrayhill Taphouse",
+    "address": "14550 SW Murray Scholls Dr, Beaverton, OR",
+    "company": "Last Call Trivia",
+    "company_url": "https://lastcalltrivia.com",
+    "day": "MO",
+    "time": "18:30",
+    "calendar": "Trivia Nights - Further Out"
+  },
+  {
+    "venue": "Oregon City Brewing Co.",
+    "address": "1401 Washington St, Oregon City, OR 97045",
+    "company": "Last Call Trivia",
+    "company_url": "https://lastcalltrivia.com",
+    "day": "MO",
+    "time": "19:00",
+    "calendar": "Trivia Nights - Further Out"
+  },
+  {
+    "venue": "Dublin Pub",
+    "address": "6821 SW Beaverton-Hillsdale Hwy, Portland, OR 97225",
+    "company": "Last Call Trivia",
+    "company_url": "https://lastcalltrivia.com",
+    "day": "MO",
+    "time": "19:00",
+    "calendar": "Trivia Nights - NW/SW"
+  },
+  {
+    "venue": "10 Barrel Brewing Portland",
+    "address": "1411 NW Flanders St, Portland, OR 97209",
+    "company": "Last Call Trivia",
+    "company_url": "https://lastcalltrivia.com",
+    "day": "MO",
+    "time": "19:00",
+    "calendar": "Trivia Nights - NW/SW"
+  },
+  {
+    "venue": "Taplandia Taphouse",
+    "address": "14350 SW Barrows Rd #3A, Tigard, OR 97223",
+    "company": "Last Call Trivia",
+    "company_url": "https://lastcalltrivia.com",
+    "day": "MO",
+    "time": "19:00",
+    "calendar": "Trivia Nights - Further Out"
+  },
+  {
+    "venue": "Ickabods Bar and Grill",
+    "address": "12475 SW 1st St, Beaverton, OR 97005",
+    "company": "Last Call Trivia",
+    "company_url": "https://lastcalltrivia.com",
+    "day": "MO",
+    "time": "19:00",
+    "calendar": "Trivia Nights - Further Out"
+  },
+  {
+    "venue": "Pizza Schmizza",
+    "address": "415 SW Montgomery St, Portland, OR 97201",
+    "company": "Last Call Trivia",
+    "company_url": "https://lastcalltrivia.com",
+    "day": "MO",
+    "time": "19:00",
+    "calendar": "Trivia Nights - NW/SW"
+  },
+  {
+    "venue": "Corner 14 Foodcarts Spirits & Brew",
+    "address": "508 14th St, Oregon City, OR 97045",
+    "company": "Last Call Trivia",
+    "company_url": "https://lastcalltrivia.com",
+    "day": "TU",
+    "time": "18:00",
+    "calendar": "Trivia Nights - Further Out"
+  },
+  {
+    "venue": "Champions Sports Bar and Grill",
+    "address": "2947 SE 73rd Ave, Hillsboro, OR 97123",
+    "company": "Last Call Trivia",
+    "company_url": "https://lastcalltrivia.com",
+    "day": "TU",
+    "time": "18:00",
+    "calendar": "Trivia Nights - Further Out"
+  },
+  {
+    "venue": "Multnomah French Quarter",
+    "address": "3518 SW Multnomah Blvd, Portland, OR 97219",
+    "company": "Last Call Trivia",
+    "company_url": "https://lastcalltrivia.com",
+    "day": "TU",
+    "time": "18:30",
+    "calendar": "Trivia Nights - NW/SW"
+  },
+  {
+    "venue": "Broadway Bar and Saloon",
+    "address": "12434 SW Broadway, Beaverton, OR 97005",
+    "company": "Last Call Trivia",
+    "company_url": "https://lastcalltrivia.com",
+    "day": "TU",
+    "time": "19:00",
+    "calendar": "Trivia Nights - Further Out"
+  },
+  {
+    "venue": "The Fields Bar and Grill",
+    "address": "1139 NW 11th Ave, Portland, OR 97209",
+    "company": "Last Call Trivia",
+    "company_url": "https://lastcalltrivia.com",
+    "day": "TU",
+    "time": "19:00",
+    "calendar": "Trivia Nights - NW/SW"
+  },
+  {
+    "venue": "Steeplejack Brewing (NE Broadway)",
+    "address": "2400 NE Broadway, Portland, OR 97232",
+    "company": "Last Call Trivia",
+    "company_url": "https://lastcalltrivia.com",
+    "day": "TU",
+    "time": "19:00",
+    "calendar": "Trivia Nights - N/NE"
+  },
+  {
+    "venue": "Moreland Ale House",
+    "address": "7995 SE Milwaukie Ave, Portland, OR 97202",
+    "company": "Last Call Trivia",
+    "company_url": "https://lastcalltrivia.com",
+    "day": "TU",
+    "time": "19:00",
+    "calendar": "Trivia Nights - SE"
+  },
+  {
+    "venue": "Central Station Taps",
+    "address": "3925 SW Rose Biggi Ave Unit 120, Beaverton, OR 97005",
+    "company": "Last Call Trivia",
+    "company_url": "https://lastcalltrivia.com",
+    "day": "TU",
+    "time": "19:00",
+    "calendar": "Trivia Nights - Further Out"
+  },
+  {
+    "venue": "The Bounty Hunter",
+    "address": "11445 SW Pacific Hwy, Tigard, OR 97223",
+    "company": "Last Call Trivia",
+    "company_url": "https://lastcalltrivia.com",
+    "day": "TU",
+    "time": "19:00",
+    "calendar": "Trivia Nights - Further Out"
+  },
+  {
+    "venue": "Hillside Pub",
+    "address": "16305 SW Barrows Rd, Beaverton, OR 97007",
+    "company": "Last Call Trivia",
+    "company_url": "https://lastcalltrivia.com",
+    "day": "TU",
+    "time": "19:00",
+    "calendar": "Trivia Nights - Further Out"
+  },
+  {
+    "venue": "Bleachers Bar and Grill",
+    "address": "527 NW Saltzman Rd, Portland, OR 97229",
+    "company": "Last Call Trivia",
+    "company_url": "https://lastcalltrivia.com",
+    "day": "TU",
+    "time": "19:30",
+    "calendar": "Trivia Nights - NW/SW"
+  },
+  {
+    "venue": "Marathon Taverna",
+    "address": "1735 W Burnside St, Portland, OR 97209",
+    "company": "Last Call Trivia",
+    "company_url": "https://lastcalltrivia.com",
+    "day": "TU",
+    "time": "19:30",
+    "calendar": "Trivia Nights - NW/SW"
+  },
+  {
+    "venue": "BearKat Brewing Co",
+    "address": "20345 SW Pacific Hwy, Sherwood, OR 97140",
+    "company": "Last Call Trivia",
+    "company_url": "https://lastcalltrivia.com",
+    "day": "WE",
+    "time": "18:30",
+    "calendar": "Trivia Nights - Further Out"
+  },
+  {
+    "venue": "The Pit Stop Sports Bar & BBQ",
+    "address": "10245 SW Canyon Rd, Beaverton, OR 97005",
+    "company": "Last Call Trivia",
+    "company_url": "https://lastcalltrivia.com",
+    "day": "WE",
+    "time": "19:00",
+    "calendar": "Trivia Nights - Further Out"
+  },
+  {
+    "venue": "Three Mermaids Public House",
+    "address": "18041 SW Lower Boones Ferry Dr, Tigard, OR 97224",
+    "company": "Last Call Trivia",
+    "company_url": "https://lastcalltrivia.com",
+    "day": "WE",
+    "time": "19:00",
+    "calendar": "Trivia Nights - Further Out"
+  },
+  {
+    "venue": "The Old Barn",
+    "address": "9656 SW Barbur Blvd, Portland, OR 97219",
+    "company": "Last Call Trivia",
+    "company_url": "https://lastcalltrivia.com",
+    "day": "WE",
+    "time": "19:00",
+    "calendar": "Trivia Nights - NW/SW"
+  },
+  {
+    "venue": "NW Growlers",
+    "address": "6141 SW Macadam Ave Suite 101, Portland, OR 97239",
+    "company": "Last Call Trivia",
+    "company_url": "https://lastcalltrivia.com",
+    "day": "WE",
+    "time": "19:00",
+    "calendar": "Trivia Nights - NW/SW"
+  },
+  {
+    "venue": "The Record Pub",
+    "address": "6034 SE Milwaukie Ave, Portland, OR 97202",
+    "company": "Last Call Trivia",
+    "company_url": "https://lastcalltrivia.com",
+    "day": "WE",
+    "time": "19:00",
+    "calendar": "Trivia Nights - SE"
+  },
+  {
+    "venue": "Lake Theater Cafe",
+    "address": "106 N State St, Lake Oswego, OR 97034",
+    "company": "Last Call Trivia",
+    "company_url": "https://lastcalltrivia.com",
+    "day": "WE",
+    "time": "19:00",
+    "calendar": "Trivia Nights - Further Out"
+  },
+  {
+    "venue": "Eastmoreland Golf Course Bar and Grill",
+    "address": "2425 SE Bybee Blvd, Portland, OR 97202",
+    "company": "Last Call Trivia",
+    "company_url": "https://lastcalltrivia.com",
+    "day": "TH",
+    "time": "18:00",
+    "calendar": "Trivia Nights - SE"
+  },
+  {
+    "venue": "Great Notion NW",
+    "address": "2204 NW 28th Ave, Portland, OR 97210",
+    "company": "Last Call Trivia",
+    "company_url": "https://lastcalltrivia.com",
+    "day": "TH",
+    "time": "18:00",
+    "calendar": "Trivia Nights - NW/SW"
+  },
+  {
+    "venue": "Steeplejack Pizza and Beer",
+    "address": "4439 SW Beaverton Hillsdale Hwy, Portland, OR 97221",
+    "company": "Last Call Trivia",
+    "company_url": "https://lastcalltrivia.com",
+    "day": "TH",
+    "time": "18:30",
+    "calendar": "Trivia Nights - NW/SW"
+  },
+  {
+    "venue": "Steeplejack Brewing at The Union on Hawthorne",
+    "address": "3757 SE Hawthorne Blvd, Portland, OR 97214",
+    "company": "Last Call Trivia",
+    "company_url": "https://lastcalltrivia.com",
+    "day": "TH",
+    "time": "19:00",
+    "calendar": "Trivia Nights - SE"
+  },
+  {
+    "venue": "River Pool & Sports Bar",
+    "address": "19 NW 5th Ave, Portland, OR 97209",
+    "company": "Last Call Trivia",
+    "company_url": "https://lastcalltrivia.com",
+    "day": "TH",
+    "time": "19:30",
+    "calendar": "Trivia Nights - NW/SW"
+  },
+  {
+    "venue": "Ringos Bar and Grill (Thursday)",
+    "address": "3655 SW Hall Blvd, Beaverton, OR 97005",
+    "company": "Last Call Trivia",
+    "company_url": "https://lastcalltrivia.com",
+    "day": "TH",
+    "time": "19:30",
+    "calendar": "Trivia Nights - Further Out"
+  },
+  {
+    "venue": "Syndicate Wine Bar (Music Bingo)",
+    "address": "12620 SW 1st St, Beaverton, OR 97005",
+    "company": "Last Call Trivia",
+    "company_url": "https://lastcalltrivia.com",
+    "day": "TU",
+    "time": "18:00",
+    "calendar": "Trivia Nights - Further Out"
+  },
+  {
+    "venue": "Gladstones Eat, Drink, Sports (Music Bingo)",
+    "address": "270 Portland Ave, Gladstone, OR 97027",
+    "company": "Last Call Trivia",
+    "company_url": "https://lastcalltrivia.com",
+    "day": "TU",
+    "time": "19:00",
+    "calendar": "Trivia Nights - Further Out"
+  },
+  {
+    "venue": "The Grove Restaurant & Bar (Music Bingo)",
+    "address": "15300 SE McLoughlin Blvd, Milwaukie, OR 97267",
+    "company": "Last Call Trivia",
+    "company_url": "https://lastcalltrivia.com",
+    "day": "WE",
+    "time": "19:00",
+    "calendar": "Trivia Nights - Further Out"
+  },
+  {
+    "venue": "Moreland Ale House (Music Bingo)",
+    "address": "7995 SE Milwaukie Ave, Portland, OR 97202",
+    "company": "Last Call Trivia",
+    "company_url": "https://lastcalltrivia.com",
+    "day": "WE",
+    "time": "19:00",
+    "calendar": "Trivia Nights - SE"
+  },
+  {
+    "venue": "BearKat Brewing Co (Music Bingo)",
+    "address": "20345 SW Pacific Hwy Ste 404, Sherwood, OR 97140",
+    "company": "Last Call Trivia",
+    "company_url": "https://lastcalltrivia.com",
+    "day": "TH",
+    "time": "18:30",
+    "calendar": "Trivia Nights - Further Out"
+  },
+  {
+    "venue": "The Office Bar (Music Bingo)",
+    "address": "10598 SE 32nd Ave, Milwaukie, OR 97222",
+    "company": "Last Call Trivia",
+    "company_url": "https://lastcalltrivia.com",
+    "day": "TH",
+    "time": "19:00",
+    "calendar": "Trivia Nights - Further Out"
+  },
+  {
+    "venue": "No Fun Bar",
+    "address": "1709 SE Hawthorne Blvd, Portland, OR 97214",
+    "company": "Bridgetown Trivia",
+    "company_url": "https://www.bridgetowntrivia.com",
+    "day": "MO",
+    "time": "19:00",
+    "calendar": "Trivia Nights - SE"
+  },
+  {
+    "venue": "Ringlers Pub - McMenamins",
+    "address": "1332 W Burnside St, Portland, OR 97209",
+    "company": "Bridgetown Trivia",
+    "company_url": "https://www.bridgetowntrivia.com",
+    "day": "MO",
+    "time": "19:30",
+    "calendar": "Trivia Nights - NW/SW"
+  },
+  {
+    "venue": "The Pub (McMinnville)",
+    "address": "326 NE Davis St, McMinnville, OR 97128",
+    "company": "Bridgetown Trivia",
+    "company_url": "https://www.bridgetowntrivia.com",
+    "day": "MO",
+    "time": "19:00",
+    "calendar": "Trivia Nights - Further Out"
+  },
+  {
+    "venue": "Alberta Street Pub",
+    "address": "1036 NE Alberta St, Portland, OR 97211",
+    "company": "Bridgetown Trivia",
+    "company_url": "https://www.bridgetowntrivia.com",
+    "day": "MO",
+    "time": "19:00",
+    "calendar": "Trivia Nights - N/NE"
+  },
+  {
+    "venue": "The Pharmacy PDX",
+    "address": "2100 NW Glisan St, Portland, OR 97210",
+    "company": "Bridgetown Trivia",
+    "company_url": "https://www.bridgetowntrivia.com",
+    "day": "MO",
+    "time": "19:30",
+    "calendar": "Trivia Nights - NW/SW"
+  },
+  {
+    "venue": "Side Street",
+    "address": "828 SE 34th Ave, Portland, OR 97214",
+    "company": "Bridgetown Trivia",
+    "company_url": "https://www.bridgetowntrivia.com",
+    "day": "MO",
+    "time": "19:00",
+    "calendar": "Trivia Nights - SE"
+  },
+  {
+    "venue": "The Paladins League",
+    "address": "4765 NE Fremont St, Portland, OR 97213",
+    "company": "Bridgetown Trivia",
+    "company_url": "https://www.bridgetowntrivia.com",
+    "day": "MO",
+    "time": "19:00",
+    "calendar": "Trivia Nights - N/NE"
+  },
+  {
+    "venue": "Gift Bar",
+    "address": "1935 SE Hawthorne Blvd, Portland, OR 97214",
+    "company": "Bridgetown Trivia",
+    "company_url": "https://www.bridgetowntrivia.com",
+    "day": "MO",
+    "time": "19:00",
+    "calendar": "Trivia Nights - SE"
+  },
+  {
+    "venue": "Beer Bunker",
+    "address": "7918 SE Stark St, Portland, OR 97215",
+    "company": "Bridgetown Trivia",
+    "company_url": "https://www.bridgetowntrivia.com",
+    "day": "MO",
+    "time": "19:00",
+    "calendar": "Trivia Nights - SE"
+  },
+  {
+    "venue": "Lay Low",
+    "address": "6015 SE Powell Blvd, Portland, OR 97206",
+    "company": "Bridgetown Trivia",
+    "company_url": "https://www.bridgetowntrivia.com",
+    "day": "MO",
+    "time": "19:00",
+    "calendar": "Trivia Nights - SE"
+  },
+  {
+    "venue": "Chapel Pub - McMenamins",
+    "address": "430 N Killingsworth St, Portland, OR 97217",
+    "company": "Bridgetown Trivia",
+    "company_url": "https://www.bridgetowntrivia.com",
+    "day": "TU",
+    "time": "19:00",
+    "calendar": "Trivia Nights - N/NE"
+  },
+  {
+    "venue": "Hollywood Q",
+    "address": "4035 NE Sandy Blvd, Portland, OR 97212",
+    "company": "Bridgetown Trivia",
+    "company_url": "https://www.bridgetowntrivia.com",
+    "day": "TU",
+    "time": "19:00",
+    "calendar": "Trivia Nights - N/NE"
+  },
+  {
+    "venue": "Smitty's Taphouse",
+    "address": "7718 SE 13th Ave, Portland, OR 97202",
+    "company": "Bridgetown Trivia",
+    "company_url": "https://www.bridgetowntrivia.com",
+    "day": "TU",
+    "time": "19:00",
+    "calendar": "Trivia Nights - SE"
+  },
+  {
+    "venue": "503 Distilling Lounge",
+    "address": "4784 SE 17th Ave, Portland, OR 97202",
+    "company": "Bridgetown Trivia",
+    "company_url": "https://www.bridgetowntrivia.com",
+    "day": "WE",
+    "time": "19:00",
+    "calendar": "Trivia Nights - SE"
+  },
+  {
+    "venue": "Broadway Pub - McMenamins",
+    "address": "1504 NE Broadway, Portland, OR 97232",
+    "company": "Bridgetown Trivia",
+    "company_url": "https://www.bridgetowntrivia.com",
+    "day": "WE",
+    "time": "19:00",
+    "calendar": "Trivia Nights - N/NE"
+  },
+  {
+    "venue": "Space Room",
+    "address": "4800 SE Hawthorne Blvd, Portland, OR 97215",
+    "company": "Bridgetown Trivia",
+    "company_url": "https://www.bridgetowntrivia.com",
+    "day": "WE",
+    "time": "19:00",
+    "calendar": "Trivia Nights - SE"
+  },
+  {
+    "venue": "Sticky Wicket",
+    "address": "8401 N Ivanhoe St, Portland, OR 97203",
+    "company": "Bridgetown Trivia",
+    "company_url": "https://www.bridgetowntrivia.com",
+    "day": "WE",
+    "time": "19:00",
+    "calendar": "Trivia Nights - N/NE"
+  },
+  {
+    "venue": "Pour Choices Taphouse",
+    "address": "1919 Main St, Vancouver, WA 98660",
+    "company": "Rip City Trivia",
+    "company_url": "https://www.ripcitytrivia.com",
+    "day": "SU",
+    "time": "18:00",
+    "calendar": "Trivia Nights - Further Out"
+  },
+  {
+    "venue": "WonderLove",
+    "address": "262 SE Main St, Portland, OR 97214",
+    "company": "Rip City Trivia",
+    "company_url": "https://www.ripcitytrivia.com",
+    "day": "MO",
+    "time": "18:00",
+    "calendar": "Trivia Nights - SE"
+  },
+  {
+    "venue": "Coasters Brew Pub",
+    "address": "18650 SE McLoughlin Blvd, Milwaukie, OR",
+    "company": "Rip City Trivia",
+    "company_url": "https://www.ripcitytrivia.com",
+    "day": "MO",
+    "time": "19:00",
+    "calendar": "Trivia Nights - Further Out"
+  },
+  {
+    "venue": "Aztec on Broadway",
+    "address": "1501 NE Broadway, Portland, OR 97232",
+    "company": "Rip City Trivia",
+    "company_url": "https://www.ripcitytrivia.com",
+    "day": "TU",
+    "time": "19:00",
+    "calendar": "Trivia Nights - N/NE"
+  },
+  {
+    "venue": "Tryon Creek Bar & Grill",
+    "address": "8610 SW Terwilliger Blvd, Portland, OR",
+    "company": "Rip City Trivia",
+    "company_url": "https://www.ripcitytrivia.com",
+    "day": "TU",
+    "time": "20:00",
+    "calendar": "Trivia Nights - NW/SW"
+  },
+  {
+    "venue": "McPeet's Portland Pub",
+    "address": "4501 NE Fremont St, Portland, OR 97213",
+    "company": "Rip City Trivia",
+    "company_url": "https://www.ripcitytrivia.com",
+    "day": "WE",
+    "time": "19:30",
+    "calendar": "Trivia Nights - N/NE"
+  },
+  {
+    "venue": "Happy Valley Station",
+    "address": "13551 SE 145th Ave #1, Happy Valley, OR 97015",
+    "company": "Rip City Trivia",
+    "company_url": "https://www.ripcitytrivia.com",
+    "day": "WE",
+    "time": "18:00",
+    "calendar": "Trivia Nights - Further Out"
+  },
+  {
+    "venue": "The Growlerie",
+    "address": "15151 SW Barrows Rd, Beaverton, OR 97007",
+    "company": "Rip City Trivia",
+    "company_url": "https://www.ripcitytrivia.com",
+    "day": "TH",
+    "time": "19:30",
+    "calendar": "Trivia Nights - Further Out"
+  },
+  {
+    "venue": "Paydirt Bar",
+    "address": "2724 Northeast Pacific Street, Portland, OR 97232",
+    "company": "Untapped Trivia",
+    "company_url": "https://untappedtrivia.com",
+    "day": "MO",
+    "time": "19:00",
+    "calendar": "Trivia Nights - SE",
+    "rrule": "FREQ=MONTHLY;BYDAY=1MO,3MO"
+  },
+  {
+    "venue": "The Automatic Bar",
+    "address": "3652 SE Division St, Portland, OR 97202",
+    "company": "Untapped Trivia",
+    "company_url": "https://untappedtrivia.com",
+    "day": "MO",
+    "time": "19:00",
+    "calendar": "Trivia Nights - SE",
+    "rrule": "FREQ=MONTHLY;BYDAY=2MO,4MO"
+  },
+  {
+    "venue": "Creepy's Bar",
+    "address": "627 SE Morrison St, Portland, OR 97214",
+    "company": "Untapped Trivia",
+    "company_url": "https://untappedtrivia.com",
+    "day": "MO",
+    "time": "19:00",
+    "calendar": "Trivia Nights - SE"
+  },
+  {
+    "venue": "Rose & Thistle Public House",
+    "address": "2314 NE Broadway, Portland, OR 97232",
+    "company": "Untapped Trivia",
+    "company_url": "https://untappedtrivia.com",
+    "day": "MO",
+    "time": "19:00",
+    "calendar": "Trivia Nights - N/NE"
+  },
+  {
+    "venue": "Advice Booth",
+    "address": "5426 N Gay Ave, Portland, OR 97217",
+    "company": "Untapped Trivia",
+    "company_url": "https://untappedtrivia.com",
+    "day": "TU",
+    "time": "19:00",
+    "calendar": "Trivia Nights - N/NE"
+  },
+  {
+    "venue": "Grand Fir Brewing",
+    "address": "1403 SE Stark St, Portland, OR 97214",
+    "company": "Untapped Trivia",
+    "company_url": "https://untappedtrivia.com",
+    "day": "TU",
+    "time": "19:00",
+    "calendar": "Trivia Nights - SE"
+  },
+  {
+    "venue": "White Owl Social Club",
+    "address": "1305 SE 8th Ave, Portland, OR 97214",
+    "company": "Untapped Trivia",
+    "company_url": "https://untappedtrivia.com",
+    "day": "TU",
+    "time": "19:00",
+    "calendar": "Trivia Nights - SE"
+  },
+  {
+    "venue": "Oakshire Beer Hall",
+    "address": "5013 NE 42nd Ave, Portland, OR 97218",
+    "company": "Untapped Trivia",
+    "company_url": "https://untappedtrivia.com",
+    "day": "WE",
+    "time": "19:00",
+    "calendar": "Trivia Nights - N/NE"
+  },
+  {
+    "venue": "Bye and Bye",
+    "address": "1011 NE Alberta St, Portland, OR 97211",
+    "company": "Untapped Trivia",
+    "company_url": "https://untappedtrivia.com",
+    "day": "WE",
+    "time": "19:00",
+    "calendar": "Trivia Nights - N/NE"
+  },
+  {
+    "venue": "Von Ebert Mississippi",
+    "address": "825 N Cook St, Portland, OR 97227",
+    "company": "Untapped Trivia",
+    "company_url": "https://untappedtrivia.com",
+    "day": "WE",
+    "time": "19:00",
+    "calendar": "Trivia Nights - N/NE"
+  },
+  {
+    "venue": "Pinky's Pizza",
+    "address": "3990 N Interstate Ave, Portland, OR 97227",
+    "company": "Untapped Trivia",
+    "company_url": "https://untappedtrivia.com",
+    "day": "TH",
+    "time": "18:00",
+    "calendar": "Trivia Nights - N/NE"
+  },
+  {
+    "venue": "Back 2 Earth",
+    "address": "3536 NE Martin Luther King Jr Blvd, Portland, OR 97212",
+    "company": "Untapped Trivia",
+    "company_url": "https://untappedtrivia.com",
+    "day": "TH",
+    "time": "18:00",
+    "calendar": "Trivia Nights - N/NE",
+    "rrule": "FREQ=MONTHLY;BYDAY=1TH,3TH"
+  },
+  {
+    "venue": "Alchemy Cider Co.",
+    "address": "818 SE Ankeny St, Portland, OR 97214",
+    "company": "Untapped Trivia",
+    "company_url": "https://untappedtrivia.com",
+    "day": "TH",
+    "time": "18:00",
+    "calendar": "Trivia Nights - SE",
+    "rrule": "FREQ=MONTHLY;BYDAY=2TH,4TH"
+  },
+  {
+    "venue": "Wonderwood Springs",
+    "address": "8811 N Lombard St, Portland, OR 97203",
+    "company": "Untapped Trivia",
+    "company_url": "https://untappedtrivia.com",
+    "day": "FR",
+    "time": "18:00",
+    "calendar": "Trivia Nights - N/NE"
+  },
+  {
+    "venue": "The Waypost",
+    "address": "3120 N Williams Ave, Portland, OR 97227",
+    "company": "ShanRock's Trivia",
+    "company_url": "https://shanrockstrivia.com",
+    "day": "MO",
+    "time": "19:00",
+    "calendar": "Trivia Nights - N/NE"
+  },
+  {
+    "venue": "The Snug",
+    "address": "6806 NE Broadway, Portland, OR 97213",
+    "company": "ShanRock's Trivia",
+    "company_url": "https://shanrockstrivia.com",
+    "day": "TU",
+    "time": "19:00",
+    "calendar": "Trivia Nights - N/NE"
+  },
+  {
+    "venue": "Dots Cafe",
+    "address": "2521 SE Clinton St, Portland, OR 97202",
+    "company": "ShanRock's Trivia",
+    "company_url": "https://shanrockstrivia.com",
+    "day": "WE",
+    "time": "19:00",
+    "calendar": "Trivia Nights - SE"
+  },
+  {
+    "venue": "Bare Bones Bar",
+    "address": "2908 SE Belmont St, Portland, OR 97214",
+    "company": "ShanRock's Trivia",
+    "company_url": "https://shanrockstrivia.com",
+    "day": "TH",
+    "time": "19:00",
+    "calendar": "Trivia Nights - SE"
+  },
+  {
+    "venue": "East Burn",
+    "address": "1800 E Burnside St, Portland, OR 97214",
+    "company": "ShanRock's Trivia",
+    "company_url": "https://shanrockstrivia.com",
+    "day": "TH",
+    "time": "19:00",
+    "calendar": "Trivia Nights - N/NE"
+  },
+  {
+    "venue": "Little Beast Brewing",
+    "address": "3412 SE Division St, Portland, OR",
+    "company": "Rain Brain Trivia",
+    "company_url": "https://rainbraintrivia.weebly.com",
+    "day": "MO",
+    "time": "18:00",
+    "calendar": "Trivia Nights - SE"
+  },
+  {
+    "venue": "Brooklyn Carreta",
+    "address": "4534 SE McLoughlin Blvd, Portland, OR",
+    "company": "Rain Brain Trivia",
+    "company_url": "https://rainbraintrivia.weebly.com",
+    "day": "TU",
+    "time": "18:00",
+    "calendar": "Trivia Nights - SE"
+  },
+  {
+    "venue": "Chill N Fill",
+    "address": "5215 N Lombard St, Portland, OR 97203",
+    "company": "Rain Brain Trivia",
+    "company_url": "https://rainbraintrivia.weebly.com",
+    "day": "TU",
+    "time": "19:00",
+    "calendar": "Trivia Nights - N/NE"
+  },
+  {
+    "venue": "Threshold Brewing",
+    "address": "403 SE 79th Ave, Portland, OR",
+    "company": "Rain Brain Trivia",
+    "company_url": "https://rainbraintrivia.weebly.com",
+    "day": "WE",
+    "time": "18:00",
+    "calendar": "Trivia Nights - SE"
+  },
+  {
+    "venue": "The Low Road",
+    "address": "400 NW Miller Ave, Gresham, OR 97030",
+    "company": "Geeks Who Drink",
+    "company_url": "https://www.geekswhodrink.com",
+    "day": "WE",
+    "time": "19:00",
+    "calendar": "Trivia Nights - Further Out"
+  },
+  {
+    "venue": "Shifters",
+    "address": "9209 SE Foster Rd, Portland, OR 97266",
+    "company": "Geeks Who Drink",
+    "company_url": "https://www.geekswhodrink.com",
+    "day": "TH",
+    "time": "19:30",
+    "calendar": "Trivia Nights - SE"
+  },
+  {
+    "venue": "Cascade Bar & Grill",
+    "address": "15000 SE Mill Plain Blvd, Vancouver, WA 98684",
+    "company": "Geeks Who Drink",
+    "company_url": "https://www.geekswhodrink.com",
+    "day": "MO",
+    "time": "20:00",
+    "calendar": "Trivia Nights - Further Out"
+  },
+  {
+    "venue": "CORE Bar & Food Carts",
+    "address": "3612 SE 82nd Ave, Portland, OR 97266",
+    "company": "Geeks Who Drink",
+    "company_url": "https://www.geekswhodrink.com",
+    "day": "WE",
+    "time": "18:30",
+    "calendar": "Trivia Nights - SE"
+  },
+  {
+    "venue": "Gigantic Brewing",
+    "address": "5224 SE 26th Ave, Portland, OR 97202",
+    "company": "Geeks Who Drink",
+    "company_url": "https://www.geekswhodrink.com",
+    "day": "WE",
+    "time": "19:00",
+    "calendar": "Trivia Nights - SE"
+  },
+  {
+    "venue": "Hopworks Brewery",
+    "address": "2944 SE Powell Blvd, Portland, OR 97202",
+    "company": "Geeks Who Drink",
+    "company_url": "https://www.geekswhodrink.com",
+    "day": "TH",
+    "time": "19:00",
+    "calendar": "Trivia Nights - SE"
+  },
+  {
+    "venue": "Baby Ketten Klub",
+    "address": "2433 SE Powell Blvd, Portland, OR 97202",
+    "company": "Geeks Who Drink",
+    "company_url": "https://www.geekswhodrink.com",
+    "day": "TU",
+    "time": "19:00",
+    "calendar": "Trivia Nights - SE"
+  },
+  {
+    "venue": "Loyal Legion - Portland",
+    "address": "710 SE 6th Ave, Portland, OR 97214",
+    "company": "Geeks Who Drink",
+    "company_url": "https://www.geekswhodrink.com",
+    "day": "WE",
+    "time": "19:30",
+    "calendar": "Trivia Nights - SE"
+  },
+  {
+    "venue": "The Star Portland",
+    "address": "1309 NW Hoyt St, Portland, OR 97209",
+    "company": "Geeks Who Drink",
+    "company_url": "https://www.geekswhodrink.com",
+    "day": "TU",
+    "time": "18:30",
+    "calendar": "Trivia Nights - NW/SW"
+  },
+  {
+    "venue": "Loowit Brewing Company",
+    "address": "507 Columbia St, Vancouver, WA 98660",
+    "company": "Geeks Who Drink",
+    "company_url": "https://www.geekswhodrink.com",
+    "day": "SU",
+    "time": "19:00",
+    "calendar": "Trivia Nights - Further Out"
+  },
+  {
+    "venue": "Tap & Table",
+    "address": "12950 SW Pacific Hwy #285, Tigard, OR 97223",
+    "company": "Geeks Who Drink",
+    "company_url": "https://www.geekswhodrink.com",
+    "day": "SA",
+    "time": "19:00",
+    "calendar": "Trivia Nights - Further Out"
+  },
+  {
+    "venue": "Taps on Scholls",
+    "address": "11427 SW Scholls Ferry Rd, Beaverton, OR 97008",
+    "company": "Geeks Who Drink",
+    "company_url": "https://www.geekswhodrink.com",
+    "day": "TU",
+    "time": "19:00",
+    "calendar": "Trivia Nights - Further Out"
+  },
+  {
+    "venue": "Loyal Legion - Beaverton",
+    "address": "4500 SW Watson Ave, Beaverton, OR 97005",
+    "company": "Geeks Who Drink",
+    "company_url": "https://www.geekswhodrink.com",
+    "day": "SU",
+    "time": "18:00",
+    "calendar": "Trivia Nights - Further Out"
+  },
+  {
+    "venue": "Lazy Days Brewing Co",
+    "address": "4505 SW Watson Ave, Beaverton, OR 97005",
+    "company": "Geeks Who Drink",
+    "company_url": "https://www.geekswhodrink.com",
+    "day": "WE",
+    "time": "19:00",
+    "calendar": "Trivia Nights - Further Out"
+  },
+  {
+    "venue": "Midway Firehouse Pizza",
+    "address": "14805 SW Hillsboro Hwy, Hillsboro, OR 97123",
+    "company": "Geeks Who Drink",
+    "company_url": "https://www.geekswhodrink.com",
+    "day": "TU",
+    "time": "18:00",
+    "calendar": "Trivia Nights - Further Out"
+  }
+]

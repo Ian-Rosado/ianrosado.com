@@ -62,14 +62,19 @@ function stripHtml(s: string): string {
     .trim();
 }
 
-// Normalize a cost string — keep the price part, drop trailing descriptions
+// Extract a cost from a description line. Returns ONLY a price or free token,
+// never prose: many events have a one-line summary as their description (e.g.
+// "Renaissance faire at … 10am–7pm"), and treating that whole sentence as the
+// cost blew out the row layout. A bare digit (a time, an address) is not a cost.
 function normalizeCost(raw: string): string {
-  // Keep only up to the first | or ; or — (description often follows)
-  const trimmed = raw.split(/[|;—–]/)[0].trim();
-  // Must look like a price or free/pwyc
-  if (/free|pwyc|pay what|\$|\d/.test(trimmed.toLowerCase())) {
-    return trimmed;
+  const t = (raw || '').trim();
+  // Free signals → keep a short label as-is, otherwise normalize to "Free"
+  if (/\bfree\b|no cover|\bpwyc\b|pay what|by donation|\bdonation\b/.test(t.toLowerCase())) {
+    return t.length <= 25 ? t : 'Free';
   }
+  // A dollar amount, optionally a range ($6-$12 / $6–$12)
+  const m = t.match(/\$\s?\d[\d.,]*\s*(?:[–-]\s*\$?\d[\d.,]*)?/);
+  if (m) return m[0].replace(/\s+/g, '');
   return '';
 }
 

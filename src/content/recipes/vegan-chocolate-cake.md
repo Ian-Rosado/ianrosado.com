@@ -4,6 +4,12 @@ date: 2024-03-01
 description: "A deeply chocolatey cake that happens to be vegan. Chia eggs are the secret."
 coverImage: "/images/recipes/vegan-chocolate-cake/cover.jpg"
 tags: ["vegan", "cake", "chocolate", "dairy-free"]
+prepTime: "PT20M"
+cookTime: "PT35M"
+totalTime: "PT1H"
+recipeYield: "12 servings"
+recipeCuisine: "American"
+recipeCategory: "Dessert"
 ingredients:
   - "2 cups sugar"
   - "1.75 cups flour"

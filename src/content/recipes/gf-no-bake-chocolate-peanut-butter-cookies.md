@@ -4,6 +4,12 @@ date: 2024-01-15
 description: "No preamble, just steps. I will explain later."
 coverImage: "/images/recipes/gf-no-bake-chocolate-peanut-butter-cookies/cover.jpg"
 tags: ["gluten-free", "no-bake", "cookies", "chocolate"]
+prepTime: "PT10M"
+cookTime: "PT5M"
+totalTime: "PT45M"
+recipeYield: "36 cookies"
+recipeCuisine: "American"
+recipeCategory: "Dessert"
 ingredients:
   - "2 cups sugar"
   - "1/2 cup milk"

@@ -4,6 +4,12 @@ date: 2024-04-01
 description: "Lighter than you'd expect. The folding technique is everything."
 coverImage: "/images/recipes/simple-chocolate-mousse/cover.jpg"
 tags: ["dessert", "chocolate", "mousse", "no-bake"]
+prepTime: "PT20M"
+cookTime: "PT10M"
+totalTime: "PT2H"
+recipeYield: "6 servings"
+recipeCuisine: "French"
+recipeCategory: "Dessert"
 ingredients:
   - "3 1/2 ounces dark chocolate (62% cacao is ideal)"
   - "1 tablespoon salted butter"

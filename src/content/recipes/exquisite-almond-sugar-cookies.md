@@ -4,6 +4,12 @@ date: 2024-06-01
 description: "The almond extract is optional, but not really."
 coverImage: "/images/recipes/exquisite-almond-sugar-cookies/step-06.jpg"
 tags: ["cookies", "almond", "sugar cookies"]
+prepTime: "PT20M"
+cookTime: "PT12M"
+totalTime: "PT2H"
+recipeYield: "24 cookies"
+recipeCuisine: "American"
+recipeCategory: "Dessert"
 ingredients:
   - "1 3/4 cups (218 g) all-purpose flour, spooned and leveled"
   - "1/2 teaspoon baking soda"

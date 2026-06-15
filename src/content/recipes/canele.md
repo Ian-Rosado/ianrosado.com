@@ -4,6 +4,12 @@ date: 2026-05-15
 description: "Deeply caramelized outside, custardy inside. The batter needs at least 24 hours in the fridge — plan ahead."
 coverImage: "/images/recipes/canele/IMG_8004.jpg"
 tags: ["french", "pastry", "baked", "rum"]
+prepTime: "PT30M"
+cookTime: "PT1H"
+totalTime: "P1DT1H30M"
+recipeYield: "12 canelés"
+recipeCuisine: "French"
+recipeCategory: "Dessert"
 ingredients:
   - "500 ml (2 cups + 2 tbsp) whole milk, cold"
   - "250 g (1 cup) sugar"

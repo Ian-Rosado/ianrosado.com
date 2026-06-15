@@ -32,6 +32,12 @@ function frac(text: string): string {
     "keywords": recipe.data.tags.join(', '),
     "recipeIngredient": recipe.data.ingredients,
     ...(recipe.data.coverImage ? { "image": `https://www.ianrosado.com${recipe.data.coverImage}` } : {}),
+    ...(recipe.data.prepTime ? { "prepTime": recipe.data.prepTime } : {}),
+    ...(recipe.data.cookTime ? { "cookTime": recipe.data.cookTime } : {}),
+    ...(recipe.data.totalTime ? { "totalTime": recipe.data.totalTime } : {}),
+    ...(recipe.data.recipeYield ? { "recipeYield": recipe.data.recipeYield } : {}),
+    ...(recipe.data.recipeCuisine ? { "recipeCuisine": recipe.data.recipeCuisine } : {}),
+    ...(recipe.data.recipeCategory ? { "recipeCategory": recipe.data.recipeCategory } : {}),
   })} />
   <article class="max-w-3xl mx-auto px-4 py-12">
 

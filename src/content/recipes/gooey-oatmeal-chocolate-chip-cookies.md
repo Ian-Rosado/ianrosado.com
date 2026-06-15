@@ -4,6 +4,12 @@ date: 2024-02-01
 description: "Crispy outside, gooey inside. The chill step is non-negotiable."
 coverImage: "/images/recipes/gooey-oatmeal-chocolate-chip-cookies/cover.jpg"
 tags: ["cookies", "chocolate", "oatmeal"]
+prepTime: "PT15M"
+cookTime: "PT12M"
+totalTime: "PT1H30M"
+recipeYield: "25 cookies"
+recipeCuisine: "American"
+recipeCategory: "Dessert"
 ingredients:
   - "1 cup brown sugar"
   - "1 stick (8 tablespoons) salted butter, room temp"

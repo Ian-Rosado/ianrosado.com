@@ -4,6 +4,12 @@ date: 2024-05-01
 description: "Cake is but a vessel for frosting."
 coverImage: "/images/recipes/simple-carrot-cake/cover.jpg"
 tags: ["cake", "frosting", "carrot"]
+prepTime: "PT30M"
+cookTime: "PT40M"
+totalTime: "PT1H30M"
+recipeYield: "12 servings"
+recipeCuisine: "American"
+recipeCategory: "Dessert"
 ingredients:
   - "2 cups all-purpose flour"
   - "2 teaspoons baking soda"

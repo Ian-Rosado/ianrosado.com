@@ -160,10 +160,16 @@ const MAX_CHIPS = 4; // events shown in a day cell before "+N more"
         </ul>
       </section>
     ))}
-    <p id="no-results" class="hidden text-center text-stone-400 text-sm py-12">
-      No events match your filters.
-      <button id="clear-filters" class="text-orange-600 underline">Clear filters</button>
-    </p>
+    <div id="no-results" class="hidden text-center py-12">
+      <p class="text-stone-400 text-sm mb-3">No events match your filters.</p>
+      <button id="clear-filters"
+        class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-lg bg-orange-600 text-white hover:bg-orange-700 transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+        Clear all filters
+      </button>
+    </div>
   </div>
 
   <!-- ===================== CALENDAR VIEW (desktop only) ===================== -->

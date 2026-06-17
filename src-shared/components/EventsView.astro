@@ -284,7 +284,13 @@ const MAX_CHIPS = 4; // events shown in a day cell before "+N more"
 <script>
   // ---- Filtering (shared by both views) --------------------------------
   // `date` is a list-view-only filter (YYYY-MM-DD, '' = all dates).
-  const state = { cost: 'all', category: 'all', search: '', date: '' };
+  // `categories` is a multi-select set of slugs; empty = show all types.
+  const state = {
+    cost: 'all',
+    categories: new Set<string>(),
+    search: '',
+    date: '',
+  };
 
   const rows = Array.from(document.querySelectorAll<HTMLElement>('.event-row'));
   const groups = Array.from(document.querySelectorAll<HTMLElement>('.date-group'));
@@ -299,7 +305,7 @@ const MAX_CHIPS = 4; // events shown in a day cell before "+N more"
     const title = el.dataset.title ?? '';
     const location = el.dataset.location ?? '';
     const okCost = state.cost === 'all' || cost === state.cost;
-    const okCat = state.category === 'all' || category === state.category;
+    const okCat = state.categories.size === 0 || state.categories.has(category);
     const okSearch = !state.search || title.includes(state.search) || location.includes(state.search);
     return okCost && okCat && okSearch;
   }
@@ -324,14 +330,38 @@ const MAX_CHIPS = 4; // events shown in a day cell before "+N more"
     if (noResults) noResults.classList.toggle('hidden', visible !== 0);
   }
 
+  // Reflect the category set onto the Type pills' pressed state.
+  // "All" is pressed only when no specific types are selected.
+  function syncCategoryPills() {
+    document.querySelectorAll<HTMLElement>('.filter-pill[data-filter="category"]').forEach((b) => {
+      const v = b.dataset.value!;
+      const on = v === 'all' ? state.categories.size === 0 : state.categories.has(v);
+      b.setAttribute('aria-pressed', String(on));
+    });
+  }
+
   document.querySelectorAll<HTMLElement>('.filter-pill').forEach((btn) => {
     btn.addEventListener('click', () => {
       const filter = btn.dataset.filter as 'cost' | 'category' | undefined;
       if (!filter) return; // e.g. the date-clear button reuses .filter-pill styling
       const value = btn.dataset.value!;
-      state[filter] = value;
-      document.querySelectorAll<HTMLElement>(`.filter-pill[data-filter="${filter}"]`)
-        .forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.value === value)));
+
+      if (filter === 'cost') {
+        // Single-select, but clicking the active non-"all" pill reverts to All.
+        state.cost = state.cost === value && value !== 'all' ? 'all' : value;
+        document.querySelectorAll<HTMLElement>('.filter-pill[data-filter="cost"]')
+          .forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.value === state.cost)));
+      } else {
+        // Multi-select set. "All" clears; any pill toggles on/off.
+        if (value === 'all') {
+          state.categories.clear();
+        } else if (state.categories.has(value)) {
+          state.categories.delete(value);
+        } else {
+          state.categories.add(value);
+        }
+        syncCategoryPills();
+      }
       apply();
     });
   });
@@ -360,12 +390,13 @@ const MAX_CHIPS = 4; // events shown in a day cell before "+N more"
   dateClear?.addEventListener('click', () => setDate(''));
 
   document.getElementById('clear-filters')?.addEventListener('click', () => {
-    state.cost = 'all'; state.category = 'all'; state.search = ''; state.date = '';
+    state.cost = 'all'; state.categories.clear(); state.search = ''; state.date = '';
     if (searchInput) searchInput.value = '';
     if (dateInput) dateInput.value = '';
     dateClear?.classList.add('hidden');
-    document.querySelectorAll<HTMLElement>('.filter-pill')
+    document.querySelectorAll<HTMLElement>('.filter-pill[data-filter="cost"]')
       .forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.value === 'all')));
+    syncCategoryPills();
     apply();
   });
 
@@ -437,7 +468,7 @@ const MAX_CHIPS = 4; // events shown in a day cell before "+N more"
 
   function matchesEvent(ev: DayEvent): boolean {
     const okCost = state.cost === 'all' || ev.costClass === state.cost;
-    const okCat = state.category === 'all' || ev.category === state.category;
+    const okCat = state.categories.size === 0 || state.categories.has(ev.category);
     const okSearch = !state.search || ev.title_lc.includes(state.search) || ev.location_lc.includes(state.search);
     return okCost && okCat && okSearch;
   }

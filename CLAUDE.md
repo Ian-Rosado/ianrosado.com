@@ -27,6 +27,35 @@ The `.claude/launch.json` is configured for the preview server using the full no
 
 ---
 
+## Portland Events Tooling Setup (new machine)
+
+The Portland Events calendar scripts and Instagram post workflow (`scripts/add-to-calendar/`,
+`.claude/skills/portland-events-instagram-post/`, `.claude/skills/portland-events-add-workflow/`)
+need a few things that **aren't in git** — set these up once per machine:
+
+1. **Copy the calendar credentials** — these are gitignored on purpose (secrets) and must be
+   carried over manually (USB, password manager, etc.), not via git:
+   - `scripts/add-to-calendar/credentials.json`
+   - `scripts/add-to-calendar/token.json`
+
+2. **Install Python deps + Playwright's browser:**
+   ```powershell
+   pip install google-auth google-api-python-client playwright
+   playwright install chromium
+   ```
+
+3. **Install GitHub CLI** (so PRs can be opened from the new machine), then authenticate:
+   ```powershell
+   winget install --id GitHub.cli
+   gh auth login
+   ```
+
+Once those three are done, the calendar-add and Instagram-post skills work identically to any
+other machine — paste event-edit URLs, the skill looks them up, fills the template, renders the
+PNG, and you commit/PR as usual.
+
+---
+
 ## Project Structure
 
 ```

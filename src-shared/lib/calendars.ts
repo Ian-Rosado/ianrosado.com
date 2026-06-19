@@ -42,6 +42,13 @@ export const CALENDARS: CalendarConfig[] = [
     description: 'Weekly farmers markets across the Portland metro area.',
     color: 'green',
   },
+  {
+    id: '90009392b0836189ae31d76a39433224df222f77af28b3000913af23d99add8e@group.calendar.google.com',
+    name: 'Portland Sports',
+    slug: 'sports',
+    description: 'Home games for Portland-area sports teams — soccer, basketball, baseball, hockey, roller derby, and more.',
+    color: 'red',
+  },
 ];
 
 // Trivia nights are grouped together on one page
@@ -107,4 +114,5 @@ export const COLOR_MAP: Record<string, { bg: string; text: string; border: strin
   green:  { bg: 'bg-green-50',   text: 'text-green-700',   border: 'border-green-200',  dot: 'bg-green-500'  },
   blue:   { bg: 'bg-blue-50',    text: 'text-blue-700',    border: 'border-blue-200',   dot: 'bg-blue-500'   },
   teal:   { bg: 'bg-teal-50',    text: 'text-teal-700',    border: 'border-teal-200',   dot: 'bg-teal-500'   },
+  red:    { bg: 'bg-red-50',     text: 'text-red-700',     border: 'border-red-200',    dot: 'bg-red-500'    },
 };

@@ -12,13 +12,25 @@ Format: JS-rendered (requires Playwright). Event cards are <a class="ev-card">
     - span.ev-free              → "FREE" if free
     - span.genre-tag            → genre
 Calendar: music for data-cat=music, events otherwise
+
+Each event's own communityplaylist.com page usually has a "More info /
+Tickets" link to the real outbound site — sometimes a venue, sometimes a
+Google Calendar event page when that's the only link the organizer provided
+(still a real, useful link). A few events instead show the URL itself as
+plain link text with no "More info" label. Either way, fetched per-event (in
+parallel; plain requests work fine here even though the listing page itself
+needs Playwright) to replace the communityplaylist.com page link with that
+real one. Filters out the site's own Discord/GitHub-issue links and the
+generic "Add to Google Calendar" template link that appears on every page.
 """
 
 import re
 import asyncio
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date
+from bs4 import BeautifulSoup
 from dateutil import parser as dp
-from .base import make_event, parse_time_12h, CALENDAR_EVENTS, CALENDAR_MUSIC
+from .base import get_page, make_event, parse_time_12h, CALENDAR_EVENTS, CALENDAR_MUSIC
 
 SOURCE = "Community Playlist"
 URL = "https://communityplaylist.com/"
@@ -26,6 +38,30 @@ BASE = "https://communityplaylist.com"
 
 PLAYWRIGHT_ARGS = ["--disable-blink-features=AutomationControlled", "--no-sandbox"]
 PLAYWRIGHT_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+
+JUNK_LINK_DOMAINS = (
+    "communityplaylist.com", "discord.gg", "github.com/khildren",
+    "google.com/calendar/render", "openstreetmap.org", "google.com/maps", "maps.google.com",
+)
+
+
+def _resolve_real_link(detail_url):
+    """Fetch an event's communityplaylist.com page and pull its real outbound
+    link — preferring a "More info / Tickets" label, else the first other
+    qualifying external link. Returns '' if none found."""
+    resp = get_page(detail_url)
+    if not resp:
+        return ""
+    soup = BeautifulSoup(resp.text, "lxml")
+    candidates = []
+    for a in soup.find_all("a", href=True):
+        href = a["href"]
+        if href.startswith("http") and not any(d in href for d in JUNK_LINK_DOMAINS):
+            candidates.append((a.get_text(strip=True), href))
+    for text, href in candidates:
+        if "more info" in text.lower() or "tickets" in text.lower():
+            return href
+    return candidates[0][1] if candidates else ""
 
 
 def _parse_time(time_text: str) -> str:
@@ -163,6 +199,24 @@ def scrape():
         if key not in seen:
             seen.add(key)
             unique.append(e)
+
+    # Swap each event's communityplaylist.com page URL for its real outbound
+    # link, where one exists.
+    unique_urls = {e["url"] for e in unique if e["url"]}
+    resolved = {}
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        future_to_url = {executor.submit(_resolve_real_link, u): u for u in unique_urls}
+        for future in as_completed(future_to_url):
+            u = future_to_url[future]
+            try:
+                real_url = future.result()
+                if real_url:
+                    resolved[u] = real_url
+            except Exception:
+                pass
+    for e in unique:
+        if e["url"] in resolved:
+            e["url"] = resolved[e["url"]]
 
     unique.sort(key=lambda e: (e.get("date", ""), e.get("time", "")))
     print(f"  [{SOURCE}] Found {len(unique)} events")

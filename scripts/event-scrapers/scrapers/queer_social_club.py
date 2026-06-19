@@ -8,10 +8,17 @@ Format: Static HTML (Squarespace eventlist), confirmed class names:
   <time> "9:00 AM"          -- start time (narrow no-break space before AM/PM)
   <time> "5:00 PM"          -- end time
   .eventlist-meta-address   -- location
-Calendar: events (LGBTQ+/community)
+Calendar: events (community calendar — not every listing is LGBTQ-specific, so
+  only "community" is auto-tagged)
+
+Each event's detail page (.eventitem-column-content) usually links out to the
+real event page (venue site, Eventbrite, signup form, etc.) — that's a much
+better link than the Queer Social Club listing page itself, so we fetch each
+detail page and swap it in when found.
 """
 
 import re
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from bs4 import BeautifulSoup
 from dateutil import parser as dp
 from .base import get_page, make_event, parse_cost, CALENDAR_EVENTS
@@ -19,6 +26,32 @@ from .base import get_page, make_event, parse_cost, CALENDAR_EVENTS
 SOURCE = "Queer Social Club"
 URL = "https://queersocialclub.com/events-portland"
 BASE = "https://queersocialclub.com"
+
+# Prefer a real site link over a bare social-media profile when both are present
+SOCIAL_DOMAINS = ("instagram.com", "facebook.com", "twitter.com", "x.com", "tiktok.com", "linktr.ee")
+
+
+def _extract_event_link(detail_url):
+    """Fetch an event's detail page and pull the first outbound (non-QSC) link
+    from the description body. Returns '' if none found."""
+    resp = get_page(detail_url)
+    if not resp:
+        return ""
+    soup = BeautifulSoup(resp.content, "lxml")
+    body = soup.select_one(".eventitem-column-content")
+    if not body:
+        return ""
+    candidates = []
+    for a in body.select("a[href]"):
+        href = a.get("href", "")
+        if href.startswith("http") and "queersocialclub.com" not in href:
+            candidates.append(href)
+    if not candidates:
+        return ""
+    for href in candidates:
+        if not any(d in href for d in SOCIAL_DOMAINS):
+            return href
+    return candidates[0]
 
 # Narrow no-break space (U+202F) used by Squarespace between digit and AM/PM
 NARROW_NBSP = " "
@@ -90,7 +123,7 @@ def scrape():
         # Strip "(map)" suffix Squarespace adds
         location = re.sub(r"\s*\(map\)\s*$", "", location).strip()
 
-        tags = ["lgbtq", "community", "queer"]
+        tags = ["community"]
 
         if not title:
             continue
@@ -106,6 +139,23 @@ def scrape():
             calendar=CALENDAR_EVENTS,
             source=SOURCE,
         ))
+
+    # Swap each QSC listing-page URL for the real outbound event link found on
+    # its detail page, where one exists. Done in parallel — one extra request
+    # per event otherwise adds up fast over ~280 listings.
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        future_to_event = {
+            executor.submit(_extract_event_link, e["url"]): e
+            for e in events if e["url"]
+        }
+        for future in as_completed(future_to_event):
+            ev = future_to_event[future]
+            try:
+                real_url = future.result()
+                if real_url:
+                    ev["url"] = real_url
+            except Exception:
+                pass
 
     print(f"  [{SOURCE}] Found {len(events)} events")
     return events

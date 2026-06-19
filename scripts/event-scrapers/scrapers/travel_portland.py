@@ -9,16 +9,40 @@ Format: Requires Playwright with stealth settings to bypass Cloudflare.
           - span.tp-card__meta      → venue + cost concatenated (subtract venue to get cost)
           - a[href*=/event/]        → event URL
 Calendar: events (general Portland events, well-curated)
+
+Each event's own travelportland.com page has an anchor literally labeled
+"Website" linking to the real outbound site (sometimes a Facebook event page
+when there's no dedicated site) — fetched per-event (in parallel) to replace
+the travelportland.com page link with that real one. Unlike the listing
+pages, the event detail pages aren't Cloudflare-protected, so a plain request
+works (no Playwright needed for this part). Ignores the "Book Now" Expedia
+affiliate link that appears identically on every event page — it's a site-
+wide hotel-booking widget, not event-specific.
 """
 
 import re
 import asyncio
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date, timedelta
+from bs4 import BeautifulSoup
 from dateutil import parser as dp
-from .base import make_event, parse_cost, CALENDAR_EVENTS
+from .base import get_page, make_event, parse_cost, CALENDAR_EVENTS
 
 SOURCE = "Travel Portland"
 BASE = "https://www.travelportland.com"
+
+
+def _resolve_real_link(detail_url):
+    """Fetch an event's travelportland.com page and pull its "Website"
+    anchor (the real outbound link). Returns '' if not found."""
+    resp = get_page(detail_url)
+    if not resp:
+        return ""
+    soup = BeautifulSoup(resp.text, "lxml")
+    for a in soup.find_all("a", href=True):
+        if a.get_text(strip=True) == "Website":
+            return a["href"]
+    return ""
 
 PLAYWRIGHT_ARGS = ["--disable-blink-features=AutomationControlled", "--no-sandbox"]
 PLAYWRIGHT_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
@@ -185,6 +209,23 @@ def scrape():
         if e["date"] and date.fromisoformat(e["date"]) >= today
     ]
     all_events.sort(key=lambda e: e["date"])
+
+    # Swap each event's travelportland.com page URL for its "Website" link.
+    unique_urls = {e["url"] for e in all_events if e["url"]}
+    resolved = {}
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        future_to_url = {executor.submit(_resolve_real_link, u): u for u in unique_urls}
+        for future in as_completed(future_to_url):
+            u = future_to_url[future]
+            try:
+                real_url = future.result()
+                if real_url:
+                    resolved[u] = real_url
+            except Exception:
+                pass
+    for e in all_events:
+        if e["url"] in resolved:
+            e["url"] = resolved[e["url"]]
 
     print(f"  [{SOURCE}] Found {len(all_events)} events")
     return all_events

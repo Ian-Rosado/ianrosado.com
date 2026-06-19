@@ -4,20 +4,56 @@ URL: https://www.pdxpipeline.com/week/ + monthly pages
 Format: WordPress/Beaver Builder. Events grouped under <h3> day headings:
   "Portland Tuesday Events, June 2:"
   Each <li> under the next <ul>: "Title @ Venue | time, details ( more info )"
-  First pdxpipeline.com link → event URL + title
-  Falls back to li text for title if no pipeline link.
+  Each <li> has exactly one link — either to the event's own pdxpipeline.com
+  page, or directly to a "more info" external site. Falls back to li text for
+  title if no pipeline link.
 Requires Playwright (JS needed to fully render page).
 Calendar: events (general Portland events, various categories)
+
+For events whose only link is their own pdxpipeline.com page, that page's
+content block (div.fl-rich-text) usually links the real external site at
+least twice (once as an image, once as text) — picking the most-repeated
+external link recovers it, filtering out comment-author spam links (WordPress
+comments here often carry a fake "homepage" URL) and social-share/junk
+domains. Done in parallel, since ~25% of events need this lookup.
 """
 
 import re
 import asyncio
+from collections import Counter
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date, timedelta
+from bs4 import BeautifulSoup
 from dateutil import parser as dp
-from .base import make_event, parse_time_12h, parse_cost, CALENDAR_EVENTS
+from .base import get_page, make_event, parse_time_12h, parse_cost, CALENDAR_EVENTS
 
 SOURCE = "PDX Pipeline"
 BASE = "https://www.pdxpipeline.com"
+JUNK_LINK_DOMAINS = (
+    "pdxpipeline.com", "facebook.com/sharer", "twitter.com/intent",
+    "pinterest.com/pin", "eepurl.com", "wordpress.org", "gravatar.com",
+)
+FAKE_COMMENT_URL_RE = re.compile(r"^https?://[A-Z][a-zA-Z%]*$")
+
+
+def _resolve_real_link(detail_url):
+    """Fetch a pdxpipeline.com event page and return its most-repeated
+    external link, or '' if none found."""
+    resp = get_page(detail_url)
+    if not resp:
+        return ""
+    soup = BeautifulSoup(resp.text, "lxml")
+    counts = Counter()
+    for a in soup.find_all("a", href=True):
+        href = a["href"]
+        if not href.startswith("http"):
+            continue
+        if any(d in href for d in JUNK_LINK_DOMAINS):
+            continue
+        if FAKE_COMMENT_URL_RE.match(href) or " " in href or "%20" in href:
+            continue
+        counts[href] += 1
+    return counts.most_common(1)[0][0] if counts else ""
 
 # Pages to scrape: /week/ + current and next 2 months
 def _get_urls():
@@ -72,9 +108,12 @@ def _parse_li(li, date_str: str) -> dict | None:
             title_from_link = link_text
             break
     if not event_url:
+        # A "more info" link straight to an external site is exactly what we
+        # want here — it's not a reason to skip it (this used to exclude
+        # them, leaving ~1 in 3 events with no URL at all).
         for a in links:
             href = a.get("href", "")
-            if href.startswith("http") and "more info" not in a.get_text(strip=True).lower():
+            if href.startswith("http"):
                 event_url = href
                 break
 
@@ -201,6 +240,25 @@ def scrape():
             if key not in seen:
                 seen.add(key)
                 all_events.append(e)
+
+    # Swap each event's pdxpipeline.com page URL for the real external link
+    # found on it, where one exists (events whose <li> linked straight to an
+    # external "more info" site already have one and are left alone).
+    own_page_urls = {e["url"] for e in all_events if e["url"] and "pdxpipeline.com" in e["url"]}
+    resolved = {}
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        future_to_url = {executor.submit(_resolve_real_link, u): u for u in own_page_urls}
+        for future in as_completed(future_to_url):
+            u = future_to_url[future]
+            try:
+                real_url = future.result()
+                if real_url:
+                    resolved[u] = real_url
+            except Exception:
+                pass
+    for e in all_events:
+        if e["url"] in resolved:
+            e["url"] = resolved[e["url"]]
 
     all_events.sort(key=lambda e: (e.get("date", ""), e.get("time", "")))
     print(f"  [{SOURCE}] Found {len(all_events)} events")

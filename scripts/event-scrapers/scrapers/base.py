@@ -32,6 +32,7 @@ CALENDAR_MUSIC = "music"
 CALENDAR_FARMERS_MARKET = "farmers_market"
 CALENDAR_COMEDY = "comedy"
 CALENDAR_KARAOKE = "karaoke"
+CALENDAR_SPORTS = "sports"
 
 
 # ── Tag normalization ──────────────────────────────────────────────────────

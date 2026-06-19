@@ -2,14 +2,44 @@
 Scraper for Portland Living on the Cheap
 URL: https://portlandlivingonthecheap.com/events/
 Format: Static HTML, events in <h3> tags with adjacent date/time/cost text
+
+Each event's own article (div.entry-content) almost always ends with a "visit
+[Venue]'s website" sentence linking to the real outbound site, right before a
+fixed "Want more Portland freebies, events and deals?" newsletter footer.
+Walking backward from that footer marker and taking the first non-internal
+link recovers it (skips occasional internal cross-links to other articles,
+e.g. roundup posts linking to a more specific post of theirs).
 """
 
 import re
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from bs4 import BeautifulSoup
 from .base import get_page, make_event, parse_time_12h, parse_cost, CALENDAR_EVENTS, CALENDAR_FARMERS_MARKET
 
 SOURCE = "Portland Living on the Cheap"
 URL = "https://portlandlivingonthecheap.com/events/"
+SITE_DOMAIN = "portlandlivingonthecheap.com"
+FOOTER_MARKER_RE = re.compile(r"Want more Portland freebies", re.I)
+
+
+def _extract_real_link(article_url):
+    """Fetch an event's article page and pull the real outbound link from the
+    end of its body text. Returns '' if none found."""
+    resp = get_page(article_url)
+    if not resp:
+        return ""
+    soup = BeautifulSoup(resp.text, "lxml")
+    body = soup.select_one("div.entry-content")
+    if not body:
+        return ""
+    footer_el = body.find(string=FOOTER_MARKER_RE)
+    if not footer_el:
+        return ""
+    for a in footer_el.find_all_previous("a", href=True):
+        href = a["href"]
+        if href.startswith("http") and SITE_DOMAIN not in href:
+            return href
+    return ""
 
 
 def scrape():
@@ -134,6 +164,25 @@ def scrape():
             calendar=cal,
             source=SOURCE,
         ))
+
+    # Swap each event's article-page URL for the real outbound link found at
+    # the end of its body text, where one exists. Recurring events share the
+    # same article, so fetch each unique URL once.
+    unique_urls = {e["url"] for e in events if e["url"]}
+    resolved = {}
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        future_to_url = {executor.submit(_extract_real_link, u): u for u in unique_urls}
+        for future in as_completed(future_to_url):
+            u = future_to_url[future]
+            try:
+                real_url = future.result()
+                if real_url:
+                    resolved[u] = real_url
+            except Exception:
+                pass
+    for e in events:
+        if e["url"] in resolved:
+            e["url"] = resolved[e["url"]]
 
     print(f"  [{SOURCE}] Found {len(events)} events")
     return events

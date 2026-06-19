@@ -64,6 +64,7 @@ leave blank to keep the "Current Calendar" value.
 | `Portland Comedy` | Stand-up, improv, comedy showcases, comedy open mics, roast battles |
 | `Portland Karaoke` | Karaoke nights |
 | `Portland Farmers Markets` | Farmers markets, produce/craft markets |
+| `Portland Sports` | Home games for Portland-area teams (Timbers, Thorns, Blazers, Fire, Hops, Pickles, Winterhawks, Rip City Remix, Rose City Rollers) |
 | `Trivia Nights - SE` | Trivia in SE Portland |
 | `Trivia Nights - N/NE` | Trivia in N or NE Portland |
 | `Trivia Nights - NW/SW` | Trivia in NW or SW Portland |
@@ -76,8 +77,13 @@ leave blank to keep the "Current Calendar" value.
 - Karaoke → **Portland Karaoke**
 - Trivia → the **Trivia Nights** calendar matching the venue (table below; if unknown, leave blank + flag)
 - Farmers / produce / craft market → **Portland Farmers Markets**
+- Pro/local team home game (soccer/basketball/baseball/hockey/roller derby) → **Portland Sports**
 - When in doubt → **Portland Events**
 - Leave blank if "Current Calendar" is already correct.
+
+> The dedicated sports scrapers pre-assign **Portland Sports**, so those rows are
+> already correct. Sports are NOT free-by-default (games are ticketed) — leave
+> cost as scraped. Only home games are scraped (away games aren't local events).
 
 > The script auto-detects most comedy/karaoke by title keyword before writing the
 > tab, so many are already correct in "Current Calendar". Focus on the misses.
@@ -127,6 +133,19 @@ or food-vendor markets (e.g. *Portland Saturday Market*, vegan pop-up markets, a
 updates = [{"range": f"G{idx + 3}", "values": [["Portland Comedy"]]} for idx in changed]
 ws.batch_update(updates)
 ```
+
+### Known trivia companies — dropped automatically, not your job to categorize
+
+`portland_events_add.py` now drops trivia events from companies whose full
+venue schedule is already covered recurringly by `trivia_generate.py` /
+`trivia_schedule.json`, **before** the Categorize tab is even written (see
+`KNOWN_TRIVIA_COMPANIES` / `is_redundant_trivia` in the script). Currently:
+Last Call Trivia, Bridgetown Trivia, Geeks Who Drink, Untapped Trivia, Rip
+City Trivia, ShanRock's Trivia/Triviology, Rain Brain Trivia. If a new trivia
+company starts showing up in Categorize that you recognize as one already in
+`trivia_schedule.json`, add it to `KNOWN_TRIVIA_COMPANIES` so future runs skip
+it too — these are pure dedup noise against the recurring events, not
+information you'd ever want as a one-off calendar entry.
 
 ### Trivia routing
 
@@ -252,6 +271,14 @@ flag blindly. The guards below caught real false positives in past runs.
 - **Verify, then subtract.** Compute matches, print them grouped by reason
   (exact / prefix / overlap), eyeball the overlap and low-word-count ones, then
   remove false positives from the skip set before the single `batch_update`.
+- **Shared co-headliners on the same date → skip it, even if support acts
+  differ.** A lineup like "Desert Shame + Perfect Buzz + Roxbury Saints" vs
+  "Desert Shame + Perfect Buzz + Charming Birds" on the same night is the same
+  show — the opener got added/corrected between scrapes, it isn't two
+  different shows. This is the one case where differing trailing words in an
+  otherwise-matching title should *increase* confidence, not lower it. Treat
+  it as a duplicate when the first 1–2 named acts match exactly and the date
+  matches, regardless of what comes after.
 
 ### Intra-batch duplicates
 

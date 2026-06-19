@@ -23,6 +23,27 @@ flow with three pauses, each backed by a tab in the Portland Events Inbox sheet:
 The script writes a tab, waits while it's filled in, then reads it back. You help
 with steps 1 and 2 (and can spot-check 3). See `portland-events-context` for shared IDs.
 
+### Two ways to run it
+
+- **Interactive (legacy):** `python portland_events_add.py --from-sheets` — pauses
+  at each tab for the user to press Enter. Works, but blocks on a local terminal.
+- **Staged (preferred when *you* are driving):** each step runs as a separate
+  non-blocking command, with the Sheet as shared state. Run from inside
+  `scripts/add-to-calendar/` (it reads `token.json`/`credentials.json` from the cwd):
+
+  | Stage | Command | Does |
+  |---|---|---|
+  | prep | `python portland_events_add.py --stage prep` | Writes **Categorize** + **Dedup** tabs, exits |
+  | *(you fill Categorize + Dedup via the sheet scripts below)* | | |
+  | review | `python portland_events_add.py --stage review` | Reads filled tabs, writes **Review** tab, exits |
+  | *(user marks Include y/n in the Review tab — works from the Sheets app on any device)* | | |
+  | commit | `python portland_events_add.py --stage commit --yes` | Reads Review tab, writes to calendar |
+
+  `--yes` skips the final confirm. The `#` column is the original Inbox row index
+  in all three tabs, so the stages line up across separate processes. This is the
+  path to use when running unattended or driving the flow remotely — see
+  `scripts/add-to-calendar/REMOTE_WORKFLOW.md` for the full remote/travel runbook.
+
 ---
 
 ## Sheet access (used by every step)

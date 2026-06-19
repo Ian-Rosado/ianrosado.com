@@ -23,6 +23,7 @@ export const EVENT_CATEGORIES: EventCategory[] = [
   { slug: 'comedy', label: 'Comedy', color: 'purple' },
   { slug: 'karaoke', label: 'Karaoke', color: 'pink' },
   { slug: 'farmers-markets', label: 'Markets', color: 'green' },
+  { slug: 'sports', label: 'Sports', color: 'red' },
   { slug: 'trivia', label: 'Trivia', color: 'blue' },
   { slug: 'pedalpalooza', label: 'Pedalpalooza', color: 'teal' },
 ];
@@ -36,6 +37,7 @@ export async function fetchAllEvents(): Promise<CalEvent[]> {
     comedyEvents,
     karaokeEvents,
     marketsEvents,
+    sportsEvents,
     triviaEvents,
     pedalaEvents,
   ] = await Promise.all([
@@ -44,6 +46,7 @@ export async function fetchAllEvents(): Promise<CalEvent[]> {
     fetchCalendarEvents(CALENDARS[2].id, CALENDARS[2].name, CALENDARS[2].slug, CALENDARS[2].color),
     fetchCalendarEvents(CALENDARS[3].id, CALENDARS[3].name, CALENDARS[3].slug, CALENDARS[3].color),
     fetchCalendarEvents(CALENDARS[4].id, CALENDARS[4].name, CALENDARS[4].slug, CALENDARS[4].color),
+    fetchCalendarEvents(CALENDARS[5].id, CALENDARS[5].name, CALENDARS[5].slug, CALENDARS[5].color),
     fetchMultipleCalendars(
       TRIVIA_CALENDARS.map((c) => ({ id: c.id, name: TRIVIA_GROUP.name, slug: c.slug, color: c.color })),
     ),
@@ -61,6 +64,7 @@ export async function fetchAllEvents(): Promise<CalEvent[]> {
     ...comedyEvents,
     ...karaokeEvents,
     ...marketsEvents,
+    ...sportsEvents,
     ...triviaEvents,
     ...pedalaEvents,
   ].sort((a, b) => a.date.localeCompare(b.date) || a.sortKey - b.sortKey);

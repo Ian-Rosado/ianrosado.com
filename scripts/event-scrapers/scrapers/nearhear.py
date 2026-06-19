@@ -67,12 +67,18 @@ def _parse_render_url(href: str) -> dict | None:
         return None
 
     # details: "Price: $25.00\nAge: All Ages\nTickets: https://..."
+    # NearHear uses "$-1.00" as a sentinel for "price not set" — leave blank
+    # rather than passing that through as a literal cost.
     cost = ""
     ticket_url = ""
     tags = ["music"]
     price_m = re.search(r"Price:\s*([^\n]+)", details)
     if price_m:
-        cost = parse_cost(price_m.group(1).strip())
+        price_raw = price_m.group(1).strip()
+        # Strip a "$-1.00" sentinel half of a range ("$10.00 - $-1.00" -> "$10.00")
+        price_raw = re.sub(r"\s*-\s*\$?-1(\.0+)?$", "", price_raw)
+        if not re.match(r"\$?-1(\.0+)?$", price_raw):
+            cost = parse_cost(price_raw)
     age_m = re.search(r"Age:\s*([^\n]+)", details)
     if age_m:
         age = age_m.group(1).strip()

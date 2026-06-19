@@ -9,9 +9,19 @@ Format: JS-rendered (Vue/CitySpark). Requires Playwright.
           - div.cityVenue span[0]   -> venue name
           - div.csIconRow           -> time text e.g. "8:00 am"
 Calendar: events (general) or music based on card classes
+
+The widget's "Visit Event Website" link only renders client-side after
+clicking an event card (direct hash-URL navigation doesn't populate it, and
+clicking through each card in turn is slow and DOM-fragile). The same data
+comes from the widget's own backing API instead — CitySpark's
+GetEvent/WillametteWeek endpoint, called with the event's PId and occurrence
+time (both already embedded in the card's detail-page href) — and is fast
+enough to call directly with `requests`, no browser needed for this part.
 """
 
 import re
+import requests
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from bs4 import BeautifulSoup
 from dateutil import parser as dp
 from .base import make_event, parse_time_12h, CALENDAR_EVENTS, CALENDAR_MUSIC
@@ -21,6 +31,42 @@ URL = "https://www.wweek.com/getbusy/calendar/events/#/"
 BASE_URL = "https://www.wweek.com/getbusy/calendar/events/"
 
 WAIT_MS = 5000  # ms to wait for JS rendering
+
+CITYSPARK_API = "https://portal.cityspark.com/api/events/GetEvent/WillametteWeek"
+CITYSPARK_HEADERS = {
+    "Content-Type": "application/json",
+    "Referer": "https://www.wweek.com/",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+}
+# Portal/hierarchy id and a Portland-area lat/lng — fixed values the widget
+# itself sends regardless of which event is requested.
+CITYSPARK_PPID = 9934
+CITYSPARK_HIER = [2, 6889]
+CITYSPARK_LAT = 45.515232
+CITYSPARK_LNG = -122.6783853
+
+DETAIL_URL_RE = re.compile(r"/details/[^/]+/(\d+)/([\d\-T:]+)$")
+
+
+def _resolve_real_link(event_url):
+    """Call CitySpark's own GetEvent API for this event's PId + occurrence
+    time and return its registered website link, if any. Returns '' if not
+    found or the URL doesn't match the expected detail-page pattern."""
+    m = DETAIL_URL_RE.search(event_url)
+    if not m:
+        return ""
+    pid, occurrence_time = m.group(1), m.group(2)
+    body = {
+        "time": occurrence_time, "pid": int(pid), "ppid": CITYSPARK_PPID,
+        "hier": CITYSPARK_HIER, "lat": CITYSPARK_LAT, "lng": CITYSPARK_LNG, "tps": None,
+    }
+    try:
+        resp = requests.post(CITYSPARK_API, headers=CITYSPARK_HEADERS, json=body, timeout=10)
+        resp.raise_for_status()
+        links = resp.json().get("Value", {}).get("Links") or []
+        return links[0]["url"] if links else ""
+    except Exception:
+        return ""
 
 
 def _get_html():
@@ -100,6 +146,24 @@ def scrape():
             calendar=calendar,
             source=SOURCE,
         ))
+
+    # Swap each event's wweek.com detail-page URL for its registered website
+    # link, where one exists, via CitySpark's own API (see _resolve_real_link).
+    unique_urls = {e["url"] for e in events if e["url"]}
+    resolved = {}
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        future_to_url = {executor.submit(_resolve_real_link, u): u for u in unique_urls}
+        for future in as_completed(future_to_url):
+            u = future_to_url[future]
+            try:
+                real_url = future.result()
+                if real_url:
+                    resolved[u] = real_url
+            except Exception:
+                pass
+    for e in events:
+        if e["url"] in resolved:
+            e["url"] = resolved[e["url"]]
 
     print(f"  [{SOURCE}] Found {len(events)} events")
     return events

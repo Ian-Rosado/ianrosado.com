@@ -44,6 +44,17 @@ from scrapers.travel_portland import scrape as scrape_travel_portland
 from scrapers.community_playlist import scrape as scrape_community_playlist
 from scrapers.bandsintown import scrape as scrape_bandsintown
 from scrapers.nearhear import scrape as scrape_nearhear
+from scrapers.rose_city_rollers import scrape as scrape_rose_city_rollers
+from scrapers.nba_blazers import scrape as scrape_nba_blazers
+from scrapers.hillsboro_hops import scrape as scrape_hillsboro_hops
+from scrapers.wnba_fire import scrape as scrape_wnba_fire
+from scrapers.rip_city_remix import scrape as scrape_rip_city_remix
+from scrapers.timbers import scrape as scrape_timbers
+from scrapers.thorns import scrape as scrape_thorns
+from scrapers.winterhawks import scrape as scrape_winterhawks
+from scrapers.portland_pickles import scrape as scrape_portland_pickles
+from scrapers.portland_bangers import scrape as scrape_portland_bangers
+from scrapers.cherry_bombs_fc import scrape as scrape_cherry_bombs_fc
 
 SCRAPERS = {
     "portland_living_cheap": scrape_portland_living_cheap,
@@ -63,6 +74,17 @@ SCRAPERS = {
     "community_playlist": scrape_community_playlist,
     "bandsintown": scrape_bandsintown,
     "nearhear": scrape_nearhear,
+    "rose_city_rollers": scrape_rose_city_rollers,
+    "nba_blazers": scrape_nba_blazers,
+    "hillsboro_hops": scrape_hillsboro_hops,
+    "wnba_fire": scrape_wnba_fire,
+    "rip_city_remix": scrape_rip_city_remix,
+    "timbers": scrape_timbers,
+    "thorns": scrape_thorns,
+    "winterhawks": scrape_winterhawks,
+    "portland_pickles": scrape_portland_pickles,
+    "portland_bangers": scrape_portland_bangers,
+    "cherry_bombs_fc": scrape_cherry_bombs_fc,
 }
 
 CALENDAR_LABELS = {
@@ -71,6 +93,7 @@ CALENDAR_LABELS = {
     "comedy": "Portland Comedy",
     "karaoke": "Portland Karaoke",
     "farmers_market": "Portland Farmers Markets",
+    "sports": "Portland Sports",
 }
 
 CSV_FIELDS = [
@@ -190,7 +213,7 @@ def main():
     parser = argparse.ArgumentParser(description="Portland Events scraper runner")
     parser.add_argument("--days", type=int, default=30,
                         help="Number of days ahead to include (default: 30)")
-    parser.add_argument("--calendar", choices=["events", "music", "farmers_market"],
+    parser.add_argument("--calendar", choices=["events", "music", "farmers_market", "sports"],
                         help="Filter to a specific calendar")
     parser.add_argument("--no-csv", action="store_true",
                         help="Skip CSV output")

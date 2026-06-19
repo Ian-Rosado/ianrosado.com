@@ -3,9 +3,17 @@ Scraper for Calagator - Portland Tech/Community Events
 URL: https://calagator.org/events/
 Format: Static HTML, semantic markup with <h3> headings and <time> elements.
 Calendar: events (tech/community)
+
+Each event's own Calagator page (#content) usually has an anchor literally
+labeled "Website" linking to the real organizer/RSVP page (Meetup, Luma,
+the venue's own site, etc.); a few instead show the URL itself as the link
+text with no "Website" label. Either way, fetched per-event (in parallel) to
+replace the Calagator page link with that real one — filtering out Calagator's
+own "map" and "Tweet" utility links in the same content block.
 """
 
 import re
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from bs4 import BeautifulSoup
 from dateutil import parser as dp
 from .base import get_page, make_event, CALENDAR_EVENTS
@@ -13,6 +21,28 @@ from .base import get_page, make_event, CALENDAR_EVENTS
 SOURCE = "Calagator"
 URL = "https://calagator.org/events/"
 BASE = "https://calagator.org"
+EXCLUDE_DOMAINS = ("calagator.org", "maps.google.com", "twitter.com")
+
+
+def _extract_real_link(detail_url):
+    """Fetch an event's Calagator page and pull the real organizer/RSVP link
+    from its #content block. Returns '' if none found."""
+    resp = get_page(detail_url)
+    if not resp:
+        return ""
+    soup = BeautifulSoup(resp.text, "lxml")
+    content = soup.select_one("#content")
+    if not content:
+        return ""
+    candidates = []
+    for a in content.find_all("a", href=True):
+        href = a["href"]
+        if href.startswith("http") and not any(d in href for d in EXCLUDE_DOMAINS):
+            candidates.append((a.get_text(strip=True), href))
+    for text, href in candidates:
+        if text == "Website":
+            return href
+    return candidates[0][1] if candidates else ""
 
 
 def scrape():
@@ -85,6 +115,24 @@ def scrape():
             calendar=CALENDAR_EVENTS,
             source=SOURCE,
         ))
+
+    # Swap each event's Calagator page URL for the real organizer/RSVP link,
+    # where one exists. Recurring events share the same page, so dedupe first.
+    unique_urls = {e["url"] for e in events if e["url"]}
+    resolved = {}
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        future_to_url = {executor.submit(_extract_real_link, u): u for u in unique_urls}
+        for future in as_completed(future_to_url):
+            u = future_to_url[future]
+            try:
+                real_url = future.result()
+                if real_url:
+                    resolved[u] = real_url
+            except Exception:
+                pass
+    for e in events:
+        if e["url"] in resolved:
+            e["url"] = resolved[e["url"]]
 
     print(f"  [{SOURCE}] Found {len(events)} events")
     return events

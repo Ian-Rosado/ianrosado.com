@@ -29,11 +29,14 @@ Authentication:
 """
 
 import csv
+import html
 import json
 import re
 import sys
 from datetime import datetime, timedelta
 from pathlib import Path
+
+sys.stdout.reconfigure(encoding="utf-8")
 
 # Google Sheet inbox (Portland Events Inbox)
 SHEET_ID = "1mx4U8klkuTeR1E7lmChABlShfE_kVwAFaV37gAjoId4"
@@ -51,6 +54,7 @@ CALENDARS = {
     "Trivia Nights - NW/SW":       "088af359972350285c1e5bccda5fb38c349d0597d7c795ef3d1c21d7b973e457@group.calendar.google.com",
     "Trivia Nights - Further Out": "ac0a6fedb05274655f5e68e9ec26c3f9b341866ae0feed97dd703e94f164a0bf@group.calendar.google.com",
     "Portland Farmers Markets":    "560e859bd2c7b5dfd2262cb6f28389921434606cec955e7ec75f02df9fd2138a@group.calendar.google.com",
+    "Portland Sports":             "90009392b0836189ae31d76a39433224df222f77af28b3000913af23d99add8e@group.calendar.google.com",
 }
 
 # Calendars whose events are free by default (no cost unless a price is stated).
@@ -64,6 +68,25 @@ FREE_DEFAULT_CALENDARS = {
     "Trivia Nights - Further Out",
 }
 
+# Trivia companies whose full venue schedule is already authoritatively
+# maintained by trivia_generate.py / trivia_schedule.json as recurring weekly
+# events. General-purpose scrapers (PDX After Dark, PDX Pipeline, etc.) also
+# pick up these same nights as one-off listings, which only adds dedup noise
+# — drop them outright rather than running them through Categorize/Dedup.
+# Update this list (and trivia_schedule.json) together when a new company is
+# added to the trivia rotation.
+KNOWN_TRIVIA_COMPANIES = [
+    "last call trivia", "bridgetown trivia", "geeks who drink",
+    "untapped trivia", "rip city trivia", "shanrock", "rain brain trivia",
+]
+
+
+def is_redundant_trivia(title):
+    """True if this title is a trivia night run by a company we already have
+    full recurring coverage for via trivia_generate.py."""
+    title_l = title.lower()
+    return "trivia" in title_l and any(c in title_l for c in KNOWN_TRIVIA_COMPANIES)
+
 CALENDAR_ALIASES = {
     "portland events":             "Portland Events",
     "main":                        "Portland Events",
@@ -76,6 +99,8 @@ CALENDAR_ALIASES = {
     "portland farmers markets":    "Portland Farmers Markets",
     "farmers markets":             "Portland Farmers Markets",
     "farmers market":              "Portland Farmers Markets",
+    "portland sports":             "Portland Sports",
+    "sports":                      "Portland Sports",
     "trivia nights - se":          "Trivia Nights - SE",
     "trivia nights - n/ne":        "Trivia Nights - N/NE",
     "trivia nights - nw/sw":       "Trivia Nights - NW/SW",
@@ -210,6 +235,7 @@ CATEGORIZE_HEADERS = [
 CATEGORIZE_INSTRUCTIONS = (
     "Fill in the '→ Assigned Calendar' column for each event. "
     "Valid values: Portland Events | Portland Live Music | Portland Comedy | Portland Karaoke | Portland Farmers Markets | "
+    "Portland Sports | "
     "Trivia Nights - SE | Trivia Nights - N/NE | Trivia Nights - NW/SW | Trivia Nights - Further Out. "
     "Leave blank to keep the current value. Then return to the terminal and press Enter."
 )
@@ -956,6 +982,112 @@ def _norm_title(s):
     return re.sub(r"[^a-z0-9 ]", "", s.lower().strip())[:60]
 
 
+# ─── Existing-event matching + refresh (for re-running scrapers) ─────────────
+# When a re-scrape finds an event that's already on the calendar (better link,
+# corrected tags, now-known cost, etc.), refresh it in place instead of just
+# dropping it as a duplicate. See find_matching_existing_event / refresh fields
+# below, used in add_events() for rows skipped as existing-calendar dupes.
+
+def _desc_lines(desc):
+    """Split a description into clean text lines. Google Calendar's web editor
+    linkifies plain URLs into <a href> anchors once an event has been touched
+    in the UI, so split on real newlines AND <br>, then strip tags/decode
+    entities per line (mirrors stripHtml in google-calendar.ts)."""
+    parts = re.split(r"\r?\n|<br\s*/?>", desc or "", flags=re.I)
+    out = []
+    for p in parts:
+        line = html.unescape(re.sub(r"<[^>]+>", " ", p))
+        line = re.sub(r"\s+", " ", line).strip()
+        if line:
+            out.append(line)
+    return out
+
+
+def parse_cost_from_description(desc):
+    for line in _desc_lines(desc):
+        low = line.lower()
+        if line.startswith("http") or low.startswith("look up venue") or low.startswith("tags:"):
+            continue
+        line = re.sub(r"https?://\S+", "", line).strip(" .|-")
+        if line:
+            return line
+    return ""
+
+
+def parse_url_from_description(desc):
+    for line in _desc_lines(desc):
+        m = re.search(r"https?://\S+", line)
+        if m:
+            return re.sub(r"[.,)>'\"]+$", "", m.group(0))
+    return ""
+
+
+def parse_tags_from_description(desc):
+    for line in _desc_lines(desc):
+        m = re.match(r"tags:\s*(.+)$", line, flags=re.I)
+        if m:
+            return [t.strip().lower() for t in m.group(1).split(",") if t.strip()]
+    return []
+
+
+def _title_words(s):
+    """Significant words only — same stopword set as _fuzzy_dedup_incoming."""
+    stop = {"the", "a", "an", "and", "&", "with", "w", "at", "in", "of",
+            "feat", "ft", "vs", "plus", "+", "•", "-"}
+    return {w for w in re.sub(r"[^a-z0-9 ]", " ", s.lower()).split() if w not in stop and len(w) > 1}
+
+
+def find_matching_existing_event(title, date_str, cal_id, existing_by_cal):
+    """Find the existing calendar event an incoming title/date most likely
+    duplicates, for in-place refresh. Same word-overlap heuristic as
+    _fuzzy_dedup_incoming, restricted to the same date."""
+    wt = _title_words(title)
+    if not wt:
+        return None
+    best, best_score = None, 0.0
+    for ev in existing_by_cal.get(cal_id, []):
+        start = ev.get("start", {})
+        ev_date = (start.get("dateTime") or start.get("date") or "")[:10]
+        if ev_date != date_str:
+            continue
+        we = _title_words(ev.get("summary", ""))
+        if not we:
+            continue
+        overlap = len(wt & we) / min(len(wt), len(we))
+        if overlap > best_score:
+            best_score, best = overlap, ev
+    return best if best_score >= 0.55 else None
+
+
+def compute_event_refresh(existing_event, new_url, new_cost, new_tags_str, source):
+    """Compare an existing calendar event's stored facets against freshly
+    scraped data and return (needs_update, new_description, new_extended_properties)
+    — only ever filling in NEW non-empty data, never blanking out a field the
+    new scrape didn't have a value for."""
+    existing_desc = existing_event.get("description", "")
+    existing_url = parse_url_from_description(existing_desc)
+    existing_cost = parse_cost_from_description(existing_desc)
+    existing_tags = parse_tags_from_description(existing_desc)
+
+    new_url_resolved = new_url if (new_url and not is_generic_url(new_url)) else ""
+    new_tags = [t.strip().lower() for t in (new_tags_str or "").split(",") if t.strip()]
+
+    final_url = new_url_resolved or existing_url
+    final_cost = new_cost.strip() if new_cost and new_cost.strip() else existing_cost
+    final_tags = new_tags if new_tags else existing_tags
+
+    url_changed = bool(final_url) and final_url != existing_url
+    cost_changed = bool(final_cost) and final_cost != existing_cost
+    tags_changed = set(final_tags) != set(existing_tags)
+
+    if not (url_changed or cost_changed or tags_changed):
+        return False, None, None
+
+    new_description = build_description(final_cost, final_url, "", ",".join(final_tags))
+    new_extended_properties = build_extended_properties(final_cost, ",".join(final_tags), source)
+    return True, new_description, new_extended_properties
+
+
 def load_blocklist():
     """Return a set of normalized titles that should be auto-skipped."""
     import gspread
@@ -1133,12 +1265,32 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
 
     print(f"  {len(rows)} rows with dates to process")
 
+    # Drop trivia nights from companies trivia_generate.py already covers
+    # recurringly — never useful, only dedup noise (see KNOWN_TRIVIA_COMPANIES).
+    before = len(rows)
+    rows = [r for r in rows if not is_redundant_trivia(get(r, "Title", "title", "summary"))]
+    if before != len(rows):
+        print(f"  Dropped {before - len(rows)} trivia event(s) from companies already covered by trivia_generate.py")
+
+    # ── Clean up scraper title artifacts ─────────────────────────────────────
+    # Recurring events occasionally get rescraped with a WordPress-style
+    # "(Copy)" suffix piled on each time (seen repeatedly at Swan Dive, e.g.
+    # "Diva Drag Brunch (Copy) (Copy) (Copy)") — strip any number of them.
+    COPY_SUFFIX_RE = re.compile(r"(\s*\(copy\))+\s*$", re.I)
+    for row in rows:
+        for k in ("Title", "title", "summary"):
+            if k in row and row[k]:
+                cleaned = COPY_SUFFIX_RE.sub("", row[k]).strip()
+                if cleaned != row[k]:
+                    row[k] = cleaned
+                break
+
     # ── Normalize calendar values ────────────────────────────────────────────
     for row in rows:
         raw_cal = get(row, "Calendar", "calendar")
         row["Calendar"] = normalize_calendar(raw_cal)
 
-    # ── Auto-detect comedy events ─────────────────────────────────────────────
+    # ── Auto-detect comedy/karaoke/dance-party events, and known venues ──────
     # Events from generic sources (PDX After Dark, Calagator, etc.) may land in
     # Portland Events or Portland Live Music — promote obvious comedy to Portland Comedy.
     COMEDY_KEYWORDS = [
@@ -1146,22 +1298,54 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
         "roast battle", "laugh", "comedian", "comic", "joke night",
     ]
     KARAOKE_KEYWORDS = ["karaoke"]
+    # DJ/dance nights built around a theme (decade throwbacks, music-video
+    # nights) are a dance party, not a live performance.
+    DANCE_PARTY_KEYWORDS = [
+        "video dance party", "80s dance", "90s dance", "2000s dance",
+        "y2k dance", "00s dance", "decades dance",
+    ]
+    # Venues that are predominantly one thing regardless of how a scraper
+    # categorized the listing. Add to these as more come up.
+    KNOWN_COMEDY_VENUES = ["helium comedy club"]
+    KNOWN_NON_MUSIC_VENUES = ["funhouse lounge"]
 
-    comedy_fixed = karaoke_fixed = 0
+    comedy_fixed = karaoke_fixed = dance_fixed = venue_comedy_fixed = venue_nonmusic_fixed = 0
     for row in rows:
+        title_l = get(row, "Title", "title", "summary").lower()
+        location_l = get(row, "Location", "location", "Venue", "venue").lower()
+
         current = row.get("Calendar", "")
         if current in ("Portland Events", "Portland Live Music"):
-            title_l = get(row, "Title", "title", "summary").lower()
             if any(kw in title_l for kw in KARAOKE_KEYWORDS):
                 row["Calendar"] = "Portland Karaoke"
                 karaoke_fixed += 1
             elif any(kw in title_l for kw in COMEDY_KEYWORDS):
                 row["Calendar"] = "Portland Comedy"
                 comedy_fixed += 1
+            elif current == "Portland Live Music" and any(kw in title_l for kw in DANCE_PARTY_KEYWORDS):
+                row["Calendar"] = "Portland Events"
+                dance_fixed += 1
+
+        # Venue overrides apply after title-keyword detection, since a known
+        # venue's identity is a stronger signal than a generic title match.
+        current = row.get("Calendar", "")
+        if current in ("Portland Events", "Portland Live Music") and any(v in location_l for v in KNOWN_COMEDY_VENUES):
+            row["Calendar"] = "Portland Comedy"
+            venue_comedy_fixed += 1
+        elif current == "Portland Live Music" and any(v in location_l for v in KNOWN_NON_MUSIC_VENUES):
+            row["Calendar"] = "Portland Events"
+            venue_nonmusic_fixed += 1
+
     if comedy_fixed:
         print(f"  Auto-detected {comedy_fixed} comedy events -> Portland Comedy")
     if karaoke_fixed:
         print(f"  Auto-detected {karaoke_fixed} karaoke events -> Portland Karaoke")
+    if dance_fixed:
+        print(f"  Auto-detected {dance_fixed} dance-party events -> Portland Events")
+    if venue_comedy_fixed:
+        print(f"  Auto-detected {venue_comedy_fixed} events at known comedy venues -> Portland Comedy")
+    if venue_nonmusic_fixed:
+        print(f"  Auto-detected {venue_nonmusic_fixed} events at known non-music venues -> Portland Events")
 
     # ── Connect to calendar + fetch existing events ──────────────────────────
     print("\nConnecting to Google Calendar...")
@@ -1229,6 +1413,52 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
         existing_titles = existing_titles_by_cal.get(cal_id, set())
         if title.lower().strip() in existing_titles or title_raw.lower().strip() in existing_titles:
             exact_skip.add(i)
+
+    # ── Refresh existing-calendar duplicates with better scraped data ────────
+    # Rows skipped because they duplicate something ALREADY on the calendar
+    # (not just another row in this same batch) — re-running scrapers after
+    # improving their link extraction should update those events in place
+    # rather than silently dropping the better data on the floor.
+    existing_calendar_skip = (ai_skip | exact_skip) - cross_source_skip
+    pending_updates = []
+    for i in existing_calendar_skip:
+        row = rows[i]
+        calendar_str = row.get("_calendar_assigned") or get(row, "Calendar", "calendar")
+        cal_result = resolve_calendar(calendar_str)
+        if not cal_result:
+            continue
+        cal_name, cal_id = cal_result
+        title_raw = get(row, "Title", "title", "summary")
+        date_str = get(row, "Date", "date")
+        tags = get(row, "Tags", "tags", "Genre", "genre")
+        cost = get(row, "Cost", "cost")
+        url = get(row, "URL", "url", "link", "Link")
+        source = get(row, "Source", "source")
+        title = build_title(title_raw, cal_name, tags)
+
+        if cal_name in FREE_DEFAULT_CALENDARS and classify_cost(cost) != "paid":
+            cost = "Free"
+
+        match = find_matching_existing_event(title, date_str, cal_id, existing_by_cal)
+        if not match:
+            continue
+        resolved_url, _ = resolve_event_url(url, get(row, "Location", "location", "Venue", "venue"))
+        needs_update, new_desc, new_ext_props = compute_event_refresh(
+            match, resolved_url, cost, tags, source
+        )
+        if needs_update:
+            pending_updates.append({
+                "event_id": match["id"],
+                "cal_id": cal_id,
+                "cal_name": cal_name,
+                "title": match.get("summary", title),
+                "description": new_desc,
+                "extendedProperties": new_ext_props,
+                "old_url": parse_url_from_description(match.get("description", "")),
+                "new_url": parse_url_from_description(new_desc),
+            })
+    if pending_updates:
+        print(f"  {len(pending_updates)} existing event(s) have better data available to refresh")
 
     # ── Load blocklist ───────────────────────────────────────────────────────
     print("Loading blocklist...")
@@ -1338,26 +1568,39 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
         update_blocklist(user_skipped)
 
     print(f"\n{len(include_indices)} events marked 'y' to add.")
+    if pending_updates:
+        print(f"{len(pending_updates)} existing event(s) will be refreshed with better data.")
 
-    if not include_indices:
-        print("Nothing to add.")
+    if not include_indices and not pending_updates:
+        print("Nothing to add or update.")
         return
 
     if dry_run:
         _review_by_index = {e["index"]: e for e in review_events}
-        print("\n[DRY RUN] The following would be added to the calendar:")
-        for idx in sorted(include_indices):
-            e = _review_by_index.get(idx)
-            if e:
-                print(f"  {e['date']}  {e['calendar']:<30}  {e['title']}")
+        if include_indices:
+            print("\n[DRY RUN] The following would be added to the calendar:")
+            for idx in sorted(include_indices):
+                e = _review_by_index.get(idx)
+                if e:
+                    print(f"  {e['date']}  {e['calendar']:<30}  {e['title']}")
+        if pending_updates:
+            print("\n[DRY RUN] The following existing events would be refreshed:")
+            for u in pending_updates:
+                print(f"  {u['cal_name']:<30}  {u['title']}")
+                print(f"      url: {u['old_url']!r} -> {u['new_url']!r}")
         print("\n[DRY RUN] No events were written to the calendar.")
         return
 
     # ── Confirm before writing ───────────────────────────────────────────────
-    print(f"\nAbout to add {len(include_indices)} events to Google Calendar.")
+    parts = []
+    if include_indices:
+        parts.append(f"add {len(include_indices)} events")
+    if pending_updates:
+        parts.append(f"refresh {len(pending_updates)} existing events")
+    print(f"\nAbout to {' and '.join(parts)} in Google Calendar.")
     confirm = input("Type 'yes' to confirm, anything else to cancel: ").strip().lower()
     if confirm != "yes":
-        print("Cancelled. No events were added.")
+        print("Cancelled. No changes were made.")
         return
 
     # ── Add events marked y ──────────────────────────────────────────────────
@@ -1442,23 +1685,49 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
         except HttpError as e:
             errors.append((title, date_str, str(e)))
 
+    # ── Refresh existing events with better data ─────────────────────────────
+    updated, update_errors = [], []
+    for u in pending_updates:
+        try:
+            service.events().patch(
+                calendarId=u["cal_id"],
+                eventId=u["event_id"],
+                body={
+                    "description": u["description"],
+                    "extendedProperties": u["extendedProperties"],
+                },
+                sendUpdates="none",
+            ).execute()
+            updated.append(u)
+        except HttpError as e:
+            update_errors.append((u["title"], str(e)))
+
     # ── Summary ──────────────────────────────────────────────────────────────
     print("\n" + "=" * 65)
     print(f"SUMMARY{' (DRY RUN)' if dry_run else ''}")
     print("=" * 65)
     print(f"Added:            {len(added)}")
+    print(f"Updated:          {len(updated)}")
     print(f"Skipped (n/blank):{len(review_events) - len(include_indices)}")
-    print(f"Errors:           {len(errors)}")
+    print(f"Errors:           {len(errors) + len(update_errors)}")
 
     if added:
         print("\n-- Added --")
         for title, d, cal in added:
             print(f"  {d}  {cal:<30}  {title}")
 
-    if errors:
+    if updated:
+        print("\n-- Updated --")
+        for u in updated:
+            print(f"  {u['cal_name']:<30}  {u['title']}")
+            print(f"      url: {u['old_url']!r} -> {u['new_url']!r}")
+
+    if errors or update_errors:
         print("\n-- Errors --")
         for title, d, err in errors:
             print(f"  {d}  {title}: {err}")
+        for title, err in update_errors:
+            print(f"  (update) {title}: {err}")
 
 
 # ─── CLI ──────────────────────────────────────────────────────────────────────

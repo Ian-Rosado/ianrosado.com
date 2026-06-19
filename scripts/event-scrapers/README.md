@@ -62,13 +62,42 @@ Output files land in `output/events_YYYY-MM-DD.json` and `output/events_YYYY-MM-
 | `flyer_escape.py` | Flyer Escape | music | web_fetch |
 | `toc_portland.py` | TOC Portland | music | web_fetch |
 
-## Sources Requiring Chrome (not yet scripted)
+## Sports sources (Portland Sports calendar — home games only)
+
+| Scraper | Team | Sport | Data source |
+|---|---|---|---|
+| `nba_blazers.py` | Trail Blazers | basketball | data.nba.com legacy JSON (cdn.nba.com is 403-blocked) |
+| `wnba_fire.py` | Portland Fire | basketball | ESPN site.api (via `espn_common.py`) |
+| `rip_city_remix.py` | Rip City Remix | basketball (G League) | ESPN site.api |
+| `timbers.py` | Portland Timbers | soccer (MLS) | ESPN site.api |
+| `thorns.py` | Portland Thorns | soccer (NWSL) | ESPN site.api |
+| `hillsboro_hops.py` | Hillsboro Hops | baseball (MiLB) | MLB StatsAPI (`statsapi.mlb.com`) |
+| `portland_pickles.py` | Portland Pickles | baseball (WCL) | wclstats.com (PrestoSports) |
+| `winterhawks.py` | Portland Winterhawks | hockey (WHL) | HockeyTech LeagueStat feed |
+| `portland_bangers.py` | Portland Bangers | soccer (USL League Two) | modular11 (via `modular11_common.py`), team 4928 |
+| `cherry_bombs_fc.py` | Portland Cherry Bombs | soccer (USL W League) | modular11, team 8112 |
+| `rose_city_rollers.py` | Rose City Rollers | roller derby | rosecityrollers.com (static HTML) |
+
+Notes:
+- **Offseason returns 0, not an error.** Blazers (NBA), Rip City Remix (G League),
+  and Winterhawks (WHL) all run fall→spring, so they return 0 upcoming games in
+  summer; they auto-populate when the next season's schedule publishes (~Aug).
+- **ESPN soccer needs `?fixture=true`** to return upcoming (not past) matches —
+  handled in `espn_common.py`.
+- **Sports schedules span a whole season.** `run_all.py`'s default `--days 30`
+  window trims most of it; to load a full season run e.g.
+  `python run_all.py --calendar sports --days 200`.
+- Two shared helpers make adding teams cheap: `espn_common.py` (any ESPN-listed
+  team — sport, league, team id, tags) and `modular11_common.py` (any USL
+  League Two / USL W League / other modular11 team — just the team id). The
+  Bangers/Cherry Bombs schedules aren't on their own Squarespace sites (those
+  are ticket-waitlist forms), but the USL league pages embed a modular11
+  widget whose data is in static HTML — that's what those two scrapers read.
+
+## Sources Requiring Chrome / manual (not scriptable)
 
 - curbsideserenade.org — Square Online (JS-required)
 - Instagram sources (@loudnlitride, @williamsfirstfriday)
-- Travel Portland — 403 bot block
-- Do PDX — 403 bot block
-- Bands in Town — 403 bot block
 
 ## Adding a New Scraper
 

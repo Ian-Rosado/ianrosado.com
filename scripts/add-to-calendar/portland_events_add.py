@@ -241,7 +241,7 @@ CATEGORIZE_INSTRUCTIONS = (
 )
 
 
-def step1_categorize(rows):
+def step1_categorize(rows, interactive=True):
     client = get_sheets_client()
     sheet = client.open_by_key(SHEET_ID)
     ws = get_or_clear_tab(sheet, CATEGORIZE_TAB, len(CATEGORIZE_HEADERS))
@@ -290,6 +290,10 @@ def step1_categorize(rows):
         print(f'  {i:3d}. "{title}" | venue: "{venue}" | tags: "{tags}" | source: "{source}" | current: "{existing}"')
     print()
     print(f"{'─' * 70}")
+    if not interactive:
+        print("Categorize tab written. Fill the '→ Assigned Calendar' column, then run --stage review:")
+        print(f"  {tab_url}")
+        return None
     print(f"Fill in the '→ Assigned Calendar' column in the sheet, then press Enter:")
     print(f"  {tab_url}")
     print("\nPress Enter when done...")
@@ -332,7 +336,8 @@ DEDUP_INSTRUCTIONS = (
 )
 
 
-def step2_deduplicate(rows, existing_by_cal, cross_source_skip=None, cross_source_dup_of=None):
+def step2_deduplicate(rows, existing_by_cal, cross_source_skip=None, cross_source_dup_of=None,
+                      interactive=True):
     cross_source_skip = cross_source_skip or set()
     cross_source_dup_of = cross_source_dup_of or {}
 
@@ -350,8 +355,10 @@ def step2_deduplicate(rows, existing_by_cal, cross_source_skip=None, cross_sourc
         if cal_name in CALENDARS
     )
     # Run the step if there are existing events to compare against OR intra-batch
-    # cross-source duplicates to surface for review.
-    if not has_existing and not cross_source_skip:
+    # cross-source duplicates to surface for review. In a staged (non-interactive)
+    # run we always write a fresh tab anyway, so a later `commit` stage never
+    # reads stale skip flags left over from a previous batch.
+    if interactive and not has_existing and not cross_source_skip:
         print("\nNo existing calendar events and no intra-batch duplicates — skipping dedup step.")
         return set()
 
@@ -367,28 +374,28 @@ def step2_deduplicate(rows, existing_by_cal, cross_source_skip=None, cross_sourc
                                        "backgroundColor": {"red": 1.0, "green": 0.95, "blue": 0.8}}},
     ])
 
-    # First pass: assign local indices in calendar-grouped order so we can
-    # reference the kept ("winner") row's local number in the auto note.
+    # Rows are displayed grouped by calendar, but the "#" column carries each
+    # event's ORIGINAL row index (matching the Categorize tab). This keeps the
+    # tab self-describing so a separate process — e.g. the `commit` stage — can
+    # read skip flags back to the right rows without an in-memory index map.
     ordered = [(orig_idx, row, cal_name)
                for cal_name, indexed_rows in by_cal.items()
                for orig_idx, row in indexed_rows]
-    index_map = {local: orig for local, (orig, _, _) in enumerate(ordered)}
-    orig_to_local = {orig: local for local, (orig, _, _) in enumerate(ordered)}
 
     incoming_data = []
     prefilled = 0
-    for local_counter, (orig_idx, row, cal_name) in enumerate(ordered):
+    for orig_idx, row, cal_name in ordered:
         is_dup = orig_idx in cross_source_skip
         note = ""
         if is_dup:
             prefilled += 1
             winner = cross_source_dup_of.get(orig_idx)
-            if winner is not None and winner in orig_to_local:
-                note = f"cross-source dup of #{orig_to_local[winner]}"
+            if winner is not None:
+                note = f"cross-source dup of #{winner}"
             else:
                 note = "cross-source duplicate (auto)"
         incoming_data.append([
-            local_counter,
+            orig_idx,
             get(row, "Title", "title", "summary"),
             get(row, "Date", "date"),
             get(row, "Location", "location", "Venue", "venue"),
@@ -450,12 +457,16 @@ def step2_deduplicate(rows, existing_by_cal, cross_source_skip=None, cross_sourc
         print(f'  ... and {len(existing_data) - 50} more (see sheet tab for full list)')
     print()
     print(f"{'─' * 70}")
+    if not interactive:
+        print("Dedup tab written. Mark 'y' on any duplicates, then run --stage review:")
+        print(f"  {tab_url}")
+        return None
     print(f"Mark 'y' in the Skip column for duplicates in the sheet, then press Enter:")
     print(f"  {tab_url}")
     print("\nPress Enter when done...")
     input()
 
-    # Read back skip flags
+    # Read back skip flags (column A is the original row index)
     all_values = ws.get_all_values()
     skip_indices = set()
     for sheet_row in all_values[2:]:  # skip header + instructions
@@ -465,11 +476,10 @@ def step2_deduplicate(rows, existing_by_cal, cross_source_skip=None, cross_sourc
         if skip_flag != "y":
             continue
         try:
-            local_idx = int(sheet_row[0])
+            orig_idx = int(sheet_row[0])
         except (ValueError, IndexError):
             continue
-        if local_idx in index_map:
-            orig_idx = index_map[local_idx]
+        if 0 <= orig_idx < len(rows):
             title = get(rows[orig_idx], "Title", "title", "summary")
             print(f"  SKIP (marked duplicate): \"{title}\"")
             skip_indices.add(orig_idx)
@@ -793,12 +803,14 @@ REVIEW_INSTRUCTIONS = (
     "When done, return to the terminal and press Enter."
 )
 
-def write_review_tab(events):
+def write_review_tab(events, interactive=True):
     """Write all candidate events to the Review tab for disposition.
 
     Each event dict must have keys:
       index, title, date, time, calendar, location, cost, tags, source, url, suggested_skip
-    Returns the worksheet so the caller can read it back later.
+    Returns the worksheet so the caller can read it back later. When
+    interactive is False the tab is written without blocking on Enter (the
+    caller is expected to read it back in a later `commit` stage).
     """
     import time
 
@@ -866,11 +878,16 @@ def write_review_tab(events):
     print(f"\n{'─' * 70}")
     print("REVIEW: Fill in the Include column")
     print(f"{'─' * 70}")
+    if lookup_rows:
+        print(f"  (Red 'Calendar Link' cells = {len(lookup_rows)} events with no specific link — add venues to venues.json)")
+    if not interactive:
+        print(f"Open the '{REVIEW_TAB}' tab, mark y/n for each event, then run --stage commit:")
+        print(f"  {tab_url}")
+        print("  (Yellow rows = suggested duplicates, pre-filled 'n')")
+        return ws
     print(f"Open the '{REVIEW_TAB}' tab, mark y/n for each event, then press Enter:")
     print(f"  {tab_url}")
     print("  (Yellow rows = suggested duplicates, pre-filled 'n')")
-    if lookup_rows:
-        print(f"  (Red 'Calendar Link' cells = {len(lookup_rows)} events with no specific link — add venues to venues.json)")
     print("\nPress Enter when done...")
     input()
 
@@ -952,6 +969,12 @@ def read_categorize_tab():
             if canonical in CALENDARS:
                 assignments[idx] = canonical
     return assignments
+
+
+def open_existing_tab(name):
+    """Open an existing worksheet by name (does not create or clear it)."""
+    client = get_sheets_client()
+    return client.open_by_key(SHEET_ID).worksheet(name)
 
 
 def read_dedup_tab():
@@ -1240,7 +1263,19 @@ def _fuzzy_dedup_incoming(rows):
 
 # ─── Main ─────────────────────────────────────────────────────────────────────
 
-def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, skip_to_review=False):
+def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, skip_to_review=False,
+               stage="full", assume_yes=False):
+    """Run the add-to-calendar flow.
+
+    stage controls how much of the pipeline runs and whether it blocks:
+      "full"   — the original interactive flow (pauses at each tab).
+      "prep"   — write the Categorize + Dedup tabs, then exit (no blocking).
+      "review" — read filled Categorize + Dedup tabs, write the Review tab, exit.
+      "commit" — read filled Categorize + Dedup + Review tabs, write to calendar.
+    The staged variants let each step run as a separate, non-blocking process so
+    the flow can be driven remotely (fill tabs from the Google Sheets app between
+    stages). assume_yes skips the final confirmation prompt in the commit/full path.
+    """
     from googleapiclient.errors import HttpError
 
     # ── Load all rows (no include filter yet) ────────────────────────────────
@@ -1370,8 +1405,21 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
     # (pre-filled 'y') rather than only auto-applied at Review.
     cross_source_skip, cross_source_dup_of = _fuzzy_dedup_incoming(rows)
 
+    # ── Stage: prep — write the Categorize + Dedup tabs, then stop ────────────
+    if stage == "prep":
+        step1_categorize(rows, interactive=False)
+        for i, row in enumerate(rows):
+            row["_calendar_assigned"] = get(row, "Calendar", "calendar")
+        step2_deduplicate(rows, existing_by_cal, cross_source_skip,
+                          cross_source_dup_of, interactive=False)
+        print("\n" + "=" * 65)
+        print("PREP COMPLETE")
+        print("=" * 65)
+        print("Fill the Categorize and Dedup tabs, then run --stage review.")
+        return
+
     # ── Step 1: Categorize + Step 2: Deduplicate ─────────────────────────────
-    if skip_to_review:
+    if skip_to_review or stage in ("review", "commit"):
         # Read already-filled Categorize and Dedup tabs — skip interactive steps
         print("\nReading Categorize tab...")
         cat_assignments = read_categorize_tab()
@@ -1526,8 +1574,20 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
     # Sort by source then date for easier bulk review
     review_events.sort(key=lambda e: (e["source"], e["date"], e["time"]))
 
-    # ── Write Review tab, wait for disposition ───────────────────────────────
-    review_ws = write_review_tab(review_events)
+    # ── Stage: review — write the Review tab, then stop ──────────────────────
+    if stage == "review":
+        write_review_tab(review_events, interactive=False)
+        print("\n" + "=" * 65)
+        print("REVIEW TAB WRITTEN")
+        print("=" * 65)
+        print("Mark Include y/n (and edit any fields), then run --stage commit.")
+        return
+
+    # ── Write Review tab (or read the already-filled one for commit) ─────────
+    if stage == "commit":
+        review_ws = open_existing_tab(REVIEW_TAB)
+    else:
+        review_ws = write_review_tab(review_events)
     include_indices, overrides = read_review_tab(review_ws)
 
     # Apply any manual field edits made in the Review tab. Any of these columns
@@ -1598,10 +1658,13 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
     if pending_updates:
         parts.append(f"refresh {len(pending_updates)} existing events")
     print(f"\nAbout to {' and '.join(parts)} in Google Calendar.")
-    confirm = input("Type 'yes' to confirm, anything else to cancel: ").strip().lower()
-    if confirm != "yes":
-        print("Cancelled. No changes were made.")
-        return
+    if assume_yes:
+        print("Proceeding without prompt (--yes).")
+    else:
+        confirm = input("Type 'yes' to confirm, anything else to cancel: ").strip().lower()
+        if confirm != "yes":
+            print("Cancelled. No changes were made.")
+            return
 
     # ── Add events marked y ──────────────────────────────────────────────────
     added, errors = [], []
@@ -1748,9 +1811,18 @@ if __name__ == "__main__":
                         help="Skip categorize and dedup steps, use scrapers' calendar assignment as-is")
     parser.add_argument("--skip-to-review", action="store_true",
                         help="Skip categorize and dedup steps, read already-filled tabs and go straight to Review")
+    parser.add_argument("--stage", choices=["prep", "review", "commit"],
+                        help="Run one non-blocking stage of the sheets flow: "
+                             "prep (write Categorize+Dedup tabs), review (write Review tab), "
+                             "commit (write to calendar). Implies --from-sheets.")
+    parser.add_argument("--yes", action="store_true",
+                        help="Skip the final 'type yes' confirmation before writing to the calendar")
     args = parser.parse_args()
 
-    if not args.from_sheets and not args.tsv:
+    # Staged runs are always sheet-backed.
+    from_sheets = args.from_sheets or args.stage is not None
+
+    if not from_sheets and not args.tsv:
         parser.error("Provide a TSV file path or use --from-sheets")
 
     if args.tsv and not Path(args.tsv).exists():
@@ -1758,13 +1830,15 @@ if __name__ == "__main__":
         sys.exit(1)
 
     # Sheets access requires broader scopes
-    if args.from_sheets:
+    if from_sheets:
         SCOPES = SCOPES_CALENDAR_AND_SHEETS
 
     add_events(
         tsv_path=args.tsv,
         dry_run=args.dry_run,
         no_ai=args.no_ai,
-        from_sheets=args.from_sheets,
+        from_sheets=from_sheets,
         skip_to_review=args.skip_to_review,
+        stage=args.stage or "full",
+        assume_yes=args.yes,
     )

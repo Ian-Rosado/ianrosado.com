@@ -65,9 +65,23 @@ ws = sheet.worksheet("Categorize")   # or "Dedup"
 rows = ws.get_all_values()
 ```
 
-Both tabs: row 1 = headers, row 2 = instructions, data starts row 3, so
-**sheet row number = data index + 3**. Batch all edits into one `ws.batch_update(...)`
-call to stay under the Sheets write-rate quota.
+Both tabs: row 1 = headers, row 2 = instructions, data starts row 3.
+
+> ⚠️ **Never assume `sheet row = index + 3`.** That holds for **Categorize**
+> (written in index order) but **NOT for Dedup**, whose rows are written in
+> **calendar-grouped order** — the original index lives in column A but the
+> physical row is unrelated to it (index 6 might sit at row 956). Writing by
+> `index + 3` silently corrupts the wrong rows. Always build an index→row map
+> from column A and write by that, then **read back to verify**:
+> ```python
+> vals = ws.get_all_values()
+> idx_row = {int(r[0]): n for n, r in enumerate(vals, start=1) if r and r[0].isdigit()}
+> ws.batch_update([{"range": f"G{idx_row[i]}", "values": [["y"]]} for i in changed])
+> # verify: re-read and confirm col G at idx_row[i] == what you wrote
+> ```
+
+Batch all edits into one `ws.batch_update(...)` call to stay under the Sheets
+write-rate quota.
 
 ---
 
@@ -234,7 +248,10 @@ Incoming section (0-indexed): `0 #`, `1 Title`, `2 Date`, `3 Location`, `4 Sourc
 `5 Calendar`, `6 → Skip?` (write `y` here), `7 Why (auto)` (read-only, auto-filled by script).
 Existing section: `0 Calendar`, `1 Existing Title`, `2 Date`.
 
-Sheet row for an incoming event = its `#` value + 3.
+⚠️ **The Dedup tab is written in calendar-grouped order, so an incoming event's
+sheet row is NOT `# + 3`.** The `#` (original index) is in column A but the
+physical row is unrelated. Build an index→row map from column A and write by it
+(see the Sheet-access warning above), then read back to verify.
 
 ### Matching logic
 
@@ -250,6 +267,9 @@ import re
 sep = next(i for i, r in enumerate(rows) if r and "EXISTING" in str(r[0]))
 incoming = [r for r in rows[2:sep] if r and r[0].isdigit()]
 existing = [r for r in rows[sep+2:] if len(r) >= 3 and r[1]]
+
+# index -> actual sheet row (rows are calendar-grouped, NOT in # order!)
+idx_row = {int(r[0]): n for n, r in enumerate(rows, start=1) if n-1 < sep and r and r[0].isdigit()}
 
 def norm(s): return re.sub(r"[^a-z0-9]", "", s.lower())
 STOP = {"the","a","an","and","with","at","in","of","feat","ft","vs","by","w"}
@@ -268,7 +288,8 @@ for inc in incoming:
         if nt == ne or (len(nt) >= 15 and (nt.startswith(ne[:20]) or ne.startswith(nt[:20]))) or (overlap >= 0.8 and min(len(wt),len(we)) >= 2):
             dup_idx.append(idx); break
 
-ws.batch_update([{"range": f"G{i+3}", "values": [["y"]]} for i in dup_idx])
+ws.batch_update([{"range": f"G{idx_row[i]}", "values": [["y"]]} for i in dup_idx])
+# then re-read and verify col G at idx_row[i] for each flagged index
 ```
 
 The code above is a starting point — **review its output before writing**, don't

@@ -307,13 +307,12 @@ const MAX_CHIPS = 4; // events shown in a day cell before "+N more"
   const eventsView = document.querySelector<HTMLElement>('.events-view');
 
   // After a filter change, scroll back to the top of the results so the user
-  // sees the filtered list from the start (only when scrolled down — avoids a
-  // pointless jump if already at the top).
+  // sees the filtered list from the start. Scroll unconditionally: if the view
+  // is already at the top this is a no-op, and guarding on the current position
+  // fails when the result set shrinks (e.g. switching between date filters) —
+  // the browser clamps the scroll, making it look "already at top" mid-page.
   function scrollToResultsTop() {
-    if (!eventsView) return;
-    if (eventsView.getBoundingClientRect().top < 0) {
-      eventsView.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+    eventsView?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   function matches(el: HTMLElement): boolean {

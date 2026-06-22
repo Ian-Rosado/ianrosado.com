@@ -1,5 +1,6 @@
 ---
 import '../../src/styles/global.css';
+import Analytics from '@vercel/analytics/astro';
 
 interface Props {
   title: string;
@@ -163,5 +164,8 @@ function isActive(href: string) {
       const menu = document.getElementById('mobile-menu');
       btn?.addEventListener('click', () => menu?.classList.toggle('hidden'));
     </script>
+
+    <!-- Vercel Web Analytics (independent of Google Analytics) -->
+    <Analytics />
   </body>
 </html>

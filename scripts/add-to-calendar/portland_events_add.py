@@ -947,6 +947,66 @@ def read_review_tab(ws):
     return include_indices, overrides
 
 
+# ─── Review-corrections feedback log ─────────────────────────────────────────
+
+REVIEW_CORRECTIONS_LOG = "review_corrections.jsonl"
+
+
+def log_review_corrections(review_events, include_indices, overrides):
+    """Diff the script's proposed dispositions against the user's final Review-tab
+    choices and append the corrections to a running JSONL log, so recurring
+    categorization/dedup mistakes can be profiled and folded back into the rules.
+
+    Must be called BEFORE field edits are applied to review_events, so the dicts
+    still hold the script's original proposals. Logging must never break the
+    calendar write, so the whole thing is wrapped defensively.
+    """
+    import json
+    from datetime import datetime
+    try:
+        by_idx = {e["index"]: e for e in review_events}
+        recats, rescued, dropped, edits = [], [], [], []
+        for idx, e in by_idx.items():
+            proposed_keep = not e.get("suggested_skip")
+            final_keep = idx in include_indices
+            ov = overrides.get(idx, {})
+            if proposed_keep and not final_keep:
+                # user excluded something the script proposed to add — a dup or
+                # otherwise-unwanted event the dedup/blocklist missed.
+                dropped.append({"title": e["title"], "calendar": e["calendar"], "date": e["date"]})
+            elif not proposed_keep and final_keep:
+                # user kept something the script proposed to skip — a false-positive skip.
+                rescued.append({"title": e["title"], "calendar": e["calendar"], "date": e["date"]})
+            if final_keep and ov:
+                new_cal = ov.get("calendar")
+                if new_cal and new_cal != e["calendar"]:
+                    recats.append({"title": e["title"], "from": e["calendar"], "to": new_cal,
+                                   "location": e.get("location", ""), "date": e["date"]})
+                for f in ("date", "time", "title", "location", "cost", "url"):
+                    nv = ov.get(f, "")
+                    if nv and str(nv) != str(e.get(f, "")):
+                        edits.append({"title": e["title"], "field": f,
+                                      "from": str(e.get(f, "")), "to": str(nv)})
+        if not (recats or rescued or dropped or edits):
+            print("\nReview corrections: none — your edits matched the proposed dispositions.")
+            return
+        record = {
+            "timestamp": datetime.now().isoformat(timespec="seconds"),
+            "counts": {"recategorized": len(recats), "rescued_from_skip": len(rescued),
+                       "dropped_as_dup_or_unwanted": len(dropped), "field_edits": len(edits)},
+            "recategorized": recats, "rescued_from_skip": rescued,
+            "dropped": dropped, "field_edits": edits,
+        }
+        with open(REVIEW_CORRECTIONS_LOG, "a", encoding="utf-8") as f:
+            f.write(json.dumps(record, ensure_ascii=False) + "\n")
+        c = record["counts"]
+        print(f"\nReview corrections logged to {REVIEW_CORRECTIONS_LOG}: "
+              f"{c['recategorized']} recategorized, {c['rescued_from_skip']} rescued from skip, "
+              f"{c['dropped_as_dup_or_unwanted']} dropped, {c['field_edits']} field edits.")
+    except Exception as ex:
+        print(f"  (review-corrections logging skipped: {ex})")
+
+
 # ─── Read already-filled Categorize and Dedup tabs ───────────────────────────
 
 def read_categorize_tab():
@@ -1589,6 +1649,12 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
     else:
         review_ws = write_review_tab(review_events)
     include_indices, overrides = read_review_tab(review_ws)
+
+    # Log how the user's final choices differ from the script's proposed
+    # dispositions (recategorizations, rescued skips, dropped dupes, field edits)
+    # so recurring mistakes can be profiled later. review_events still holds the
+    # ORIGINAL proposals here — edits are applied just below.
+    log_review_corrections(review_events, include_indices, overrides)
 
     # Apply any manual field edits made in the Review tab. Any of these columns
     # can be edited in the sheet and the edit flows to the calendar write.

@@ -37,3 +37,6 @@ public/images/sabbatical-from-site/
 *.HEIC
 *.mov
 *.MOV
+
+# Add-to-calendar review feedback log (local, per-machine)
+scripts/add-to-calendar/review_corrections.jsonl

@@ -341,6 +341,25 @@ Cost, Tags, or URL — those edits flow to the calendar write. If asked, you can
 help spot remaining cross-source duplicates here (same date + similar title from
 two different sources) and suggest which to mark `n`.
 
+### Review-corrections feedback loop (learn from the user's edits)
+
+At commit, the script diffs its own proposed dispositions against the user's
+final Review-tab choices and appends the corrections to
+**`scripts/add-to-calendar/review_corrections.jsonl`** (gitignored, per-machine)
+— `log_review_corrections()`. Each run records four buckets: `recategorized`
+(calendar the user changed, with from/to + venue), `rescued_from_skip` (events
+the script wrongly flagged as dup/blocklisted), `dropped` (events the user
+caught as dupes/unwanted that the script proposed to add), and `field_edits`.
+
+**The user wants these mined, not narrated during review.** Don't interrupt their
+review to ask about a fix. Instead, periodically (or when they ask) read the log,
+group recurring patterns, and bring a short **profile of mistakes** to confirm —
+then fold confirmed ones into the durable rules: venue→calendar entries in the
+trivia table above, `KNOWN_COMEDY_VENUES` / `KNOWN_NON_MUSIC_VENUES` /
+`KNOWN_TRIVIA_COMPANIES` / `DANCE_PARTY_KEYWORDS` in `portland_events_add.py`,
+the dedup false-positive guards, or `venues.json`. A recategorization that
+recurs for the same venue/keyword is a rule waiting to be written.
+
 ### Venue → URL mappings live in `venues.json` (NOT this skill)
 
 When an event's source URL is a generic listing page, the script links to the

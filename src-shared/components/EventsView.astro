@@ -304,6 +304,17 @@ const MAX_CHIPS = 4; // events shown in a day cell before "+N more"
   const countEl = document.getElementById('result-count');
   const noResults = document.getElementById('no-results');
   const listView = document.getElementById('list-view');
+  const eventsView = document.querySelector<HTMLElement>('.events-view');
+
+  // After a filter change, scroll back to the top of the results so the user
+  // sees the filtered list from the start (only when scrolled down — avoids a
+  // pointless jump if already at the top).
+  function scrollToResultsTop() {
+    if (!eventsView) return;
+    if (eventsView.getBoundingClientRect().top < 0) {
+      eventsView.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
 
   function matches(el: HTMLElement): boolean {
     const cost = el.dataset.cost ?? 'unknown';
@@ -369,6 +380,7 @@ const MAX_CHIPS = 4; // events shown in a day cell before "+N more"
         syncCategoryPills();
       }
       apply();
+      scrollToResultsTop();
     });
   });
 
@@ -386,11 +398,9 @@ const MAX_CHIPS = 4; // events shown in a day cell before "+N more"
     if (dateInput) dateInput.value = value;
     dateClear?.classList.toggle('hidden', !value);
     apply();
-    if (value) {
-      // Scroll the chosen day into view under the sticky filter bar.
-      document.querySelector<HTMLElement>(`.date-group[data-date="${value}"]`)
-        ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+    // Scroll back to the top of the results rather than to the chosen day,
+    // so the filtered list reads from the start.
+    scrollToResultsTop();
   }
   dateInput?.addEventListener('change', () => setDate(dateInput.value));
   dateClear?.addEventListener('click', () => setDate(''));
@@ -404,6 +414,7 @@ const MAX_CHIPS = 4; // events shown in a day cell before "+N more"
       .forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.value === 'all')));
     syncCategoryPills();
     apply();
+    scrollToResultsTop();
   });
 
   // ---- View toggle (List / Calendar) -----------------------------------

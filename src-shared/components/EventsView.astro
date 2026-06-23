@@ -315,11 +315,13 @@ const MAX_CHIPS = 4; // events shown in a day cell before "+N more"
   // predictable regardless of the interim clamped position.
   // `delay` lets the date input wait out its native picker's dismissal
   // animation (which outlasts a single frame); pills use a short default.
-  function scrollToResultsTop(delay = 120) {
+  // `behavior: 'auto'` (instant) avoids a smooth animation being interrupted
+  // mid-scroll, used for the fragile date case.
+  function scrollToResultsTop(delay = 120, behavior: ScrollBehavior = 'smooth') {
     if (!eventsView) return;
     setTimeout(() => {
       const top = window.scrollY + eventsView.getBoundingClientRect().top;
-      window.scrollTo({ top, behavior: 'smooth' });
+      window.scrollTo({ top, behavior });
     }, delay);
   }
 
@@ -406,12 +408,17 @@ const MAX_CHIPS = 4; // events shown in a day cell before "+N more"
     dateClear?.classList.toggle('hidden', !value);
     apply();
     // Scroll back to the top of the results rather than to the chosen day, so
-    // the filtered list reads from the start. Longer delay: on mobile the date
-    // input's native picker is still dismissing, and a scroll fired before it
-    // settles gets dropped (this is the date→date "no scroll" case).
-    scrollToResultsTop(350);
+    // the filtered list reads from the start. Longer delay to outlast the native
+    // picker dismissal, and instant behavior so it can't be interrupted.
+    scrollToResultsTop(350, 'auto');
   }
-  dateInput?.addEventListener('change', () => setDate(dateInput.value));
+  dateInput?.addEventListener('change', () => {
+    // iOS keeps the date input focused after the picker closes, and ignores
+    // programmatic scrolls while a field is focused — blur to release that lock
+    // so the scroll-to-top actually takes effect (the date→date "no scroll" bug).
+    dateInput.blur();
+    setDate(dateInput.value);
+  });
   dateClear?.addEventListener('click', () => setDate(''));
 
   document.getElementById('clear-filters')?.addEventListener('click', () => {

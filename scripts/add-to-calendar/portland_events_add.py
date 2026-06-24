@@ -33,6 +33,7 @@ import html
 import json
 import re
 import sys
+import unicodedata
 from datetime import datetime, timedelta
 from pathlib import Path
 
@@ -382,28 +383,49 @@ def step2_deduplicate(rows, existing_by_cal, cross_source_skip=None, cross_sourc
                for cal_name, indexed_rows in by_cal.items()
                for orig_idx, row in indexed_rows]
 
+    # Index existing calendar events by date for venue+time matching.
+    vt_index = build_venue_time_index(existing_by_cal)
+
     incoming_data = []
     prefilled = 0
+    vt_sure = vt_unsure = 0
     for orig_idx, row, cal_name in ordered:
+        title    = get(row, "Title", "title", "summary")
+        date_str = get(row, "Date", "date")
+        location = get(row, "Location", "location", "Venue", "venue")
+        time_str = get(row, "Time", "time", "Start Time", "start_time")
         is_dup = orig_idx in cross_source_skip
         note = ""
+        skip_flag = ""
         if is_dup:
             prefilled += 1
+            skip_flag = "y"
             winner = cross_source_dup_of.get(orig_idx)
-            if winner is not None:
-                note = f"cross-source dup of #{winner}"
-            else:
-                note = "cross-source duplicate (auto)"
+            note = (f"cross-source dup of #{winner}" if winner is not None
+                    else "cross-source duplicate (auto)")
+        else:
+            # Venue + date + overlapping start time against existing calendar events.
+            vt = find_venue_time_dup(title, date_str, location, time_str, vt_index)
+            if vt:
+                esum, is_sure = vt
+                if is_sure:
+                    skip_flag = "y"
+                    note = f"venue+time dup of on-cal: {esum[:55]}"
+                    vt_sure += 1
+                else:
+                    skip_flag = "?"  # unsure — surfaced in Review for a human call
+                    note = f"venue+time overlap (review): {esum[:55]}"
+                    vt_unsure += 1
         incoming_data.append([
-            orig_idx,
-            get(row, "Title", "title", "summary"),
-            get(row, "Date", "date"),
-            get(row, "Location", "location", "Venue", "venue"),
-            get(row, "Source", "source"),
-            cal_name,
-            "y" if is_dup else "",  # Skip? — pre-filled for intra-batch dupes
+            orig_idx, title, date_str, location,
+            get(row, "Source", "source"), cal_name,
+            skip_flag,  # Skip? — 'y' auto-skip, '?' needs review, '' keep
             note,
         ])
+
+    if vt_sure or vt_unsure:
+        print(f"  Venue+time match: {vt_sure} sure dup(s) auto-skipped, "
+              f"{vt_unsure} unsure flagged '?' for review")
 
     ws.append_rows(incoming_data, value_input_option="USER_ENTERED")
 
@@ -792,12 +814,15 @@ REVIEW_TAB = "Review"
 REVIEW_HEADERS = [
     "→ Include? (y/n)", "#", "Date", "Time", "Calendar",
     "Title", "Location", "Cost", "Tags", "Source", "URL", "Calendar Link",
+    "Dedup Note",
 ]
 REVIEW_INSTRUCTIONS = (
     "Type 'y' in the Include column to add an event, 'n' to skip. "
     "You can also EDIT any of Date, Time, Calendar, Title, Location, Cost, Tags, URL — "
     "your edits are written to the calendar. "
     "Suggested duplicates are pre-filled 'n' (highlighted). "
+    "Rows pre-filled '?' (orange) overlap an existing event at the same venue+time — "
+    "see 'Dedup Note' and change to 'y' to add or 'n' to skip. "
     "'Calendar Link' shows the link the event will get; rows flagged 'look up venue' "
     "have no specific link (add the venue to venues.json, or paste a URL in the URL column). "
     "When done, return to the terminal and press Enter."
@@ -824,9 +849,16 @@ def write_review_tab(events, interactive=True):
 
     data = []
     dup_rows = []     # 1-indexed sheet rows to highlight (duplicates)
+    review_rows = []  # 1-indexed sheet rows to highlight (venue+time '?' review)
     lookup_rows = []  # 1-indexed sheet rows needing a venue lookup
     for e in events:
-        include_suggestion = "n" if e.get("suggested_skip") else ""
+        vt_note = e.get("vt_review_note", "")
+        if e.get("suggested_skip"):
+            include_suggestion = "n"
+        elif vt_note:
+            include_suggestion = "?"  # venue+time overlap — needs a human call
+        else:
+            include_suggestion = ""
 
         # Resolve what calendar link this event will actually get
         loc_for_url = e["location"]
@@ -846,10 +878,13 @@ def write_review_tab(events, interactive=True):
             e["source"],
             e["url"],
             link_display,
+            vt_note,
         ])
         sheet_row = len(data) + 2  # +2 for header + instructions rows
         if e.get("suggested_skip"):
             dup_rows.append(sheet_row)
+        elif vt_note:
+            review_rows.append(sheet_row)
         if not resolved_url:
             lookup_rows.append(sheet_row)
 
@@ -859,15 +894,19 @@ def write_review_tab(events, interactive=True):
 
     # Format header + instructions + dup rows + lookup-link cells in one batch
     formats = [
-        {"range": "A1:L1", "format": {"textFormat": {"bold": True}}},
-        {"range": "A2:L2", "format": {
+        {"range": "A1:M1", "format": {"textFormat": {"bold": True}}},
+        {"range": "A2:M2", "format": {
             "textFormat": {"italic": True},
             "backgroundColor": {"red": 1.0, "green": 0.95, "blue": 0.8},
         }},
     ]
     dup_fmt = {"backgroundColor": {"red": 1.0, "green": 0.95, "blue": 0.6}}
     for row_num in dup_rows:
-        formats.append({"range": f"A{row_num}:L{row_num}", "format": dup_fmt})
+        formats.append({"range": f"A{row_num}:M{row_num}", "format": dup_fmt})
+    # Venue+time '?' rows — orange so they stand out from yellow auto-skips
+    review_fmt = {"backgroundColor": {"red": 1.0, "green": 0.8, "blue": 0.6}}
+    for row_num in review_rows:
+        formats.append({"range": f"A{row_num}:M{row_num}", "format": review_fmt})
     # Highlight just the Calendar Link cell (column L) for lookup-needed rows
     lookup_fmt = {"backgroundColor": {"red": 1.0, "green": 0.85, "blue": 0.85}}
     for row_num in lookup_rows:
@@ -1038,19 +1077,28 @@ def open_existing_tab(name):
 
 
 def read_dedup_tab():
-    """Read skip flags from an already-filled Dedup tab.
-    Returns a set of data indices marked 'y'.
+    """Read flags from an already-filled Dedup tab.
+
+    Returns (skip_indices, review_flags):
+      skip_indices — set of indices marked 'y' (skip as a duplicate)
+      review_flags — dict {index: note} for indices marked '?' (a venue+time
+                     overlap that needs a human call; not auto-skipped)
     """
     client = get_sheets_client()
     ws = client.open_by_key(SHEET_ID).worksheet(DEDUP_TAB)
     all_values = ws.get_all_values()
     skip_indices = set()
+    review_flags = {}
     for row in all_values[2:]:  # skip header + instructions
         if not row or not row[0].isdigit():
             continue
-        if row[6].strip().lower() == "y" if len(row) > 6 else False:
+        flag = row[6].strip().lower() if len(row) > 6 else ""
+        note = row[7].strip() if len(row) > 7 else ""
+        if flag == "y":
             skip_indices.add(int(row[0]))
-    return skip_indices
+        elif flag == "?":
+            review_flags[int(row[0])] = note
+    return skip_indices, review_flags
 
 
 # ─── Blocklist ───────────────────────────────────────────────────────────────
@@ -1114,9 +1162,12 @@ def parse_tags_from_description(desc):
 
 
 def _title_words(s):
-    """Significant words only — same stopword set as _fuzzy_dedup_incoming."""
+    """Significant words only — same stopword set as _fuzzy_dedup_incoming.
+    Accent-insensitive (so 'Andrés' matches 'ANDRES')."""
     stop = {"the", "a", "an", "and", "&", "with", "w", "at", "in", "of",
             "feat", "ft", "vs", "plus", "+", "•", "-"}
+    s = unicodedata.normalize("NFKD", s)
+    s = "".join(c for c in s if not unicodedata.combining(c))
     return {w for w in re.sub(r"[^a-z0-9 ]", " ", s.lower()).split() if w not in stop and len(w) > 1}
 
 
@@ -1140,6 +1191,81 @@ def find_matching_existing_event(title, date_str, cal_id, existing_by_cal):
         if overlap > best_score:
             best_score, best = overlap, ev
     return best if best_score >= 0.55 else None
+
+
+# ─── Venue + time duplicate detection ────────────────────────────────────────
+# Title-overlap alone misses the same show billed under a different headliner
+# (sources list "Rx Bandits" vs "Rx Bandits, Maps & Atlases", or just a support
+# act). Two events at the same venue on the same date within a couple hours are
+# almost always the same show. We flag those against existing calendar events:
+#   - titles share a significant word  -> sure duplicate (auto-skip, 'y')
+#   - titles don't overlap             -> unsure, flag '?' + note for review
+# Festivals/parks are multi-act all-day venues, so a sub-act there is NOT a true
+# duplicate of the umbrella event — those are always treated as unsure.
+
+VENUE_TIME_THRESHOLD_MIN = 150  # same venue+date, starts within 2.5h = same show
+_FESTIVAL_RE = re.compile(
+    r"festival|parkways|comedy in the park|good in the hood|night market|porchfest|street fair",
+    re.I)
+# Park / waterfront host multi-act festivals; "farm" is excluded because Topaz
+# Farm etc. host single concerts, not festivals.
+_PARK_VENUE_RE = re.compile(r"\bpark\b|waterfront", re.I)
+
+
+def _start_minutes(dt_iso):
+    m = re.search(r"T(\d{2}):(\d{2})", dt_iso or "")
+    return int(m.group(1)) * 60 + int(m.group(2)) if m else None
+
+
+def build_venue_time_index(existing_by_cal):
+    """date(str) -> list of (venue_norm, start_minutes|None, summary, is_festival).
+    Pooled across every calendar so a concert can match a festival umbrella or a
+    mis-categorized event on another calendar."""
+    index = {}
+    for evs in existing_by_cal.values():
+        for ev in evs:
+            start = ev.get("start", {})
+            d = (start.get("dateTime") or start.get("date") or "")[:10]
+            loc = ev.get("location", "")
+            vnorm = normalize_venue(loc)
+            if not d or not vnorm:
+                continue
+            summary = ev.get("summary", "")
+            is_fest = bool(_FESTIVAL_RE.search(summary)) or bool(_PARK_VENUE_RE.search(loc))
+            index.setdefault(d, []).append(
+                (vnorm, _start_minutes(start.get("dateTime", "")), summary, is_fest))
+    return index
+
+
+def find_venue_time_dup(title, date_str, location, time_str, vt_index):
+    """If an existing event shares venue + date + overlapping start time, return
+    (existing_summary, is_sure). is_sure means the titles share a significant
+    word (high-confidence same show); festival/park matches are never 'sure'.
+    Returns None when there's no venue+time collision.
+
+    When several existing events share the slot (e.g. a single-act listing AND
+    the full-bill listing of the same show), prefer the one whose title contains
+    this act — so an act matches the bill it appears in, not a co-bill listed
+    separately."""
+    vnorm = normalize_venue(location)
+    if not vnorm:
+        return None
+    m = re.match(r"^\s*(\d{1,2}):(\d{2})\s*$", time_str or "")
+    cm = int(m.group(1)) * 60 + int(m.group(2)) if m else None
+    wt = _title_words(title)
+    fallback = None
+    for (evenue, estart, esum, is_fest) in vt_index.get(date_str, []):
+        if evenue != vnorm:
+            continue
+        if cm is not None and estart is not None and abs(cm - estart) > VENUE_TIME_THRESHOLD_MIN:
+            continue
+        if is_fest:
+            continue  # festival sub-acts are kept as separate events, not deduped
+        if wt & _title_words(esum):
+            return (esum, True)         # this act is in that bill — sure dup
+        if fallback is None:
+            fallback = (esum, False)    # same slot, different billing — hold '?'
+    return fallback
 
 
 def compute_event_refresh(existing_event, new_url, new_cost, new_tags_str, source):
@@ -1479,6 +1605,7 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
         return
 
     # ── Step 1: Categorize + Step 2: Deduplicate ─────────────────────────────
+    vt_review_flags = {}  # idx -> note, for venue+time overlaps needing review ('?')
     if skip_to_review or stage in ("review", "commit"):
         # Read already-filled Categorize and Dedup tabs — skip interactive steps
         print("\nReading Categorize tab...")
@@ -1489,8 +1616,10 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
         print(f"  {len(cat_assignments)} calendar assignments read")
 
         print("Reading Dedup tab...")
-        ai_skip = read_dedup_tab()
+        ai_skip, vt_review_flags = read_dedup_tab()
         print(f"  {len(ai_skip)} events flagged as duplicates")
+        if vt_review_flags:
+            print(f"  {len(vt_review_flags)} event(s) flagged '?' for venue+time review")
     else:
         if no_ai:
             calendar_assignments = [get(r, "Calendar", "calendar") for r in rows]
@@ -1618,6 +1747,8 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
             "suggested_skip": (i in ai_skip or i in exact_skip
                                or _norm_title(title) in blocklist
                                or "sold out" in title.lower()),
+            # venue+time overlap that needs a human call ('?' + note), if any
+            "vt_review_note": vt_review_flags.get(i, ""),
             # stash for later use
             "_row":           row,
         })

@@ -1,73 +1,82 @@
 """
 Scraper for Bandsintown — Portland concerts
 URL: https://www.bandsintown.com/c/portland-or
-Format: JS-rendered (Playwright). CSS classes are obfuscated/hashed, so we
-        parse from stable signals instead:
-          - href: /e/{id}-{artist}-at-{venue}  → artist + venue from slug
-          - container text: "{Mon Day}- {h:mm am/pm}"  → date + time
+
+Bandsintown is JS-rendered and behind Cloudflare. The previous version parsed
+obfuscated DOM (artist/venue from /e/ slugs, date/time from container text). That
+broke twice: (1) the page stopped exposing `<a href="/e/...">` links, and (2) the
+date was read from a walked-up ancestor that could span multiple cards, so a
+promo/"popular artists" block collapsed many events onto one shared date.
+
+This version instead drives the site's own JSON pagination endpoint:
+  /all-dates/fetch-next/upcomingEvents?page=N&longitude=..&latitude=..
+Each event arrives as structured JSON with its own `startsAt`/`endsAt`,
+`artistName`, `venueName`, `locationText`, and `eventUrl` — so every event keeps
+its real date. The endpoint is Cloudflare-protected, so we call it from inside a
+Playwright page context (which has already cleared the challenge) rather than with
+plain requests (which gets a 403 "Just a moment..." page).
+
 Calendar: music (concerts)
 """
 
 import re
 import asyncio
-from datetime import date
-from dateutil import parser as dp
-from .base import make_event, parse_time_12h, CALENDAR_MUSIC
+from datetime import date, datetime
+
+from .base import make_event, CALENDAR_MUSIC
 
 SOURCE = "Bandsintown"
-URL = "https://www.bandsintown.com/c/portland-or"
+CITY_URL = "https://www.bandsintown.com/c/portland-or"
+
+# Portland, OR coordinates used by the city page's fetch-next endpoint.
+LONGITUDE = "-122.67621"
+LATITUDE = "45.52345"
+FETCH_NEXT = (
+    "https://www.bandsintown.com/all-dates/fetch-next/upcomingEvents"
+    "?page=%d&longitude=" + LONGITUDE + "&latitude=" + LATITUDE
+)
+MAX_PAGES = 30  # safety cap; endpoint returns ~36/page, stops on empty
 
 PLAYWRIGHT_ARGS = ["--disable-blink-features=AutomationControlled", "--no-sandbox"]
 PLAYWRIGHT_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
 
-MONTHS = "Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec"
+# Only keep events in Oregon / SW Washington — the distance-sorted feed bleeds
+# into other states on later pages.
+KEEP_REGION = ("OR", "WA")
 
 
-def _slug_to_artist_venue(href: str) -> tuple[str, str]:
-    """Parse /e/{id}-{artist}-at-{venue} into (artist, venue)."""
-    m = re.search(r"/e/\d+-(.+)$", href.split("?")[0].rstrip("/"))
-    if not m:
+def _iso_date_time(value: str) -> tuple[str, str]:
+    """'2026-06-23T17:30:00' -> ('2026-06-23', '17:30'). Missing/garbage -> ('','')."""
+    if not value:
         return "", ""
-    slug = m.group(1)
-    if "-at-" in slug:
-        artist_slug, venue_slug = slug.rsplit("-at-", 1)
-    else:
-        artist_slug, venue_slug = slug, ""
-
-    def deslug(s: str) -> str:
-        return " ".join(w.capitalize() for w in s.split("-")).strip()
-
-    return deslug(artist_slug), deslug(venue_slug)
+    try:
+        dt = datetime.fromisoformat(value)
+        return dt.strftime("%Y-%m-%d"), dt.strftime("%H:%M")
+    except (ValueError, TypeError):
+        return "", ""
 
 
-def _parse_date_time(text: str) -> tuple[str, str]:
-    """Extract date + time from container text like 'Jun 23- 7:00 pm'."""
-    today = date.today()
-    date_str = ""
-    time_str = ""
+def _location(venue: str, loc_text: str) -> str:
+    """Combine venue + 'City, ST' without duplicating the venue name."""
+    venue = (venue or "").strip()
+    loc_text = (loc_text or "").strip()
+    if venue and loc_text and loc_text.lower() not in venue.lower():
+        return f"{venue}, {loc_text}"
+    return venue or loc_text
 
-    date_m = re.search(rf"({MONTHS})\s+(\d{{1,2}})", text)
-    if date_m:
-        try:
-            parsed = dp.parse(f"{date_m.group(1)} {date_m.group(2)} {today.year}")
-            if parsed.date() < today:
-                parsed = parsed.replace(year=today.year + 1)
-            date_str = parsed.strftime("%Y-%m-%d")
-        except Exception:
-            pass
 
-    time_m = re.search(r"\d{1,2}:\d{2}\s*[ap]m", text, re.I)
-    if time_m:
-        time_str = parse_time_12h(time_m.group(0))
-
-    return date_str, time_str
+def _in_region(loc_text: str) -> bool:
+    """True if 'City, ST' ends with a kept state code (OR / WA)."""
+    if not loc_text:
+        return True  # keep when unknown rather than silently drop
+    state = loc_text.rsplit(",", 1)[-1].strip().upper()
+    return state in KEEP_REGION
 
 
 async def _fetch() -> list:
     from playwright.async_api import async_playwright
-    from bs4 import BeautifulSoup
 
-    events = []
+    raw_events = []
     try:
         async with async_playwright() as p:
             browser = await p.chromium.launch(headless=True, args=PLAYWRIGHT_ARGS)
@@ -81,69 +90,170 @@ async def _fetch() -> list:
                 'Object.defineProperty(navigator, "webdriver", {get: () => undefined})'
             )
             page = await context.new_page()
-            await page.goto(URL, wait_until="domcontentloaded", timeout=30000)
-            await page.wait_for_timeout(5000)
-            content = await page.content()
+            # Load the city page once so the page context clears Cloudflare and
+            # carries the cookies needed by the fetch-next endpoint.
+            await page.goto(CITY_URL, wait_until="domcontentloaded", timeout=30000)
+            await page.wait_for_timeout(4000)
+
+            fetch_js = """async (url) => {
+                const r = await fetch(url, {headers: {'Accept': 'application/json'}});
+                return {status: r.status, body: await r.text()};
+            }"""
+
+            import json as _json
+            for page_num in range(1, MAX_PAGES + 1):
+                res = await page.evaluate(fetch_js, FETCH_NEXT % page_num)
+                if res["status"] != 200:
+                    print(f"  [{SOURCE}] page {page_num} HTTP {res['status']}, stopping")
+                    break
+                try:
+                    data = _json.loads(res["body"])
+                except ValueError:
+                    print(f"  [{SOURCE}] page {page_num} non-JSON response, stopping")
+                    break
+                events = data.get("events") or []
+                if not events:
+                    break
+                raw_events.extend(events)
+                if not data.get("urlForNextPageOfEvents"):
+                    break
+
             await browser.close()
-
-        soup = BeautifulSoup(content, "lxml")
-        seen = set()
-        for a in soup.find_all("a", href=re.compile(r"/e/\d")):
-            href = a.get("href", "").split("?")[0]
-            if href in seen:
-                continue
-            seen.add(href)
-
-            artist, venue = _slug_to_artist_venue(href)
-            if not artist:
-                continue
-
-            # Walk up a few levels to capture the date/time text
-            container = a
-            for _ in range(4):
-                if container.parent:
-                    container = container.parent
-            text = container.get_text(" ", strip=True)
-            date_str, time_str = _parse_date_time(text)
-            if not date_str:
-                continue
-
-            events.append(make_event(
-                title=artist,
-                date=date_str,
-                time=time_str,
-                location=venue,
-                url=href,
-                tags=["music", "concert"],
-                calendar=CALENDAR_MUSIC,
-                source=SOURCE,
-            ))
     except Exception as e:
         print(f"  [{SOURCE}] Error: {e}")
 
-    return events
+    return raw_events
+
+
+# Park / waterfront venues host multi-act festivals (acts spread across the day,
+# each its own set) — those stay as separate events. Everywhere else, multiple
+# acts at the same venue + date within a couple hours are one show's bill.
+_FESTIVAL_VENUE_RE = re.compile(r"\bpark\b|waterfront", re.I)
+_SAME_SHOW_GAP_MIN = 120
+
+
+def _to_minutes(t):
+    m = re.match(r"^(\d{1,2}):(\d{2})$", t or "")
+    return int(m.group(1)) * 60 + int(m.group(2)) if m else None
+
+
+def _merge_cluster(cluster):
+    """Combine several acts at one show into a single event with all names in
+    the title, the earliest start, and the latest known end."""
+    acts = []
+    for e in cluster:
+        if e["title"] not in acts:
+            acts.append(e["title"])
+    starts = [e["time"] for e in cluster if e["time"]]
+    ends = [e["end_time"] for e in cluster if e["end_time"]]
+    rep = cluster[0]  # earliest by time — carries venue + a valid event URL
+    return make_event(
+        title=", ".join(acts),
+        date=rep["date"],
+        time=min(starts) if starts else "",
+        end_time=max(ends) if ends else "",
+        location=rep["location"],
+        url=rep["url"],
+        tags=["music", "concert"],
+        calendar=CALENDAR_MUSIC,
+        source=SOURCE,
+    )
+
+
+def _merge_co_bills(events):
+    """Bandsintown lists each act of a multi-act bill as its own event. Collapse
+    the acts of one show (same venue + date, starts within ~2h) into a single
+    combined-title event. Festival/park venues are left as separate events."""
+    from collections import defaultdict
+    groups = defaultdict(list)
+    for e in events:
+        venue = e["location"].split(",")[0].strip().lower()
+        groups[(venue, e["date"])].append(e)
+
+    merged = []
+    for (venue, date), evs in groups.items():
+        if len(evs) == 1:
+            merged.append(evs[0])
+            continue
+        # Festivals: keep every act as its own event.
+        if _FESTIVAL_VENUE_RE.search(evs[0]["location"]) or len(evs) > 6:
+            merged.extend(evs)
+            continue
+        # Cluster by start-time gaps; a gap > 2h starts a new (separate) show.
+        evs.sort(key=lambda e: (_to_minutes(e["time"]) if _to_minutes(e["time"]) is not None else 9999))
+        clusters, cur, last = [], [], None
+        for e in evs:
+            m = _to_minutes(e["time"])
+            if cur and m is not None and last is not None and m - last > _SAME_SHOW_GAP_MIN:
+                clusters.append(cur)
+                cur = []
+            cur.append(e)
+            if m is not None:
+                last = m
+        if cur:
+            clusters.append(cur)
+        for cl in clusters:
+            merged.append(cl[0] if len(cl) == 1 else _merge_cluster(cl))
+    return merged
 
 
 def scrape():
-    events = asyncio.run(_fetch())
+    raw = asyncio.run(_fetch())
 
     today = date.today()
     seen = set()
-    unique = []
-    for e in events:
+    out = []
+    skipped_region = 0
+    for ev in raw:
+        if ev.get("streamingEvent"):
+            continue  # livestreams aren't local events
+        loc_text = ev.get("locationText", "")
+        if not _in_region(loc_text):
+            skipped_region += 1
+            continue
+
+        date_str, time_str = _iso_date_time(ev.get("startsAt", ""))
+        if not date_str:
+            continue  # never emit an event without a real date
+        _, end_time = _iso_date_time(ev.get("endsAt", ""))
+
         try:
-            if date.fromisoformat(e["date"]) < today:
+            if date.fromisoformat(date_str) < today:
                 continue
         except ValueError:
             continue
-        key = (e["title"].lower()[:50], e["date"])
-        if key not in seen:
-            seen.add(key)
-            unique.append(e)
 
-    unique.sort(key=lambda e: (e.get("date", ""), e.get("time", "")))
-    print(f"  [{SOURCE}] Found {len(unique)} events")
-    return unique
+        artist = (ev.get("artistName") or "").strip()
+        if not artist:
+            continue
+
+        key = (artist.lower()[:50], date_str)
+        if key in seen:
+            continue
+        seen.add(key)
+
+        out.append(make_event(
+            title=artist,
+            date=date_str,
+            time=time_str,
+            end_time=end_time,
+            location=_location(ev.get("venueName", ""), loc_text),
+            url=(ev.get("eventUrl") or "").split("?")[0],
+            tags=["music", "concert"],
+            calendar=CALENDAR_MUSIC,
+            source=SOURCE,
+        ))
+
+    before_merge = len(out)
+    out = _merge_co_bills(out)
+    merged_n = before_merge - len(out)
+
+    out.sort(key=lambda e: (e.get("date", ""), e.get("time", "")))
+    extra = f" ({skipped_region} skipped: out of region)" if skipped_region else ""
+    if merged_n:
+        extra += f" ({merged_n} co-bill act(s) merged)"
+    print(f"  [{SOURCE}] Found {len(out)} events{extra}")
+    return out
 
 
 if __name__ == "__main__":

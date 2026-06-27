@@ -88,6 +88,25 @@ def is_redundant_trivia(title):
     title_l = title.lower()
     return "trivia" in title_l and any(c in title_l for c in KNOWN_TRIVIA_COMPANIES)
 
+
+# Imported, read-only calendar of Shift / Pedalpalooza bike rides. This script
+# never writes it, but its events are folded into the Portland Events dedup set
+# so bike rides already listed here don't get re-added as new Events events.
+PEDALPALOOZA_CALENDAR_ID = "d11s65r5vlq540k2aicdm8c7ndrp6dsl@import.calendar.google.com"
+
+# Recurring listings the user consistently drops at Review (e.g. tourist cruise
+# schedules) — dropped before Categorize, like redundant trivia. Grow this from
+# patterns surfaced by the review-corrections log (see log_review_corrections).
+KNOWN_DROP_PATTERNS = [
+    "portland spirit",   # recurring sightseeing / dinner-cruise listings
+]
+
+
+def is_unwanted_recurring(title):
+    """True for recurring listings the user has repeatedly dropped at Review."""
+    title_l = title.lower()
+    return any(p in title_l for p in KNOWN_DROP_PATTERNS)
+
 CALENDAR_ALIASES = {
     "portland events":             "Portland Events",
     "main":                        "Portland Events",
@@ -1493,6 +1512,12 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
     if before != len(rows):
         print(f"  Dropped {before - len(rows)} trivia event(s) from companies already covered by trivia_generate.py")
 
+    # Drop recurring listings the user consistently rejects (tourist cruises, …).
+    before = len(rows)
+    rows = [r for r in rows if not is_unwanted_recurring(get(r, "Title", "title", "summary"))]
+    if before != len(rows):
+        print(f"  Dropped {before - len(rows)} unwanted recurring listing(s) (see KNOWN_DROP_PATTERNS)")
+
     # ── Clean up scraper title artifacts ─────────────────────────────────────
     # Recurring events occasionally get rescraped with a WordPress-style
     # "(Copy)" suffix piled on each time (seen repeatedly at Swan Dive, e.g.
@@ -1584,6 +1609,18 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
         existing_titles_by_cal[cal_id] = {ev.get("summary", "").lower().strip() for ev in evs}
         if evs:
             print(f"  {cal_name}: {len(evs)} existing")
+
+    # Bike rides scraped into Portland Events are almost always already on the
+    # imported Pedalpalooza calendar (which this script doesn't write). Fold
+    # those events into the Portland Events dedup set so recurring rides get
+    # flagged as duplicates instead of landing in Review every run.
+    pdx_events_id = CALENDARS["Portland Events"]
+    pedal_evs = fetch_existing_events(service, PEDALPALOOZA_CALENDAR_ID, min_date, max_date)
+    if pedal_evs:
+        existing_by_cal[pdx_events_id].extend(pedal_evs)
+        existing_titles_by_cal[pdx_events_id].update(
+            ev.get("summary", "").lower().strip() for ev in pedal_evs)
+        print(f"  Pedalpalooza (folded into Portland Events dedup): {len(pedal_evs)} existing")
 
     # ── Intra-batch cross-source dedup (computed up front) ───────────────────
     # The same show scraped from two sources (slightly different caps / punctuation

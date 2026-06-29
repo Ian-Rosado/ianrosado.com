@@ -29,8 +29,9 @@ The `.claude/launch.json` is configured for the preview server using the full no
 
 ## Portland Events Tooling Setup (new machine)
 
-The Portland Events calendar scripts and Instagram post workflow (`scripts/add-to-calendar/`,
-`.claude/skills/portland-events-instagram-post/`, `.claude/skills/portland-events-add-workflow/`)
+The Portland Events calendar scripts and Instagram workflows (`scripts/add-to-calendar/`,
+`.claude/skills/portland-events-instagram-post/`, `.claude/skills/portland-events-instagram-ingest/`,
+`.claude/skills/portland-events-add-workflow/`)
 need a few things that **aren't in git** — set these up once per machine:
 
 1. **Copy the calendar credentials** — these are gitignored on purpose (secrets) and must be
@@ -40,9 +41,16 @@ need a few things that **aren't in git** — set these up once per machine:
 
 2. **Install Python deps + Playwright's browser:**
    ```powershell
-   pip install google-auth google-api-python-client playwright
+   pip install google-auth google-api-python-client playwright gspread requests
+   pip install yt-dlp   # optional — improves the Instagram-ingest fetch hit rate
    playwright install chromium
    ```
+
+   The Instagram-ingest flow ("save posts on your phone all week, then run the
+   batch") is documented in the **portland-events-instagram-ingest** skill and
+   driven by `scripts/add-to-calendar/instagram_events.py`. Links land in an
+   "IG Inbox" sheet tab; the script fetches each flyer + caption, Claude extracts
+   the event fields, and the rows feed the normal add-to-calendar review/commit.
 
 3. **Install GitHub CLI** (so PRs can be opened from the new machine), then authenticate:
    ```powershell

@@ -5,3 +5,6 @@ __pycache__/
 output/
 .venv/
 venv/
+
+# Instagram ingest working dir (fetched flyers + manifest, per-machine)
+ig_work/

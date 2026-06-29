@@ -18,6 +18,7 @@ anywhere.
 
 | Step | Command | Who | Blocks? |
 |---|---|---|---|
+| 0. (optional) Instagram saved posts → Inbox | `cd scripts/add-to-calendar` then `python instagram_events.py fetch` → Claude extracts → `python instagram_events.py write ig_work/rows.json` | Claude/you | No |
 | 1. Scrape → Inbox | `cd scripts/event-scrapers` then `python run_all.py --days 30 --push-to-sheets --clear` | Claude/you | No |
 | 2. Prep tabs | `cd scripts/add-to-calendar` then `python portland_events_add.py --stage prep` | Claude/you | No |
 | 3. Fill Categorize + Dedup | *(Claude fills via the sheet scripts, or you fill by hand)* | Claude | — |
@@ -27,6 +28,11 @@ anywhere.
 
 `--yes` skips the final "type yes" confirmation (needed for unattended runs).
 Leave it off if you want the prompt.
+
+> ⚠️ If you use the Instagram ingest (step 0), run it **after** the scrape, or
+> run the scrape **without** `--clear` — `--clear` wipes the whole Inbox tab,
+> including freshly-added IG rows. The full Instagram flow lives in the
+> **portland-events-instagram-ingest** skill.
 
 The old behavior is unchanged: `python portland_events_add.py --from-sheets`
 (no `--stage`) still runs the original interactive flow with the four pauses,

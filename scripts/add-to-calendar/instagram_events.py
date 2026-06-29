@@ -167,73 +167,89 @@ def shortcode(url):
     return m.group(1) if m else None
 
 
-def fetch_post(url, dest_dir):
+def fetch_post(url, dest_dir, cookies_from_browser=None):
     """
     Best-effort fetch of a public post's first image + caption, no login.
 
     Returns {"url", "shortcode", "caption", "image": <path or None>, "error"}.
-    Tries the public og: meta tags first, then yt-dlp if installed. Instagram
-    increasingly gates content behind login, so failures are expected and are
-    reported (not raised) so the batch keeps going — Claude can still open the
-    link by hand, or you can paste the caption.
+    Instagram 403s anonymous requests, so the reliable path is a logged-in
+    fetch. Pass `cookies_from_browser` (e.g. "chrome") to have yt-dlp reuse the
+    browser you're already signed into Instagram on — that gets past the wall
+    without you exporting anything. Without cookies it falls back to public
+    og: meta tags, which often fail; failures are reported (not raised) so the
+    batch keeps going.
+
+    Order: with cookies, try the logged-in yt-dlp fetch first (most reliable);
+    without, try the anonymous og: tags first, then yt-dlp as a long shot.
     """
     code = shortcode(url) or "post"
     result = {"url": url, "shortcode": code, "caption": "", "image": None, "error": ""}
 
-    # --- Attempt 1: public Open Graph meta tags ---
-    try:
-        import requests
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                          "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36",
-            "Accept-Language": "en-US,en;q=0.9",
-        }
-        resp = requests.get(url, headers=headers, timeout=20)
-        html = resp.text
-        og_img = re.search(r'property=["\']og:image["\']\s+content=["\']([^"\']+)', html)
-        og_desc = re.search(r'property=["\']og:description["\']\s+content=["\']([^"\']+)', html)
-        if og_desc:
-            desc = og_desc.group(1)
-            # og:description looks like: 123 likes, 4 comments - user on Date: "caption"
-            m = re.search(r':\s*"(.+)"\s*$', desc, re.S)
-            result["caption"] = (m.group(1) if m else desc).strip()
-        if og_img:
-            img_url = og_img.group(1).replace("&amp;", "&")
-            img = requests.get(img_url, headers=headers, timeout=20)
-            if img.ok and img.content:
-                p = dest_dir / f"{code}.jpg"
-                p.write_bytes(img.content)
-                result["image"] = str(p)
-        if result["caption"] or result["image"]:
+    def try_og():
+        try:
+            import requests
+            headers = {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                              "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36",
+                "Accept-Language": "en-US,en;q=0.9",
+            }
+            resp = requests.get(url, headers=headers, timeout=20)
+            html = resp.text
+            og_img = re.search(r'property=["\']og:image["\']\s+content=["\']([^"\']+)', html)
+            og_desc = re.search(r'property=["\']og:description["\']\s+content=["\']([^"\']+)', html)
+            if og_desc:
+                desc = og_desc.group(1)
+                # og:description looks like: 123 likes, 4 comments - user on Date: "caption"
+                m = re.search(r':\s*"(.+)"\s*$', desc, re.S)
+                result["caption"] = (m.group(1) if m else desc).strip()
+            if og_img:
+                img_url = og_img.group(1).replace("&amp;", "&")
+                img = requests.get(img_url, headers=headers, timeout=20)
+                if img.ok and img.content:
+                    p = dest_dir / f"{code}.jpg"
+                    p.write_bytes(img.content)
+                    result["image"] = str(p)
+            return bool(result["caption"] or result["image"])
+        except Exception as e:  # noqa: BLE001 - report, keep going
+            result["error"] = f"og-fetch: {e}"
+            return False
+
+    def try_ytdlp():
+        try:
+            import yt_dlp  # type: ignore
+            opts = {
+                "quiet": True,
+                "skip_download": True,
+                "outtmpl": str(dest_dir / f"{code}.%(ext)s"),
+                "writethumbnail": True,
+            }
+            if cookies_from_browser:
+                # e.g. ("chrome",) — yt-dlp reads the logged-in browser's cookies.
+                opts["cookiesfrombrowser"] = (cookies_from_browser,)
+            with yt_dlp.YoutubeDL(opts) as ydl:
+                info = ydl.extract_info(url, download=True)
+            result["caption"] = (info.get("description") or result["caption"]).strip()
+            for ext in ("jpg", "webp", "png"):
+                cand = dest_dir / f"{code}.{ext}"
+                if cand.exists():
+                    result["image"] = str(cand)
+                    break
+            if result["caption"] or result["image"]:
+                result["error"] = ""
+                return True
+            return False
+        except ImportError:
+            if not result["error"]:
+                result["error"] = "login-gated (install yt-dlp, ideally with --cookies-from-browser)"
+            return False
+        except Exception as e:  # noqa: BLE001
+            result["error"] = result["error"] or f"yt-dlp: {e}"
+            return False
+
+    attempts = [try_ytdlp, try_og] if cookies_from_browser else [try_og, try_ytdlp]
+    for attempt in attempts:
+        if attempt():
             return result
-    except Exception as e:  # noqa: BLE001 - report, keep going
-        result["error"] = f"og-fetch: {e}"
-
-    # --- Attempt 2: yt-dlp (handles more cases, optional dependency) ---
-    try:
-        import yt_dlp  # type: ignore
-        opts = {
-            "quiet": True,
-            "skip_download": True,
-            "outtmpl": str(dest_dir / f"{code}.%(ext)s"),
-            "writethumbnail": True,
-        }
-        with yt_dlp.YoutubeDL(opts) as ydl:
-            info = ydl.extract_info(url, download=True)
-        result["caption"] = (info.get("description") or result["caption"]).strip()
-        for ext in ("jpg", "webp", "png"):
-            cand = dest_dir / f"{code}.{ext}"
-            if cand.exists():
-                result["image"] = str(cand)
-                break
-        result["error"] = ""
-        return result
-    except ImportError:
-        if not result["error"]:
-            result["error"] = "login-gated (install yt-dlp for a better chance)"
-    except Exception as e:  # noqa: BLE001
-        result["error"] = result["error"] or f"yt-dlp: {e}"
-
     return result
 
 
@@ -273,7 +289,7 @@ def cmd_fetch(args):
     manifest = []
     for r in pend:
         print(f"fetching row {r['row']}: {r['url']}")
-        info = fetch_post(r["url"], WORK_DIR)
+        info = fetch_post(r["url"], WORK_DIR, cookies_from_browser=args.cookies_from_browser)
         info["ig_row"] = r["row"]
         manifest.append(info)
         status = "ok" if (info["image"] or info["caption"]) else f"FAILED ({info['error']})"
@@ -373,6 +389,9 @@ def main():
 
     f = sub.add_parser("fetch", help="Download flyer + caption for pending links into ig_work/.")
     f.add_argument("--url", help="Fetch a single URL instead of the pending list.")
+    f.add_argument("--cookies-from-browser", default="chrome",
+                   help="Browser to read Instagram login cookies from (chrome/firefox/edge/safari/brave). "
+                        "Pass '' to disable and fetch anonymously. Default: chrome.")
     f.set_defaults(func=cmd_fetch)
 
     w = sub.add_parser("write", help="Append extracted events (rows.json) to Inbox, mark links done.")

@@ -40,17 +40,31 @@ The first time ever: `python instagram_events.py init` creates the IG Inbox tab.
 
 2. **Fetch flyers + captions**
    ```
-   python instagram_events.py fetch
+   python instagram_events.py fetch          # uses Chrome login cookies by default
    ```
-   Downloads each pending post's first image + caption (no login) into
-   `ig_work/` and writes `ig_work/manifest.json` — a list of
+   Downloads each pending post's first image + caption into `ig_work/` and
+   writes `ig_work/manifest.json` — a list of
    `{ig_row, url, shortcode, caption, image, error}`.
 
-   Instagram gates a lot behind login, so some posts will come back with
-   `error` and no image/caption. That's expected — don't treat it as a script
-   bug. For those, open the link yourself (WebFetch) or ask Ian to paste the
-   caption; if it truly can't be read, leave the IG Inbox row alone (it stays
-   pending) and tell Ian which ones need a hand.
+   **Instagram 403s anonymous requests, so the fetch needs a logged-in
+   session.** By default `fetch` reads the cookies from the browser Ian is
+   signed into Instagram on (`--cookies-from-browser chrome`, via yt-dlp) — so
+   it works from just the links with nothing to paste, *as long as it runs on a
+   machine where he's logged into IG in that browser* (his desktop). Override
+   the browser with `--cookies-from-browser firefox|edge|safari|brave`, or pass
+   `--cookies-from-browser ''` to attempt an anonymous og:-tag fetch (usually
+   fails now).
+
+   > This is why the fetch can't run from a Claude-on-the-web/cloud session:
+   > those sandboxes are firewalled off from instagram.com by the environment's
+   > network policy AND have no access to Ian's browser cookies. Run the fetch on
+   > the desktop. The *collection* half (links in the IG Inbox tab) is what
+   > happens on mobile.
+
+   Any post that still comes back with `error` and no image/caption: open the
+   link yourself or ask Ian to paste the caption; if it truly can't be read,
+   leave the IG Inbox row alone (it stays pending) and tell Ian which ones need
+   a hand.
 
 3. **Extract event fields (this is the vision step — you do it)**
    Read `ig_work/manifest.json`. For each post, **Read the `image`** (the flyer
@@ -117,11 +131,13 @@ The first time ever: `python instagram_events.py init` creates the IG Inbox tab.
 
 ## Notes & failure modes
 
-- **Login-gated fetches are normal.** The fetcher tries public Open Graph tags
-  first, then `yt-dlp` if installed (`pip install yt-dlp` improves the hit rate).
-  Carousels only yield the first image via og:tags — usually the flyer, which is
-  what we want; if details are on a later slide, fall back to the caption or ask
-  Ian.
+- **Logged-in fetch is the reliable path.** With `--cookies-from-browser`
+  (default `chrome`), yt-dlp reuses Ian's Instagram login, which gets past the
+  wall from just the links — needs `pip install yt-dlp` and that he's signed
+  into IG in that browser on the machine running the fetch. Anonymous fetches
+  (no cookies) mostly 403 now. Carousels only yield the first image — usually
+  the flyer, which is what we want; if details are on a later slide, fall back to
+  the caption or ask Ian.
 - **Dedup is handled downstream.** Don't worry about an Instagram event already
   being on the calendar from a scraper — the Dedup stage catches it. Just extract
   faithfully.

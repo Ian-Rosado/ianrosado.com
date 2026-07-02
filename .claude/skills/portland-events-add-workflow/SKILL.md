@@ -211,6 +211,8 @@ If neither resolves it, **leave blank + flag**.
 | The EastBurn Public House | Trivia Nights - N/NE |
 | Migration Brewing (Glisan) | Trivia Nights - N/NE |
 | Mississippi Pizza Pub | Trivia Nights - N/NE |
+| Rose City Book Pub (NE Fremont) | Trivia Nights - N/NE |
+| Tomorrow's Verse (NE Fremont) | Trivia Nights - N/NE |
 | Covert Cafe | Trivia Nights - SE |
 | No Fun Bar | Trivia Nights - SE |
 | Dots Cafe | Trivia Nights - SE |

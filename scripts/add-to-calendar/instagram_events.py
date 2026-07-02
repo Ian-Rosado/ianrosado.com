@@ -53,10 +53,17 @@ sys.stdout.reconfigure(encoding="utf-8")
 # ── Config ──────────────────────────────────────────────────────────────────
 
 SHEET_ID = "1mx4U8klkuTeR1E7lmChABlShfE_kVwAFaV37gAjoId4"
-INBOX_TAB = "Inbox"        # the existing pipeline entry point (12 cols, see below)
+INBOX_TAB = "Inbox"        # the existing pipeline entry point (13 cols, see below)
 IG_TAB = "IG Inbox"        # where phone-pasted Instagram links land
 
-SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
+# This script only needs Sheets, but it shares token.json with
+# portland_events_add.py, which needs Calendar too. Requesting the same
+# combined scope here keeps a fresh sign-in from silently downgrading the
+# shared token to sheets-only (which then 403s the pipeline's calendar calls).
+SCOPES = [
+    "https://www.googleapis.com/auth/calendar",
+    "https://www.googleapis.com/auth/spreadsheets",
+]
 
 WORK_DIR = Path("ig_work")  # gitignored; holds fetched flyers + manifest.json
 
@@ -66,11 +73,11 @@ WORK_DIR = Path("ig_work")  # gitignored; holds fetched flyers + manifest.json
 IG_HEADERS = ["Instagram URL", "Status", "Note"]
 
 # Inbox tab columns (must match scripts/event-scrapers/sheets_writer.py):
-#   A Title | B Date | C Time | D End Time | E Duration | F Location | G Cost
-#   H Calendar | I Tags | J Source | K URL | L Added
+#   A include | B Title | C Date | D Time | E End Time | F Duration (min)
+#   G Location | H Cost | I Calendar | J Tags | K Source | L URL | M Added
 INBOX_HEADERS = [
-    "Title", "Date", "Time", "End Time", "Duration", "Location",
-    "Cost", "Calendar", "Tags", "Source", "URL", "Added",
+    "include", "Title", "Date", "Time", "End Time", "Duration (min)",
+    "Location", "Cost", "Calendar", "Tags", "Source", "URL", "Added",
 ]
 
 # Maps a human calendar name (what Claude suggests during extraction) onto the
@@ -305,10 +312,16 @@ def cmd_fetch(args):
 
 
 def _to_inbox_row(ev):
-    """Map one extracted-event dict to the 12-column Inbox row order."""
+    """Map one extracted-event dict to the 13-column Inbox row order.
+
+    The Inbox tab's first column is the blank 'include' flag (filled during
+    review), so the row must lead with an empty cell to stay aligned — see
+    INBOX_HEADERS / scripts/event-scrapers/sheets_writer.py.
+    """
     cal = ev.get("calendar", "")
     cal_code = CALENDAR_CODES.get(cal, cal)  # accept either a name or a code
     return [
+        "",                            # include (blank; set during review)
         ev.get("title", ""),
         ev.get("date", ""),            # YYYY-MM-DD
         ev.get("time", ""),            # HH:MM 24h

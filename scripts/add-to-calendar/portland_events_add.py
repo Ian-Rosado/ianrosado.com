@@ -107,6 +107,16 @@ def is_unwanted_recurring(title):
     title_l = title.lower()
     return any(p in title_l for p in KNOWN_DROP_PATTERNS)
 
+
+def is_bike_ride(tags_str):
+    """True if tagged as a bike ride. Pedalpalooza / Shift rides live on the
+    imported Pedalpalooza calendar and the user drops them at Review every run;
+    they carry a discrete `bike` tag (mostly from Community Playlist). Dropped
+    before Categorize. (The Pedalpalooza-calendar dedup fold-in catches
+    title-matches too, but that import lags, so this tag drop is the reliable
+    catch.)"""
+    return "bike" in {t.strip().lower() for t in (tags_str or "").split(",")}
+
 CALENDAR_ALIASES = {
     "portland events":             "Portland Events",
     "main":                        "Portland Events",
@@ -1518,6 +1528,12 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
     if before != len(rows):
         print(f"  Dropped {before - len(rows)} unwanted recurring listing(s) (see KNOWN_DROP_PATTERNS)")
 
+    # Drop bike rides — covered by the imported Pedalpalooza calendar.
+    before = len(rows)
+    rows = [r for r in rows if not is_bike_ride(get(r, "Tags", "tags", "Genre", "genre"))]
+    if before != len(rows):
+        print(f"  Dropped {before - len(rows)} bike ride(s) (covered by the Pedalpalooza calendar)")
+
     # ── Clean up scraper title artifacts ─────────────────────────────────────
     # Recurring events occasionally get rescraped with a WordPress-style
     # "(Copy)" suffix piled on each time (seen repeatedly at Swan Dive, e.g.
@@ -1547,8 +1563,9 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
     # DJ/dance nights built around a theme (decade throwbacks, music-video
     # nights) are a dance party, not a live performance.
     DANCE_PARTY_KEYWORDS = [
-        "video dance party", "80s dance", "90s dance", "2000s dance",
-        "y2k dance", "00s dance", "decades dance",
+        "video dance party", "video dance", "dance attack", "glow night",
+        "dance night", "80s dance", "80's dance", "90s dance", "90's dance",
+        "2000s dance", "y2k dance", "00s dance", "00's dance", "decades dance",
     ]
     # Venues that are predominantly one thing regardless of how a scraper
     # categorized the listing. Add to these as more come up.
@@ -1617,6 +1634,11 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
     pdx_events_id = CALENDARS["Portland Events"]
     pedal_evs = fetch_existing_events(service, PEDALPALOOZA_CALENDAR_ID, min_date, max_date)
     if pedal_evs:
+        # Mark them so the existing-event refresh step never tries to PATCH them
+        # via the Portland Events calendar — they live on the (read-only) import
+        # calendar and are here only to drive the skip/dedup decision.
+        for ev in pedal_evs:
+            ev["_dedup_only"] = True
         existing_by_cal[pdx_events_id].extend(pedal_evs)
         existing_titles_by_cal[pdx_events_id].update(
             ev.get("summary", "").lower().strip() for ev in pedal_evs)
@@ -1715,6 +1737,10 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
 
         match = find_matching_existing_event(title, date_str, cal_id, existing_by_cal)
         if not match:
+            continue
+        # Dedup-only matches (folded-in Pedalpalooza events) live on a different,
+        # read-only calendar — skip the incoming row, but never try to patch them.
+        if match.get("_dedup_only"):
             continue
         resolved_url, _ = resolve_event_url(url, get(row, "Location", "location", "Venue", "venue"))
         needs_update, new_desc, new_ext_props = compute_event_refresh(

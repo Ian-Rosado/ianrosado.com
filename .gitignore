@@ -38,5 +38,9 @@ public/images/sabbatical-from-site/
 *.mov
 *.MOV
 
+# Instagram rendered PNGs — derived from HTML; re-render with Playwright on demand
+instagram/*.png
+instagram/event_cards_*/
+
 # Add-to-calendar review feedback log (local, per-machine)
 scripts/add-to-calendar/review_corrections.jsonl

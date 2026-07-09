@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<!--
+  EVENT DETAIL CARDS — Jul 6–12, two events per card (7 cards total)
+  Render all 7 PNGs with Playwright:
+
+    from playwright.sync_api import sync_playwright
+    import os
+    html = r'C:\Users\nai19\Documents\GitHub\ianrosado.com\instagram\event_cards_jul6_12.html'
+    out  = r'C:\Users\nai19\Documents\GitHub\ianrosado.com\instagram\event_cards_jul6_12'
+    os.makedirs(out, exist_ok=True)
+    with sync_playwright() as p:
+        browser = p.chromium.launch()
+        page = browser.new_page(viewport={'width': 1200, 'height': 1200})
+        page.goto('file:///' + html.replace('\\', '/'))
+        page.wait_for_load_state('networkidle')
+        for i, el in enumerate(page.query_selector_all('.post')):
+            el.screenshot(path=os.path.join(out, f'card_{i+1:02d}.png'))
+        browser.close()
+-->
+<title>Portland Events – Event Cards Jul 6–12</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;900&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #111;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    padding: 24px;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  /* ── Canvas ── */
+  .post {
+    width: 1080px;
+    height: 1080px;
+    background: #0d2b1a;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Header ── */
+  .card-header {
+    padding: 32px 48px 16px;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .week-label {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+    margin-bottom: 4px;
+  }
+  .title { font-family: 'DM Serif Display', serif; font-size: 46px; color: #fff; line-height: 1.05; }
+  .title span { color: #5cdc80; }
+  .logo { position: absolute; top: 32px; right: 48px; width: 68px; height: 68px; }
+
+  /* ── Divider ── */
+  .divider {
+    height: 3px;
+    margin: 0 48px;
+    background: linear-gradient(90deg, #5cdc80, transparent);
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  /* ── Body ── */
+  .card-body {
+    flex: 1;
+    padding: 24px 40px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    min-height: 0;
+  }
+
+  /* Day header */
+  .day-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+  .day-name {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.38);
+  }
+  .day-num {
+    font-size: 52px;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1;
+  }
+
+  /* Events pair — stacked vertically */
+  .events-pair {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    flex: 1;
+    min-height: 0;
+  }
+
+  /* Individual event tile — color classes set background + --accent */
+  .event-tile {
+    border-radius: 18px;
+    padding: 22px 28px 20px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+  .event-tile.teal   { --accent: #3ecfb0; background: #003d35; }
+  .event-tile.blue   { --accent: #5ca8ff; background: #0a2050; }
+  .event-tile.coral  { --accent: #ff7a5c; background: #5c1a10; }
+  .event-tile.purple { --accent: #b39dff; background: #2d1a5e; }
+  .event-tile.pink   { --accent: #f07ad8; background: #4a1040; }
+  .event-tile.amber  { --accent: #f0a500; background: #7a3d00; }
+  .event-tile.green  { --accent: #5cdc80; background: #0a3520; }
+
+  .category {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .event-name {
+    font-family: 'DM Serif Display', serif;
+    font-size: 44px;
+    color: #fff;
+    line-height: 1.07;
+    margin-bottom: 10px;
+  }
+  .description {
+    font-size: 19px;
+    font-weight: 400;
+    color: rgba(255,255,255,0.68);
+    line-height: 1.5;
+    flex: 1;
+  }
+  .tile-meta {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    font-size: 16px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.5);
+  }
+
+  /* ── Footer ── */
+  .card-footer {
+    padding: 12px 48px 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  .footer-site, .footer-handle { font-size: 19px; color: rgba(255,255,255,0.38); }
+</style>
+</head>
+<body>
+
+<!-- ─── Card 1 · Monday Jul 6 ─────────────────────────────── -->
+<div class="post">
+  <div class="card-header">
+    <div class="week-label">This week in Portland · JUL 6–12</div>
+    <div class="title">Events of the <span>Week</span></div>
+    <svg class="logo" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="5" width="30" height="26" rx="4" fill="#F28C28"/><rect x="1" y="5" width="30" height="9" rx="4" fill="#d4720e"/><rect x="1" y="10" width="30" height="4" fill="#d4720e"/><rect x="9" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="19.5" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.6"/></svg>
+  </div>
+  <div class="divider"></div>
+  <div class="card-body">
+    <div class="day-header">
+      <span class="day-name">Mon</span><span class="day-num">6</span>
+    </div>
+    <div class="events-pair">
+      <div class="event-tile teal">
+        <div class="category">⚽ World Cup</div>
+        <div class="event-name">Spain vs Portugal</div>
+        <div class="description">Two European giants face off in the World Cup Round of 16. Lunchtime kickoff — catch it at bars across Portland before USMNT tips at 5pm.</div>
+        <div class="tile-meta">Bars around town · 12pm</div>
+      </div>
+      <div class="event-tile blue">
+        <div class="category">⚽ World Cup</div>
+        <div class="event-name">USMNT vs Belgium</div>
+        <div class="description">USA vs Belgium in the World Cup Round of 16. Providence Park's free event is sold out, but venues across Portland are all showing it.</div>
+        <div class="tile-meta">Venues around town · 5pm · Free &amp; Ticketed</div>
+      </div>
+    </div>
+  </div>
+  <div class="card-footer">
+    <span class="footer-site">pdx-events.com</span>
+    <span class="footer-handle">@portland_events_calendar</span>
+  </div>
+</div>
+
+<!-- ─── Card 2 · Tuesday Jul 7 ────────────────────────────── -->
+<div class="post">
+  <div class="card-header">
+    <div class="week-label">This week in Portland · JUL 6–12</div>
+    <div class="title">Events of the <span>Week</span></div>
+    <svg class="logo" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="5" width="30" height="26" rx="4" fill="#F28C28"/><rect x="1" y="5" width="30" height="9" rx="4" fill="#d4720e"/><rect x="1" y="10" width="30" height="4" fill="#d4720e"/><rect x="9" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="19.5" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.6"/></svg>
+  </div>
+  <div class="divider"></div>
+  <div class="card-body">
+    <div class="day-header">
+      <span class="day-name">Tue</span><span class="day-num">7</span>
+    </div>
+    <div class="events-pair">
+      <div class="event-tile coral">
+        <div class="category">🎸 Live Music</div>
+        <div class="event-name">JT Wise &amp; Cosacchi</div>
+        <div class="description">Free lunchtime live music at Pioneer Courthouse Square. JT Wise Band and Cosacchi bring warm, roots-influenced sounds to the heart of downtown Portland.</div>
+        <div class="tile-meta">Pioneer Courthouse Sq · 12pm · Free</div>
+      </div>
+      <div class="event-tile purple">
+        <div class="category">🔬 Science Talk</div>
+        <div class="event-name">OMSI Science Pub</div>
+        <div class="description">Science meets nightlife at Mission Theater. OMSI's popular lecture series brings local researchers to the stage for an evening of ideas and drinks.</div>
+        <div class="tile-meta">Mission Theater · 6pm</div>
+      </div>
+    </div>
+  </div>
+  <div class="card-footer">
+    <span class="footer-site">pdx-events.com</span>
+    <span class="footer-handle">@portland_events_calendar</span>
+  </div>
+</div>
+
+<!-- ─── Card 3 · Wednesday Jul 8 ──────────────────────────── -->
+<div class="post">
+  <div class="card-header">
+    <div class="week-label">This week in Portland · JUL 6–12</div>
+    <div class="title">Events of the <span>Week</span></div>
+    <svg class="logo" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="5" width="30" height="26" rx="4" fill="#F28C28"/><rect x="1" y="5" width="30" height="9" rx="4" fill="#d4720e"/><rect x="1" y="10" width="30" height="4" fill="#d4720e"/><rect x="9" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="19.5" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.6"/></svg>
+  </div>
+  <div class="divider"></div>
+  <div class="card-body">
+    <div class="day-header">
+      <span class="day-name">Wed</span><span class="day-num">8</span>
+    </div>
+    <div class="events-pair">
+      <div class="event-tile pink">
+        <div class="category">🎤 Hip Hop</div>
+        <div class="event-name">Hip Hop Soulsation</div>
+        <div class="description">Free outdoor hip hop performance and movement workshop at Gateway Discovery Park. Open to all ages and skill levels — just show up ready to move.</div>
+        <div class="tile-meta">Gateway Discovery Park · 11:30am · Free</div>
+      </div>
+      <div class="event-tile amber">
+        <div class="category">💃 Dance</div>
+        <div class="event-name">Tabor Dance</div>
+        <div class="description">Free outdoor social dancing at Laurelhurst Park. No partner or experience needed — a welcoming community event under the evening sky.</div>
+        <div class="tile-meta">Laurelhurst Park · 7pm · Free</div>
+      </div>
+    </div>
+  </div>
+  <div class="card-footer">
+    <span class="footer-site">pdx-events.com</span>
+    <span class="footer-handle">@portland_events_calendar</span>
+  </div>
+</div>
+
+<!-- ─── Card 4 · Thursday Jul 9 ───────────────────────────── -->
+<div class="post">
+  <div class="card-header">
+    <div class="week-label">This week in Portland · JUL 6–12</div>
+    <div class="title">Events of the <span>Week</span></div>
+    <svg class="logo" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="5" width="30" height="26" rx="4" fill="#F28C28"/><rect x="1" y="5" width="30" height="9" rx="4" fill="#d4720e"/><rect x="1" y="10" width="30" height="4" fill="#d4720e"/><rect x="9" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="19.5" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.6"/></svg>
+  </div>
+  <div class="divider"></div>
+  <div class="card-body">
+    <div class="day-header">
+      <span class="day-name">Thu</span><span class="day-num">9</span>
+    </div>
+    <div class="events-pair">
+      <div class="event-tile blue">
+        <div class="category">🛒 Market</div>
+        <div class="event-name">South Waterfront Market</div>
+        <div class="description">Outdoor market with local produce, artisan food, and handmade goods along the river. Scenic Waterfront setting — a great lunchtime escape from the office.</div>
+        <div class="tile-meta">South Waterfront · 12pm · Free</div>
+      </div>
+      <div class="event-tile teal">
+        <div class="category">🎶 Live Music</div>
+        <div class="event-name">Music at the Park</div>
+        <div class="description">Free live music at Laurelhurst Park. Bring a blanket and settle in for a summer evening concert under the trees — a perfect low-key Thursday night.</div>
+        <div class="tile-meta">Laurelhurst Park · 6pm · Free</div>
+      </div>
+    </div>
+  </div>
+  <div class="card-footer">
+    <span class="footer-site">pdx-events.com</span>
+    <span class="footer-handle">@portland_events_calendar</span>
+  </div>
+</div>
+
+<!-- ─── Card 5 · Friday Jul 10 ────────────────────────────── -->
+<div class="post">
+  <div class="card-header">
+    <div class="week-label">This week in Portland · JUL 6–12</div>
+    <div class="title">Events of the <span>Week</span></div>
+    <svg class="logo" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="5" width="30" height="26" rx="4" fill="#F28C28"/><rect x="1" y="5" width="30" height="9" rx="4" fill="#d4720e"/><rect x="1" y="10" width="30" height="4" fill="#d4720e"/><rect x="9" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="19.5" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.6"/></svg>
+  </div>
+  <div class="divider"></div>
+  <div class="card-body">
+    <div class="day-header">
+      <span class="day-name">Fri</span><span class="day-num">10</span>
+    </div>
+    <div class="events-pair">
+      <div class="event-tile coral">
+        <div class="category">🛍️ Night Market</div>
+        <div class="event-name">Portland Night Market</div>
+        <div class="description">Portland's biggest night market fills SE Alder with 200+ local vendors — food, art, vintage, and handmade goods. Free and all ages, running until 11pm.</div>
+        <div class="tile-meta">SE Alder St · 4pm · Free</div>
+      </div>
+      <div class="event-tile purple">
+        <div class="category">🎬 Film</div>
+        <div class="event-name">Movie in the Park: Elio</div>
+        <div class="description">Pixar's Elio screens outdoors at MLK Jr Park. A heartfelt sci-fi story about a misfit kid who becomes Earth's alien ambassador — free, bring a blanket.</div>
+        <div class="tile-meta">MLK Jr Park · 7:30pm · Free</div>
+      </div>
+    </div>
+  </div>
+  <div class="card-footer">
+    <span class="footer-site">pdx-events.com</span>
+    <span class="footer-handle">@portland_events_calendar</span>
+  </div>
+</div>
+
+<!-- ─── Card 6 · Saturday Jul 11 ──────────────────────────── -->
+<div class="post">
+  <div class="card-header">
+    <div class="week-label">This week in Portland · JUL 6–12</div>
+    <div class="title">Events of the <span>Week</span></div>
+    <svg class="logo" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="5" width="30" height="26" rx="4" fill="#F28C28"/><rect x="1" y="5" width="30" height="9" rx="4" fill="#d4720e"/><rect x="1" y="10" width="30" height="4" fill="#d4720e"/><rect x="9" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="19.5" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.6"/></svg>
+  </div>
+  <div class="divider"></div>
+  <div class="card-body">
+    <div class="day-header">
+      <span class="day-name">Sat</span><span class="day-num">11</span>
+    </div>
+    <div class="events-pair">
+      <div class="event-tile pink">
+        <div class="category">🎵 Porchfest</div>
+        <div class="event-name">Overlook Porchfest</div>
+        <div class="description">Musicians play from front porches throughout the Overlook neighborhood as visitors walk house to house discovering sets. One of Portland's most charming free summer traditions.</div>
+        <div class="tile-meta">Overlook · N Portland · All day · Free</div>
+      </div>
+      <div class="event-tile amber">
+        <div class="category">🎪 Street Fair</div>
+        <div class="event-name">Mississippi Street Fair</div>
+        <div class="description">N Mississippi Ave shuts down for local vendors, live music stages, and food carts. The full energy of one of Portland's most vibrant neighborhoods, free and all ages.</div>
+        <div class="tile-meta">N Mississippi Ave · 10am · Free</div>
+      </div>
+    </div>
+  </div>
+  <div class="card-footer">
+    <span class="footer-site">pdx-events.com</span>
+    <span class="footer-handle">@portland_events_calendar</span>
+  </div>
+</div>
+
+<!-- ─── Card 7 · Sunday Jul 12 ────────────────────────────── -->
+<div class="post">
+  <div class="card-header">
+    <div class="week-label">This week in Portland · JUL 6–12</div>
+    <div class="title">Events of the <span>Week</span></div>
+    <svg class="logo" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="5" width="30" height="26" rx="4" fill="#F28C28"/><rect x="1" y="5" width="30" height="9" rx="4" fill="#d4720e"/><rect x="1" y="10" width="30" height="4" fill="#d4720e"/><rect x="9" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="19.5" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.6"/></svg>
+  </div>
+  <div class="divider"></div>
+  <div class="card-body">
+    <div class="day-header">
+      <span class="day-name">Sun</span><span class="day-num">12</span>
+    </div>
+    <div class="events-pair">
+      <div class="event-tile teal">
+        <div class="category">🏷️ Yard Sale</div>
+        <div class="event-name">Overlook Yard Sale</div>
+        <div class="description">Community-wide yard sale throughout Overlook, with dozens of households participating at once — plus a free table for things folks just want to give away.</div>
+        <div class="tile-meta">Overlook · N Portland · All day · Free</div>
+      </div>
+      <div class="event-tile blue">
+        <div class="category">🎹 Concert</div>
+        <div class="event-name">Tribute to Stevie Wonder</div>
+        <div class="description">Portland Cello Project pays tribute to Stevie Wonder at Ventura Park, part of Portland Parks' Summer Free for All. Soulful, free, and all ages.</div>
+        <div class="tile-meta">Ventura Park · 6pm · Free</div>
+      </div>
+    </div>
+  </div>
+  <div class="card-footer">
+    <span class="footer-site">pdx-events.com</span>
+    <span class="footer-handle">@portland_events_calendar</span>
+  </div>
+</div>
+
+</body>
+</html>

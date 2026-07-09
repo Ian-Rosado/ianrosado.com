@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Portland Events – Events of the Week Jul 6–12</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;900&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #111;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .post {
+    width: 1080px;
+    height: 1080px;
+    background: #0d2b1a;          /* Green theme canvas */
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+  }
+  .header {
+    padding: 36px 48px 20px;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .week-label {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #5cdc80;
+    margin-bottom: 4px;
+  }
+  .title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 52px;
+    color: #fff;
+    line-height: 1.05;
+  }
+  .title span { color: #5cdc80; }
+  .logo {
+    position: absolute;
+    top: 36px;
+    right: 48px;
+    width: 72px;
+    height: 72px;
+  }
+  .divider {
+    height: 3px;
+    margin: 0 48px;
+    background: linear-gradient(90deg, #5cdc80, #3ecfb0, #5ca8ff, transparent);
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+  .grid {
+    padding: 14px 28px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+    min-height: 0;
+  }
+  .col-head {
+    display: grid;
+    grid-template-columns: 100px 1fr 1fr;
+    gap: 10px;
+    flex: 0 0 auto;
+  }
+  .col-label {
+    font-size: 19px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    line-height: 1;
+    padding-left: 18px;
+  }
+  .col-label.day   { color: #ffcf70; }
+  .col-label.night { color: #9db4ff; }
+  .row {
+    display: grid;
+    grid-template-columns: 100px 1fr 1fr;
+    gap: 10px;
+    flex: 1;
+    min-height: 0;
+  }
+  .day {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 14px;
+    background: rgba(255,255,255,0.07);
+  }
+  .day-name {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.45);
+    line-height: 1;
+  }
+  .day-num {
+    font-size: 42px;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.1;
+  }
+  .tile {
+    border-radius: 14px;
+    padding: 0 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .tile-name {
+    font-size: 30px;
+    font-weight: 700;
+    line-height: 1.12;
+    color: #fff;
+    margin-bottom: 6px;
+  }
+  .tile-meta {
+    font-size: 19px;
+    font-weight: 400;
+    opacity: 0.62;
+    color: #fff;
+    line-height: 1.2;
+  }
+  .green  { background: #0a3520; }
+  .teal   { background: #003d35; }
+  .blue   { background: #0a2050; }
+  .amber  { background: #7a3d00; }
+  .coral  { background: #5c1a10; }
+  .purple { background: #2d1a5e; }
+  .pink   { background: #4a1040; }
+  .footer {
+    padding: 10px 48px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  .footer-cta { font-size: 22px; color: rgba(255,255,255,0.5); line-height: 1.5; }
+  .footer-cta strong { color: #5cdc80; display: block; font-size: 26px; }
+  .footer-handle { font-size: 20px; color: rgba(255,255,255,0.35); }
+  .footer-tags { font-size: 20px; color: rgba(255,255,255,0.25); text-align: right; line-height: 1.7; }
+</style>
+</head>
+<body>
+<div class="post">
+  <div class="header">
+    <div class="week-label">This week in Portland · JUL 6–12</div>
+    <div class="title">Events of the <span>Week</span></div>
+    <svg class="logo" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+      <rect x="1" y="5" width="30" height="26" rx="4" fill="#F28C28"/>
+      <rect x="1" y="5" width="30" height="9" rx="4" fill="#d4720e"/>
+      <rect x="1" y="10" width="30" height="4" fill="#d4720e"/>
+      <rect x="9" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/>
+      <rect x="19.5" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/>
+      <rect x="5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/>
+      <rect x="13.5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/>
+      <rect x="22" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/>
+      <rect x="5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/>
+      <rect x="13.5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/>
+      <rect x="22" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.6"/>
+    </svg>
+  </div>
+  <div class="divider"></div>
+  <div class="grid">
+
+    <div class="col-head">
+      <div></div>
+      <div class="col-label day">☀ Day</div>
+      <div class="col-label night">🌙 Night</div>
+    </div>
+
+    <div class="row">
+      <div class="day"><span class="day-name">Mon</span><span class="day-num">6</span></div>
+      <div class="tile teal">
+        <div class="tile-name">Spain vs Portugal</div>
+        <div class="tile-meta">Bars around town · 12pm</div>
+      </div>
+      <div class="tile blue">
+        <div class="tile-name">USMNT vs Belgium</div>
+        <div class="tile-meta">Venues around town · 5pm · Free &amp; Ticketed</div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="day"><span class="day-name">Tue</span><span class="day-num">7</span></div>
+      <div class="tile coral">
+        <div class="tile-name">JT Wise &amp; Cosacchi</div>
+        <div class="tile-meta">Pioneer Courthouse Sq · 12pm · Free</div>
+      </div>
+      <div class="tile purple">
+        <div class="tile-name">OMSI Science Pub</div>
+        <div class="tile-meta">Mission Theater · 6pm</div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="day"><span class="day-name">Wed</span><span class="day-num">8</span></div>
+      <div class="tile pink">
+        <div class="tile-name">Hip Hop Soulsation</div>
+        <div class="tile-meta">Gateway Discovery Park · 11:30am · Free</div>
+      </div>
+      <div class="tile amber">
+        <div class="tile-name">Tabor Dance</div>
+        <div class="tile-meta">Laurelhurst Park · 7pm · Free</div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="day"><span class="day-name">Thu</span><span class="day-num">9</span></div>
+      <div class="tile blue">
+        <div class="tile-name">South Waterfront Market</div>
+        <div class="tile-meta">South Waterfront · 12pm · Free</div>
+      </div>
+      <div class="tile teal">
+        <div class="tile-name">Music at the Park</div>
+        <div class="tile-meta">Laurelhurst Park · 6pm · Free</div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="day"><span class="day-name">Fri</span><span class="day-num">10</span></div>
+      <div class="tile coral">
+        <div class="tile-name">Portland Night Market</div>
+        <div class="tile-meta">SE Alder St · 4pm · Free</div>
+      </div>
+      <div class="tile purple">
+        <div class="tile-name">Movie in the Park: Elio</div>
+        <div class="tile-meta">MLK Jr Park · 7:30pm · Free</div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="day"><span class="day-name">Sat</span><span class="day-num">11</span></div>
+      <div class="tile pink">
+        <div class="tile-name">Overlook Porchfest</div>
+        <div class="tile-meta">Overlook · N Portland · Free</div>
+      </div>
+      <div class="tile amber">
+        <div class="tile-name">Mississippi Street Fair</div>
+        <div class="tile-meta">N Mississippi Ave · 10am · Free</div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="day"><span class="day-name">Sun</span><span class="day-num">12</span></div>
+      <div class="tile teal">
+        <div class="tile-name">Overlook Yard Sale</div>
+        <div class="tile-meta">Overlook · All day · Free</div>
+      </div>
+      <div class="tile blue">
+        <div class="tile-name">Tribute to Stevie Wonder</div>
+        <div class="tile-meta">Ventura Park · 6pm · Free</div>
+      </div>
+    </div>
+
+  </div>
+  <div class="divider"></div>
+  <div class="footer">
+    <div class="footer-cta">
+      <strong>+ more events &amp; details</strong>
+      <div>pdx-events.com</div>
+      <div class="footer-handle">@portland_events_calendar</div>
+    </div>
+    <div class="footer-tags">#PDXEvents · #Portland · #FreePDX</div>
+  </div>
+</div>
+</body>
+</html>

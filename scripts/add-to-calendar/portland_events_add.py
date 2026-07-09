@@ -1978,7 +1978,15 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
             all_day = False
         else:
             start_dt = f"{date_str}T00:00:00"
-            next_day = (datetime.strptime(date_str, "%Y-%m-%d") + timedelta(days=1)).strftime("%Y-%m-%d")
+            # All-day event. For a multi-day span (e.g. a week-long "Restaurant
+            # Week"), the End Time column may hold an end DATE (YYYY-MM-DD,
+            # inclusive last day); span through it. Otherwise it's a single day.
+            # Google's all-day end.date is exclusive, so add one day either way.
+            last_day = date_str
+            if end_time_str and re.match(r"^\d{4}-\d{2}-\d{2}$", end_time_str.strip()) \
+                    and end_time_str.strip() >= date_str:
+                last_day = end_time_str.strip()
+            next_day = (datetime.strptime(last_day, "%Y-%m-%d") + timedelta(days=1)).strftime("%Y-%m-%d")
             end_dt   = f"{next_day}T00:00:00"
             all_day  = True
 

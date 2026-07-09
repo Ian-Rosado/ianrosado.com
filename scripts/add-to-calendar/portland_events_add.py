@@ -108,14 +108,17 @@ def is_unwanted_recurring(title):
     return any(p in title_l for p in KNOWN_DROP_PATTERNS)
 
 
-def is_bike_ride(tags_str):
-    """True if tagged as a bike ride. Pedalpalooza / Shift rides live on the
-    imported Pedalpalooza calendar and the user drops them at Review every run;
-    they carry a discrete `bike` tag (mostly from Community Playlist). Dropped
-    before Categorize. (The Pedalpalooza-calendar dedup fold-in catches
-    title-matches too, but that import lags, so this tag drop is the reliable
+def is_bike_ride(tags_str, url=""):
+    """True if this is a Pedalpalooza / Shift bike ride. Those live on the
+    imported Pedalpalooza calendar and the user drops them at Review every run.
+    Detected two ways: a discrete `bike` tag (mostly from Community Playlist), or
+    a shift2bikes.org URL (Shift's own calendar — the authoritative bike source).
+    Dropped before Categorize. (The Pedalpalooza-calendar dedup fold-in catches
+    title-matches too, but that import lags, so these drops are the reliable
     catch.)"""
-    return "bike" in {t.strip().lower() for t in (tags_str or "").split(",")}
+    if "bike" in {t.strip().lower() for t in (tags_str or "").split(",")}:
+        return True
+    return "shift2bikes.org" in (url or "").lower()
 
 CALENDAR_ALIASES = {
     "portland events":             "Portland Events",
@@ -1437,6 +1440,49 @@ def _fuzzy_dedup_incoming(rows):
             return 0.0
         return len(wa & wb) / min(len(wa), len(wb))
 
+    # ── Venue + time-overlap detection ──────────────────────────────────────
+    # Two differently-titled events at the same venue with overlapping times are
+    # usually the same show scraped differently by two sources — the title-word
+    # test misses them. Detect by normalized venue + an actual time-window
+    # overlap (not merely the same date, so an early show and a late show at one
+    # venue aren't merged), then keep the more COMPLETE record.
+    GENERIC_VENUES = {"", "portland", "portland or", "oregon", "tba", "tbd",
+                      "online", "virtual", "various", "various locations"}
+
+    def _venue_key(loc):
+        v = (loc or "").split(",")[0].strip().lower()
+        v = re.sub(r"^the\s+", "", v)
+        v = re.sub(r"[^a-z0-9 ]", " ", v)
+        return re.sub(r"\s+", " ", v).strip()
+
+    def _minutes(t):
+        m = re.match(r"^\s*(\d{1,2}):(\d{2})", t or "")
+        return int(m.group(1)) * 60 + int(m.group(2)) if m else None
+
+    def _window(row):
+        s = _minutes(get(row, "Time", "time", "Start Time", "start_time"))
+        if s is None:
+            return None
+        e = _minutes(get(row, "End Time", "end_time", "EndTime"))
+        if e is None or e <= s:
+            e = s + DEFAULT_DURATION_MINUTES
+        return (s, e)
+
+    def _venue_time_dup(ra, rb):
+        va = _venue_key(get(ra, "Location", "location", "Venue", "venue"))
+        vb = _venue_key(get(rb, "Location", "location", "Venue", "venue"))
+        if not va or va != vb or va in GENERIC_VENUES:
+            return False
+        wa, wb = _window(ra), _window(rb)
+        if not wa or not wb:
+            return False
+        return wa[0] < wb[1] and wb[0] < wa[1]  # time windows actually overlap
+
+    def _completeness(row):
+        return (bool(get(row, "Time", "time")) + bool(get(row, "Cost", "cost"))
+                + bool(get(row, "URL", "url", "link", "Link"))
+                + bool(get(row, "Location", "location", "Venue", "venue")))
+
     # Group by date
     by_date = {}
     for i, row in enumerate(rows):
@@ -1459,14 +1505,24 @@ def _fuzzy_dedup_incoming(rows):
                     continue  # same source handled by scraper-level dedup
                 ta = get(ra, "Title", "title", "summary")
                 tb = get(rb, "Title", "title", "summary")
-                if _overlap(ta, tb) >= OVERLAP_THRESHOLD:
-                    # Flag the lower-priority source; break ties by detail score
-                    pri_a = SOURCE_PRIORITY.get(src_a, 0)
-                    pri_b = SOURCE_PRIORITY.get(src_b, 0)
-                    det_a = len(ta) + bool(get(ra, "Location", "location")) * 20
-                    det_b = len(tb) + bool(get(rb, "Location", "location")) * 20
-                    score_a = pri_a * 100 + det_a
-                    score_b = pri_b * 100 + det_b
+                title_dup = _overlap(ta, tb) >= OVERLAP_THRESHOLD
+                venue_time_dup = (not title_dup) and _venue_time_dup(ra, rb)
+                if title_dup or venue_time_dup:
+                    if title_dup:
+                        # Same show, similar title: keep the higher-priority
+                        # source; break ties by detail score.
+                        pri_a = SOURCE_PRIORITY.get(src_a, 0)
+                        pri_b = SOURCE_PRIORITY.get(src_b, 0)
+                        det_a = len(ta) + bool(get(ra, "Location", "location")) * 20
+                        det_b = len(tb) + bool(get(rb, "Location", "location")) * 20
+                        score_a = pri_a * 100 + det_a
+                        score_b = pri_b * 100 + det_b
+                    else:
+                        # Same venue + overlapping time, different titles: keep the
+                        # more COMPLETE record (has time/cost/url/location); break
+                        # ties by source priority.
+                        score_a = _completeness(ra) * 100 + SOURCE_PRIORITY.get(src_a, 0)
+                        score_b = _completeness(rb) * 100 + SOURCE_PRIORITY.get(src_b, 0)
                     loser, winner = (ib, ia) if score_a >= score_b else (ia, ib)
                     skip.add(loser)
                     dup_of[loser] = winner

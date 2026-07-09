@@ -80,9 +80,12 @@ INBOX_HEADERS = [
     "Location", "Cost", "Calendar", "Tags", "Source", "URL", "Added",
 ]
 
-# Maps a human calendar name (what Claude suggests during extraction) onto the
-# short "Calendar" code the Inbox/categorize step understands. The categorize
-# stage can still override this; it's just a starting guess.
+# The Inbox "Calendar" column must hold the full calendar NAME (e.g.
+# "Portland Live Music") — that's what portland_events_add.py's categorize step
+# recognizes (see CALENDAR_ALIASES there). Short codes like "music"/"events" are
+# NOT recognized and silently default to Portland Events, so we normalize any
+# short code back to its full name before writing. The categorize stage can
+# still override the guess; this is just a starting point.
 CALENDAR_CODES = {
     "Portland Events": "events",
     "Portland Live Music": "music",
@@ -95,6 +98,8 @@ CALENDAR_CODES = {
     "Trivia Nights - NW/SW": "trivia_nwsw",
     "Trivia Nights - Further Out": "trivia_further",
 }
+# Inverse: short code -> full name, so a code passed in rows.json still expands.
+_CODE_TO_NAME = {code: name for name, code in CALENDAR_CODES.items()}
 
 
 # ── Auth (mirrors portland_events_add.get_sheets_client) ─────────────────────
@@ -319,7 +324,7 @@ def _to_inbox_row(ev):
     INBOX_HEADERS / scripts/event-scrapers/sheets_writer.py.
     """
     cal = ev.get("calendar", "")
-    cal_code = CALENDAR_CODES.get(cal, cal)  # accept either a name or a code
+    cal_name = _CODE_TO_NAME.get(cal, cal)  # accept a name or a code; store the name
     return [
         "",                            # include (blank; set during review)
         ev.get("title", ""),
@@ -329,7 +334,7 @@ def _to_inbox_row(ev):
         ev.get("duration", ""),
         ev.get("location", ""),
         ev.get("cost", ""),
-        cal_code,
+        cal_name,
         ev.get("tags", ""),            # comma-separated
         ev.get("source", "Instagram"),
         ev.get("url", ""),

@@ -16,7 +16,7 @@ import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from bs4 import BeautifulSoup
 from dateutil import parser as dp
-from .base import get_page, make_event, CALENDAR_EVENTS
+from .base import get_page, make_event, multiday_end_date, CALENDAR_EVENTS
 
 SOURCE = "Calagator"
 URL = "https://calagator.org/events/"
@@ -75,6 +75,8 @@ def scrape():
         date_str = ""
         time_str = ""
         end_time_str = ""
+        dt = None
+        dt_end = None
 
         start_el = el.select_one("abbr.dtstart, time.dtstart, [class*='dtstart']")
         if start_el:
@@ -95,6 +97,9 @@ def scrape():
             except Exception:
                 pass
 
+        # Multi-day events (e.g. festivals) span date..end_date as an all-day event.
+        end_date_str = multiday_end_date(dt, dt_end)
+
         # Location
         loc_el = el.select_one(".location, [class*='venue'], address")
         location = loc_el.get_text(strip=True) if loc_el else ""
@@ -109,6 +114,7 @@ def scrape():
             date=date_str,
             time=time_str,
             end_time=end_time_str,
+            end_date=end_date_str,
             location=location,
             url=url,
             tags=tags,

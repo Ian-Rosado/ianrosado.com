@@ -23,7 +23,7 @@ import re
 import asyncio
 from datetime import date, datetime
 
-from .base import make_event, CALENDAR_MUSIC
+from .base import make_event, multiday_end_date, CALENDAR_MUSIC
 
 SOURCE = "Bandsintown"
 CITY_URL = "https://www.bandsintown.com/c/portland-or"
@@ -217,6 +217,15 @@ def scrape():
             continue  # never emit an event without a real date
         _, end_time = _iso_date_time(ev.get("endsAt", ""))
 
+        # Multi-day festivals span date..end_date; the helper is conservative so
+        # a normal show ending after midnight is never treated as multi-day.
+        def _iso_dt(v):
+            try:
+                return datetime.fromisoformat(v)
+            except (ValueError, TypeError):
+                return None
+        end_date = multiday_end_date(_iso_dt(ev.get("startsAt", "")), _iso_dt(ev.get("endsAt", "")))
+
         try:
             if date.fromisoformat(date_str) < today:
                 continue
@@ -237,6 +246,7 @@ def scrape():
             date=date_str,
             time=time_str,
             end_time=end_time,
+            end_date=end_date,
             location=_location(ev.get("venueName", ""), loc_text),
             url=(ev.get("eventUrl") or "").split("?")[0],
             tags=["music", "concert"],

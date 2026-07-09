@@ -3,9 +3,13 @@ Shared utilities and event schema for all Portland event scrapers.
 
 Event schema:
   title          : str   - Event name
-  date           : str   - YYYY-MM-DD
+  date           : str   - YYYY-MM-DD (start / first day)
   time           : str   - HH:MM 24-hour, or "" if unknown
   end_time       : str   - HH:MM 24-hour, or "" if unknown
+  end_date       : str   - YYYY-MM-DD last day of a multi-day event, else "".
+                           When set, the event is all-day and spans date..end_date
+                           (see multiday_end_date() + the "End Time" column, which
+                           carries this date for portland_events_add to span).
   duration_minutes: int  - Derived from time/end_time if available, else None
   location       : str   - Venue name and/or address
   cost           : str   - Free, $10, "Pay what you can", etc.
@@ -16,7 +20,7 @@ Event schema:
 """
 
 import requests
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from dateutil import parser as dateparser
 
 HEADERS = {
@@ -96,11 +100,35 @@ def normalize_tags(tags):
     return out
 
 
+def multiday_end_date(start_dt, end_dt):
+    """Given a source event's start/end *datetimes*, return the inclusive last
+    day ('YYYY-MM-DD') of a genuine multi-day event, or '' for a single day.
+
+    Conservative on purpose: requires the span to exceed 24h, so an event that
+    merely ends after midnight (a late concert, e.g. 9pm–1am) is never treated
+    as multi-day. An all-day end at exactly midnight is treated as exclusive
+    (iCal/hCalendar convention), i.e. the last real day is the day before.
+
+    Pass the result as make_event(end_date=...); it renders as an all-day span.
+    """
+    if not start_dt or not end_dt:
+        return ""
+    if (end_dt - start_dt) <= timedelta(hours=24):
+        return ""
+    last = end_dt
+    if end_dt.hour == 0 and end_dt.minute == 0:
+        last = end_dt - timedelta(days=1)   # exclusive all-day end
+    if last.date() <= start_dt.date():
+        return ""
+    return last.date().isoformat()
+
+
 def make_event(
     title="",
     date="",
     time="",
     end_time="",
+    end_date="",
     duration_minutes=None,
     location="",
     cost="",
@@ -110,6 +138,16 @@ def make_event(
     source="",
 ):
     """Return a new event dict with all required fields."""
+    # Multi-day span: when end_date is a later calendar day than the start date,
+    # the event is rendered as an all-day event covering date..end_date. Force
+    # all-day by dropping the clock times (a week-long festival has no single
+    # start/end time). A same-day-or-earlier end_date is ignored.
+    if end_date and date and end_date > date:
+        time = ""
+        end_time = ""
+    else:
+        end_date = ""
+
     # Auto-compute duration_minutes if both times are given
     if duration_minutes is None and time and end_time:
         try:
@@ -126,6 +164,7 @@ def make_event(
         "date": date,
         "time": time,
         "end_time": end_time,
+        "end_date": end_date,
         "duration_minutes": duration_minutes,
         "location": location,
         "cost": cost,

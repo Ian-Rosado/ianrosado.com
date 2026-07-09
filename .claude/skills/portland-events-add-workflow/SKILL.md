@@ -262,7 +262,11 @@ duplicate if any of:
 - Normalized titles are equal (lowercase, strip non-alphanumeric)
 - One normalized title is a prefix of the other (≥ ~15 chars)
 - Significant-word overlap ≥ 0.8 (drop stopwords: the, a, and, with, at, of, feat, vs, …)
-- Same venue + same/similar time, even if titles differ across sources
+- Same venue + same/similar time, even if titles differ across sources —
+  `_fuzzy_dedup_incoming` now **auto-flags** these (normalized venue + an actual
+  time-window overlap, generic venues like "Portland, OR" excluded), keeping the
+  more complete record. They arrive pre-filled `y` in the Dedup tab; clear the
+  `y` if it wrongly merged two simultaneous shows at a multi-room venue.
 
 ```python
 import re

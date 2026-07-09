@@ -13,20 +13,13 @@ from .base import get_page, make_event, parse_cost, CALENDAR_EVENTS
 
 SOURCE = "PDX Parent"
 URL = "https://pdxparent.com/events/"
+# pdxparent.com's WAF returns 403 to any client that claims a browser
+# User-Agent but lacks a real browser's TLS fingerprint (the fake-Chrome-UA
+# mismatch that bot filters flag). A plain, non-browser UA is served normally.
+# DO NOT "upgrade" this to a Mozilla/Chrome UA — that's what blocks it.
 HEADERS_OVERRIDE = {
-    "User-Agent": (
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-        "AppleWebKit/537.36 (KHTML, like Gecko) "
-        "Chrome/124.0.0.0 Safari/537.36"
-    ),
+    "User-Agent": "pdx-events-scraper/1.0",
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-    "Accept-Language": "en-US,en;q=0.5",
-    "Accept-Encoding": "gzip, deflate, br",
-    "Connection": "keep-alive",
-    "Upgrade-Insecure-Requests": "1",
-    "Sec-Fetch-Dest": "document",
-    "Sec-Fetch-Mode": "navigate",
-    "Sec-Fetch-Site": "none",
 }
 
 

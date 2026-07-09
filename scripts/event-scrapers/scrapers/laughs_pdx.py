@@ -8,7 +8,7 @@ Calendar: events (comedy)
 import re
 from bs4 import BeautifulSoup
 from dateutil import parser as dp
-from .base import get_page, make_event, parse_cost, CALENDAR_COMEDY
+from .base import get_page, make_event, parse_cost, multiday_end_date, CALENDAR_COMEDY
 
 SOURCE = "Laughs PDX"
 URL = "https://www.laughspdx.com/events/"
@@ -46,6 +46,8 @@ def scrape():
         date_str = ""
         time_str = ""
         end_time_str = ""
+        dt = None
+        dt_end = None
 
         start_el = article.select_one(
             "abbr.tribe-events-abbr[title], .tribe-event-date-start, "
@@ -71,6 +73,9 @@ def scrape():
             except Exception:
                 pass
 
+        # Multi-day events span date..end_date as an all-day event.
+        end_date_str = multiday_end_date(dt, dt_end)
+
         # Location
         loc_el = article.select_one(".tribe-venue, address, [class*='venue']")
         location = loc_el.get_text(" ", strip=True) if loc_el else ""
@@ -86,6 +91,7 @@ def scrape():
             date=date_str,
             time=time_str,
             end_time=end_time_str,
+            end_date=end_date_str,
             location=location,
             cost=cost,
             url=url,

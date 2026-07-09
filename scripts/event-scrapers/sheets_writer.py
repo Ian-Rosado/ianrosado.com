@@ -14,7 +14,7 @@ Tab layout (written to "Inbox" tab, created if missing):
   A: Title
   B: Date        (YYYY-MM-DD)
   C: Time        (HH:MM 24h)
-  D: End Time    (HH:MM 24h)
+  D: End Time    (HH:MM 24h, or YYYY-MM-DD end date for a multi-day event)
   E: Duration    (minutes)
   F: Location
   G: Cost
@@ -176,7 +176,9 @@ def event_to_row(event):
         event.get("title", ""),
         event.get("date", ""),
         event.get("time", ""),
-        event.get("end_time", ""),
+        # For a multi-day event the "End Time" column carries the end DATE
+        # (YYYY-MM-DD); portland_events_add reads that as the span's last day.
+        event.get("end_date") or event.get("end_time", ""),
         event.get("duration_minutes", "") or "",
         event.get("location", ""),
         event.get("cost", ""),

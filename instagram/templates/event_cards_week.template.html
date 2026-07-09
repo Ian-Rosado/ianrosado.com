@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<!--
+  EVENT DETAIL CARDS — Events of the Week (one card per day, 7 cards total)
+  ──────────────────────────────────────────────────────────────────────────
+  HOW TO USE
+  1. Copy to  instagram/event_cards_<dates>.html
+  2. Set the .week-label date range (e.g. "JUL 6–12").
+  3. Match the <<THEME>> canvas + accent to the companion  portland_events_week_<dates>.html
+     so the cards feel like the same post family.
+  4. Add one .post block per day. Each card has:
+       • A .day-header showing the day name + date number
+       • Two stacked .event-tile divs (Day pick on top, Night pick below)
+       • Tile color classes match the companion grid — same day, same colors.
+       • tile-meta = "Venue · Time" (no date — the day-header already shows it)
+  5. Skip the tile color class that matches the canvas (e.g. no .green tiles on
+     the Green canvas) so it doesn't blend in.
+  6. Render with Playwright:
+
+    from playwright.sync_api import sync_playwright
+    import os
+    html = r'C:\Users\nai19\Documents\GitHub\ianrosado.com\instagram\event_cards_<dates>.html'
+    out  = r'C:\Users\nai19\Documents\GitHub\ianrosado.com\instagram\event_cards_<dates>'
+    os.makedirs(out, exist_ok=True)
+    with sync_playwright() as p:
+        browser = p.chromium.launch()
+        page = browser.new_page(viewport={'width': 1200, 'height': 1200})
+        page.goto('file:///' + html.replace('\\', '/'))
+        page.wait_for_load_state('networkidle')
+        page.wait_for_timeout(800)
+        for i, el in enumerate(page.query_selector_all('.post')):
+            el.screenshot(path=os.path.join(out, f'card_{i+1:02d}.png'))
+        browser.close()
+-->
+<title>Portland Events – Event Detail Cards (Week)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;900&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #111;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    padding: 24px;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  /* ── Canvas ── */
+  .post {
+    width: 1080px;
+    height: 1080px;
+    background: #0d2b1a;          /* <<THEME>> canvas — match companion week post */
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Header ── */
+  .card-header {
+    padding: 32px 48px 16px;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .week-label {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+    margin-bottom: 4px;
+  }
+  .title { font-family: 'DM Serif Display', serif; font-size: 46px; color: #fff; line-height: 1.05; }
+  .title span { color: #5cdc80; }  /* <<THEME>> accent */
+  .logo { position: absolute; top: 32px; right: 48px; width: 68px; height: 68px; }
+
+  /* ── Divider ── */
+  .divider {
+    height: 3px;
+    margin: 0 48px;
+    background: linear-gradient(90deg, #5cdc80, transparent);  /* <<THEME>> accent */
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  /* ── Body ── */
+  .card-body {
+    flex: 1;
+    padding: 24px 40px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    min-height: 0;
+  }
+
+  /* Day header — shown once per card above the event pair */
+  .day-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+  .day-name {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.38);
+  }
+  .day-num {
+    font-size: 52px;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1;
+  }
+
+  /* Events pair — stacked vertically, fills remaining height */
+  .events-pair {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    flex: 1;
+    min-height: 0;
+  }
+
+  /* Individual event tile */
+  .event-tile {
+    border-radius: 18px;
+    padding: 22px 28px 20px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+  .event-tile.teal   { --accent: #3ecfb0; background: #003d35; }
+  .event-tile.blue   { --accent: #5ca8ff; background: #0a2050; }
+  .event-tile.coral  { --accent: #ff7a5c; background: #5c1a10; }
+  .event-tile.purple { --accent: #b39dff; background: #2d1a5e; }
+  .event-tile.pink   { --accent: #f07ad8; background: #4a1040; }
+  .event-tile.amber  { --accent: #f0a500; background: #7a3d00; }
+  .event-tile.green  { --accent: #5cdc80; background: #0a3520; }
+
+  .category {
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .event-name {
+    font-family: 'DM Serif Display', serif;
+    font-size: 44px;
+    color: #fff;
+    line-height: 1.07;
+    margin-bottom: 10px;
+  }
+  .description {
+    font-size: 24px;
+    font-weight: 400;
+    color: rgba(255,255,255,0.68);
+    line-height: 1.5;
+    flex: 1;
+  }
+  .tile-meta {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    font-size: 18px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.5);
+  }
+
+  /* ── Footer ── */
+  .card-footer {
+    padding: 12px 48px 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  .footer-site, .footer-handle { font-size: 19px; color: rgba(255,255,255,0.38); }
+</style>
+</head>
+<body>
+
+<!-- ─── Card · DAY D ──────────────────────────────────────────── -->
+<!-- Repeat this block once per day (Mon–Sun). tile colors should  -->
+<!-- match the companion grid — same day, same color pair.         -->
+<div class="post">
+  <div class="card-header">
+    <div class="week-label">This week in Portland · MON D–D</div>
+    <div class="title">Events of the <span>Week</span></div>
+    <svg class="logo" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="5" width="30" height="26" rx="4" fill="#F28C28"/><rect x="1" y="5" width="30" height="9" rx="4" fill="#d4720e"/><rect x="1" y="10" width="30" height="4" fill="#d4720e"/><rect x="9" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="19.5" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.6"/></svg>
+  </div>
+  <div class="divider"></div>
+  <div class="card-body">
+    <div class="day-header">
+      <span class="day-name">Mon</span><span class="day-num">1</span>
+    </div>
+    <div class="events-pair">
+      <!-- Day pick (top tile) -->
+      <div class="event-tile teal">
+        <div class="category">☀️ Category</div>
+        <div class="event-name">Day Event Name</div>
+        <div class="description">Event description goes here — 2–3 sentences about what it is, what to expect, and why it's worth going.</div>
+        <div class="tile-meta">Venue · Time · Cost</div>
+      </div>
+      <!-- Night pick (bottom tile) -->
+      <div class="event-tile blue">
+        <div class="category">🌙 Category</div>
+        <div class="event-name">Night Event Name</div>
+        <div class="description">Event description goes here — 2–3 sentences about what it is, what to expect, and why it's worth going.</div>
+        <div class="tile-meta">Venue · Time · Cost</div>
+      </div>
+    </div>
+  </div>
+  <div class="card-footer">
+    <span class="footer-site">pdx-events.com</span>
+    <span class="footer-handle">@portland_events_calendar</span>
+  </div>
+</div>
+
+</body>
+</html>

@@ -24,71 +24,33 @@ Calendars:
 import json
 import csv
 import argparse
+import importlib
+import pkgutil
 import sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date, timedelta
 from pathlib import Path
 
-# Import all scrapers
-from scrapers.portland_living_cheap import scrape as scrape_portland_living_cheap
-from scrapers.pc_pdx import scrape as scrape_pc_pdx
-from scrapers.pdx_parent import scrape as scrape_pdx_parent
-from scrapers.pdx_after_dark import scrape as scrape_pdx_after_dark
-from scrapers.nineteen_hz import scrape as scrape_nineteen_hz
-from scrapers.calagator import scrape as scrape_calagator
-from scrapers.queer_social_club import scrape as scrape_queer_social_club
-from scrapers.laughs_pdx import scrape as scrape_laughs_pdx
-from scrapers.flyer_escape import scrape as scrape_flyer_escape
-from scrapers.toc_portland import scrape as scrape_toc_portland
-from scrapers.dopdx import scrape as scrape_dopdx
-from scrapers.wweek import scrape as scrape_wweek
-from scrapers.pdx_pipeline import scrape as scrape_pdx_pipeline
-from scrapers.travel_portland import scrape as scrape_travel_portland
-from scrapers.community_playlist import scrape as scrape_community_playlist
-from scrapers.bandsintown import scrape as scrape_bandsintown
-from scrapers.nearhear import scrape as scrape_nearhear
-from scrapers.rose_city_rollers import scrape as scrape_rose_city_rollers
-from scrapers.nba_blazers import scrape as scrape_nba_blazers
-from scrapers.hillsboro_hops import scrape as scrape_hillsboro_hops
-from scrapers.wnba_fire import scrape as scrape_wnba_fire
-from scrapers.rip_city_remix import scrape as scrape_rip_city_remix
-from scrapers.timbers import scrape as scrape_timbers
-from scrapers.thorns import scrape as scrape_thorns
-from scrapers.winterhawks import scrape as scrape_winterhawks
-from scrapers.portland_pickles import scrape as scrape_portland_pickles
-from scrapers.portland_bangers import scrape as scrape_portland_bangers
-from scrapers.cherry_bombs_fc import scrape as scrape_cherry_bombs_fc
+# ── Scraper auto-discovery ────────────────────────────────────────────────────
+# Every module in scrapers/ that defines a top-level scrape() is run. Helper
+# modules (base, espn_common, modular11_common) define none, so they're skipped.
+# To add a source, just drop a new file with a scrape() into scrapers/.
+# To temporarily disable a scraper, add its module name here:
+DISABLED_SCRAPERS = set()
 
-SCRAPERS = {
-    "portland_living_cheap": scrape_portland_living_cheap,
-    "pc_pdx": scrape_pc_pdx,
-    "pdx_parent": scrape_pdx_parent,
-    "pdx_after_dark": scrape_pdx_after_dark,
-    "nineteen_hz": scrape_nineteen_hz,
-    "calagator": scrape_calagator,
-    "queer_social_club": scrape_queer_social_club,
-    "laughs_pdx": scrape_laughs_pdx,
-    "flyer_escape": scrape_flyer_escape,
-    "toc_portland": scrape_toc_portland,
-    "dopdx": scrape_dopdx,
-    "wweek": scrape_wweek,
-    "pdx_pipeline": scrape_pdx_pipeline,
-    "travel_portland": scrape_travel_portland,
-    "community_playlist": scrape_community_playlist,
-    "bandsintown": scrape_bandsintown,
-    "nearhear": scrape_nearhear,
-    "rose_city_rollers": scrape_rose_city_rollers,
-    "nba_blazers": scrape_nba_blazers,
-    "hillsboro_hops": scrape_hillsboro_hops,
-    "wnba_fire": scrape_wnba_fire,
-    "rip_city_remix": scrape_rip_city_remix,
-    "timbers": scrape_timbers,
-    "thorns": scrape_thorns,
-    "winterhawks": scrape_winterhawks,
-    "portland_pickles": scrape_portland_pickles,
-    "portland_bangers": scrape_portland_bangers,
-    "cherry_bombs_fc": scrape_cherry_bombs_fc,
-}
+_SCRAPERS_DIR = Path(__file__).parent / "scrapers"
+
+def discover_scrapers():
+    found = {}
+    for m in sorted(pkgutil.iter_modules([str(_SCRAPERS_DIR)]), key=lambda m: m.name):
+        if m.name in DISABLED_SCRAPERS:
+            continue
+        mod = importlib.import_module(f"scrapers.{m.name}")
+        if callable(getattr(mod, "scrape", None)):
+            found[m.name] = mod.scrape
+    return found
+
+SCRAPERS = discover_scrapers()
 
 CALENDAR_LABELS = {
     "events": "Portland Events",

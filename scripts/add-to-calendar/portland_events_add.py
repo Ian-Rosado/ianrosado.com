@@ -36,6 +36,7 @@ import sys
 import unicodedata
 from datetime import datetime, timedelta
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 sys.stdout.reconfigure(encoding="utf-8")
 
@@ -577,8 +578,11 @@ def fetch_existing_events(service, calendar_id, start_date, end_date):
     from googleapiclient.errors import HttpError
     events = []
     page_token = None
-    start_iso = f"{start_date}T00:00:00-07:00"
-    end_iso   = f"{end_date}T23:59:59-07:00"
+    # Resolve the correct Pacific offset per date (PDT -07:00 / PST -08:00) so
+    # the window doesn't shift an hour in winter.
+    pacific = ZoneInfo(TIMEZONE)
+    start_iso = datetime.fromisoformat(f"{start_date}T00:00:00").replace(tzinfo=pacific).isoformat()
+    end_iso   = datetime.fromisoformat(f"{end_date}T23:59:59").replace(tzinfo=pacific).isoformat()
     while True:
         try:
             result = service.events().list(
@@ -1586,7 +1590,9 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
 
     # Drop bike rides — covered by the imported Pedalpalooza calendar.
     before = len(rows)
-    rows = [r for r in rows if not is_bike_ride(get(r, "Tags", "tags", "Genre", "genre"))]
+    rows = [r for r in rows if not is_bike_ride(
+        get(r, "Tags", "tags", "Genre", "genre"),
+        get(r, "URL", "url", "link", "Link"))]
     if before != len(rows):
         print(f"  Dropped {before - len(rows)} bike ride(s) (covered by the Pedalpalooza calendar)")
 

@@ -15,7 +15,10 @@ Usage:
 Calendars:
   events          → General Portland Events calendar
   music           → Portland Live Music calendar
+  comedy          → Portland Comedy calendar
+  karaoke         → Portland Karaoke calendar
   farmers_market  → Portland Farmers Markets calendar
+  sports          → Portland Sports calendar
 """
 
 import json
@@ -136,11 +139,17 @@ def filter_events(events, days=30, calendar=None):
 
     filtered = []
     for e in events:
-        # Date filter
+        # Date filter. A multi-day event (end_date set) is kept while it's
+        # still ongoing — drop only when its whole [date, end_date] window
+        # falls outside [today, cutoff].
         if e["date"]:
             try:
                 event_date = date.fromisoformat(e["date"])
-                if event_date < today or event_date > cutoff:
+                try:
+                    event_end = date.fromisoformat(e.get("end_date") or e["date"])
+                except ValueError:
+                    event_end = event_date
+                if event_end < today or event_date > cutoff:
                     continue
             except ValueError:
                 pass  # Keep events with unparseable dates
@@ -213,7 +222,7 @@ def main():
     parser = argparse.ArgumentParser(description="Portland Events scraper runner")
     parser.add_argument("--days", type=int, default=30,
                         help="Number of days ahead to include (default: 30)")
-    parser.add_argument("--calendar", choices=["events", "music", "farmers_market", "sports"],
+    parser.add_argument("--calendar", choices=sorted(CALENDAR_LABELS),
                         help="Filter to a specific calendar")
     parser.add_argument("--no-csv", action="store_true",
                         help="Skip CSV output")

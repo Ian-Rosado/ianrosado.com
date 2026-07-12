@@ -255,7 +255,7 @@ if __name__ == "__main__":
     parser.add_argument("json_file", nargs="?", help="Path to events JSON file (from run_all.py)")
     parser.add_argument("--clear", action="store_true", help="Clear sheet before writing")
     parser.add_argument("--no-dedup", action="store_true", help="Skip duplicate checking")
-    parser.add_argument("--calendar", choices=["events", "music", "farmers_market", "sports"],
+    parser.add_argument("--calendar", choices=sorted(CALENDAR_LABELS),
                         help="Filter to one calendar type")
     args = parser.parse_args()
 

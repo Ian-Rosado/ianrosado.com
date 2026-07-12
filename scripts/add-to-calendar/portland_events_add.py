@@ -36,38 +36,35 @@ import sys
 import unicodedata
 from datetime import datetime, timedelta
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 sys.stdout.reconfigure(encoding="utf-8")
+
+# Shared OAuth helper (scripts/google_auth.py) — one token for all scripts.
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+import google_auth
 
 # Google Sheet inbox (Portland Events Inbox)
 SHEET_ID = "1mx4U8klkuTeR1E7lmChABlShfE_kVwAFaV37gAjoId4"
 INBOX_TAB = "Inbox"
 
-# ─── Calendar IDs ─────────────────────────────────────────────────────────────
+# ─── Calendar IDs (from the shared config, also read by the website build) ───
+# Edit src-shared/config/calendars.json — nothing should hardcode an ID here.
 
-CALENDARS = {
-    "Portland Events":             "6218570f10546f6f03748bbd25adcde299bfd55ef4741d8d1520e79653d9c9f6@group.calendar.google.com",
-    "Portland Live Music":         "34ae96ffcf119eb4dbf6acf86b0886273efeb8a702ed6e9267ef3d24f0e9a1f7@group.calendar.google.com",
-    "Portland Comedy":             "94a06447d97328f27a5e219c8e01c42be692998a7573738132a4405a739efec4@group.calendar.google.com",
-    "Portland Karaoke":            "e911229a59a93265f26cc81a1cbd2c3be4300fad84e935846ddb8fa7909f42fb@group.calendar.google.com",
-    "Trivia Nights - SE":          "441feafdb38c603cde09cd9a60e4f8ed10be90a21eb26dee01db64d0c8594a88@group.calendar.google.com",
-    "Trivia Nights - N/NE":        "561e4a90958248768cba407c23d37f1293e28f3749bc14de503d258fc03a48c7@group.calendar.google.com",
-    "Trivia Nights - NW/SW":       "088af359972350285c1e5bccda5fb38c349d0597d7c795ef3d1c21d7b973e457@group.calendar.google.com",
-    "Trivia Nights - Further Out": "ac0a6fedb05274655f5e68e9ec26c3f9b341866ae0feed97dd703e94f164a0bf@group.calendar.google.com",
-    "Portland Farmers Markets":    "560e859bd2c7b5dfd2262cb6f28389921434606cec955e7ec75f02df9fd2138a@group.calendar.google.com",
-    "Portland Sports":             "90009392b0836189ae31d76a39433224df222f77af28b3000913af23d99add8e@group.calendar.google.com",
-}
+_CONFIG_DIR = Path(__file__).resolve().parent.parent.parent / "src-shared" / "config"
+_CAL_CFG = json.loads((_CONFIG_DIR / "calendars.json").read_text(encoding="utf-8"))
+_FACETS_CFG = json.loads((_CONFIG_DIR / "facets.json").read_text(encoding="utf-8"))
+
+# All calendars this script can write to: the six main ones + the four trivia.
+CALENDARS = {c["name"]: c["id"]
+             for c in _CAL_CFG["calendars"] + _CAL_CFG["triviaCalendars"]}
 
 # Calendars whose events are free by default (no cost unless a price is stated).
-# Mirrors FREE_DEFAULT_SLUGS in src-shared/lib/google-calendar.ts. (Bike rides
-# live on the imported Pedalpalooza calendar, which isn't written by this script.)
-FREE_DEFAULT_CALENDARS = {
-    "Portland Farmers Markets",
-    "Trivia Nights - SE",
-    "Trivia Nights - N/NE",
-    "Trivia Nights - NW/SW",
-    "Trivia Nights - Further Out",
-}
+# (Bike rides live on the imported Pedalpalooza calendar, which isn't written
+# by this script — the website applies its free default at read time.)
+FREE_DEFAULT_CALENDARS = {c["name"]
+                          for c in _CAL_CFG["calendars"] + _CAL_CFG["triviaCalendars"]
+                          if c.get("freeDefault")}
 
 # Trivia companies whose full venue schedule is already authoritatively
 # maintained by trivia_generate.py / trivia_schedule.json as recurring weekly
@@ -92,7 +89,7 @@ def is_redundant_trivia(title):
 # Imported, read-only calendar of Shift / Pedalpalooza bike rides. This script
 # never writes it, but its events are folded into the Portland Events dedup set
 # so bike rides already listed here don't get re-added as new Events events.
-PEDALPALOOZA_CALENDAR_ID = "d11s65r5vlq540k2aicdm8c7ndrp6dsl@import.calendar.google.com"
+PEDALPALOOZA_CALENDAR_ID = _CAL_CFG["pedalpalooza"]["id"]
 
 # Recurring listings the user consistently drops at Review (e.g. tourist cruise
 # schedules) — dropped before Categorize, like redundant trivia. Grow this from
@@ -142,12 +139,10 @@ CALENDAR_ALIASES = {
 
 TIMEZONE = "America/Los_Angeles"
 DEFAULT_DURATION_MINUTES = 120
-SCOPES_CALENDAR = ["https://www.googleapis.com/auth/calendar"]
-SCOPES_CALENDAR_AND_SHEETS = [
-    "https://www.googleapis.com/auth/calendar",
-    "https://www.googleapis.com/auth/spreadsheets",  # full read+write
-]
-SCOPES = SCOPES_CALENDAR  # default; overridden to include sheets when --from-sheets
+# Scopes now live in scripts/google_auth.py (calendar + sheets, one shared
+# token for every script). Kept here as aliases for older imports.
+SCOPES_CALENDAR_AND_SHEETS = google_auth.SCOPES
+SCOPES = google_auth.SCOPES
 
 SHEET_URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/edit"
 
@@ -204,31 +199,8 @@ def get(row, *keys):
 # ─── Shared Google Sheets client ──────────────────────────────────────────────
 
 def get_sheets_client():
-    """Return an authenticated gspread client using the current SCOPES."""
-    import gspread
-    from google.oauth2.credentials import Credentials
-    from google_auth_oauthlib.flow import InstalledAppFlow
-    from google.auth.transport.requests import Request
-
-    creds = None
-    token_path = Path("token.json")
-    creds_path = Path("credentials.json")
-
-    if token_path.exists():
-        creds = Credentials.from_authorized_user_file(str(token_path), SCOPES)
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            if not creds_path.exists():
-                print("ERROR: credentials.json not found.")
-                sys.exit(1)
-            flow = InstalledAppFlow.from_client_secrets_file(str(creds_path), SCOPES)
-            creds = flow.run_local_server(port=0)
-        with open(token_path, "w") as f:
-            f.write(creds.to_json())
-
-    return gspread.authorize(creds)
+    """Return an authenticated gspread client (shared token, see google_auth)."""
+    return google_auth.get_gspread_client()
 
 
 def get_or_clear_tab(sheet, tab_name, cols):
@@ -544,31 +516,8 @@ def step2_deduplicate(rows, existing_by_cal, cross_source_skip=None, cross_sourc
 # ─── Google Calendar auth ─────────────────────────────────────────────────────
 
 def get_service():
-    """Return an authenticated Google Calendar API service."""
-    from google.auth.transport.requests import Request
-    from google.oauth2.credentials import Credentials
-    from google_auth_oauthlib.flow import InstalledAppFlow
-    from googleapiclient.discovery import build
-
-    creds = None
-    token_path = Path("token.json")
-    creds_path = Path("credentials.json")
-
-    if token_path.exists():
-        creds = Credentials.from_authorized_user_file(str(token_path), SCOPES)
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            if not creds_path.exists():
-                print("ERROR: credentials.json not found.")
-                sys.exit(1)
-            flow = InstalledAppFlow.from_client_secrets_file(str(creds_path), SCOPES)
-            creds = flow.run_local_server(port=0)
-        with open(token_path, "w") as f:
-            f.write(creds.to_json())
-
-    return build("calendar", "v3", credentials=creds)
+    """Return an authenticated Google Calendar API service (shared token)."""
+    return google_auth.get_calendar_service()
 
 
 # ─── Fetch existing events ────────────────────────────────────────────────────
@@ -577,8 +526,11 @@ def fetch_existing_events(service, calendar_id, start_date, end_date):
     from googleapiclient.errors import HttpError
     events = []
     page_token = None
-    start_iso = f"{start_date}T00:00:00-07:00"
-    end_iso   = f"{end_date}T23:59:59-07:00"
+    # Resolve the correct Pacific offset per date (PDT -07:00 / PST -08:00) so
+    # the window doesn't shift an hour in winter.
+    pacific = ZoneInfo(TIMEZONE)
+    start_iso = datetime.fromisoformat(f"{start_date}T00:00:00").replace(tzinfo=pacific).isoformat()
+    end_iso   = datetime.fromisoformat(f"{end_date}T23:59:59").replace(tzinfo=pacific).isoformat()
     while True:
         try:
             result = service.events().list(
@@ -736,14 +688,10 @@ def resolve_event_url(url, location):
 
 # ─── Facet classification (for calendar extendedProperties) ──────────────────
 
-AGE_TAGS = {"all-ages", "21+", "18+", "19+", "16+"}
-NEIGHBORHOOD_TAGS = {
-    "se", "ne", "nw", "sw", "n", "downtown", "pearl", "alberta", "hawthorne",
-    "belmont", "division", "mississippi", "sellwood", "hollywood", "st johns",
-    "st-johns", "foster", "burnside", "goose hollow", "nob hill", "82nd",
-    "montavilla", "woodstock", "kenton", "old town", "central eastside",
-    "laurelhurst", "beaverton", "hillsboro", "vancouver", "troutdale",
-}
+# Facet tag lists come from the shared config, the same file the website
+# build reads (src-shared/config/facets.json) — edit there, not here.
+AGE_TAGS = set(_FACETS_CFG["ageTags"])
+NEIGHBORHOOD_TAGS = set(_FACETS_CFG["neighborhoodTags"])
 
 
 def classify_cost(cost):
@@ -1586,7 +1534,9 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
 
     # Drop bike rides — covered by the imported Pedalpalooza calendar.
     before = len(rows)
-    rows = [r for r in rows if not is_bike_ride(get(r, "Tags", "tags", "Genre", "genre"))]
+    rows = [r for r in rows if not is_bike_ride(
+        get(r, "Tags", "tags", "Genre", "genre"),
+        get(r, "URL", "url", "link", "Link"))]
     if before != len(rows):
         print(f"  Dropped {before - len(rows)} bike ride(s) (covered by the Pedalpalooza calendar)")
 
@@ -2152,10 +2102,6 @@ if __name__ == "__main__":
     if args.tsv and not Path(args.tsv).exists():
         print(f"ERROR: File not found: {args.tsv}")
         sys.exit(1)
-
-    # Sheets access requires broader scopes
-    if from_sheets:
-        SCOPES = SCOPES_CALENDAR_AND_SHEETS
 
     add_events(
         tsv_path=args.tsv,

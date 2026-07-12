@@ -1,0 +1,11 @@
+{
+  "_comment": "Single source of truth for facet tag classification. A tag in ageTags becomes the event's age facet; one in neighborhoodTags becomes its neighborhood; everything else is a genre. Read by src-shared/lib/google-calendar.ts (website build) and scripts/add-to-calendar/portland_events_add.py (pipeline). Edit here only.",
+  "ageTags": ["all-ages", "21+", "18+", "19+", "16+"],
+  "neighborhoodTags": [
+    "se", "ne", "nw", "sw", "n", "downtown", "pearl", "alberta", "hawthorne",
+    "belmont", "division", "mississippi", "sellwood", "hollywood", "st johns",
+    "st-johns", "foster", "burnside", "goose hollow", "nob hill", "82nd",
+    "montavilla", "woodstock", "kenton", "old town", "central eastside",
+    "laurelhurst", "beaverton", "hillsboro", "vancouver", "troutdale"
+  ]
+}

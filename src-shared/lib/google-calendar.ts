@@ -1,3 +1,6 @@
+import facets from '../config/facets.json';
+import { FREE_DEFAULT_SLUGS } from './calendars';
+
 const API_KEY = import.meta.env.GOOGLE_CALENDAR_API_KEY;
 const BASE = 'https://www.googleapis.com/calendar/v3/calendars';
 const TZ = 'America/Los_Angeles';
@@ -78,23 +81,13 @@ function normalizeCost(raw: string): string {
   return '';
 }
 
-// Calendars whose events are free by default — farmers markets, trivia nights,
-// and Pedalpalooza/Shift bike rides. These only carry a cost when a price is
-// explicitly stated; otherwise they classify as free. (Pedalpalooza is an
-// imported, read-only calendar, so this read-time default is the only place it
-// can be applied.)
-const FREE_DEFAULT_SLUGS = new Set(['farmers-markets', 'trivia', 'pedalpalooza']);
-
-// Tag classification — mirrors classify_facets() in portland_events_add.py so a
-// single embedded "Tags:" line yields genres / age / neighborhood at build time.
-const AGE_TAGS = new Set(['all-ages', '21+', '18+', '19+', '16+']);
-const NEIGHBORHOOD_TAGS = new Set([
-  'se', 'ne', 'nw', 'sw', 'n', 'downtown', 'pearl', 'alberta', 'hawthorne',
-  'belmont', 'division', 'mississippi', 'sellwood', 'hollywood', 'st johns',
-  'st-johns', 'foster', 'burnside', 'goose hollow', 'nob hill', '82nd',
-  'montavilla', 'woodstock', 'kenton', 'old town', 'central eastside',
-  'laurelhurst', 'beaverton', 'hillsboro', 'vancouver', 'troutdale',
-]);
+// Free-by-default calendars + facet tag lists come from the shared config
+// (src-shared/config/), the same files the Python pipeline reads — so the
+// classification can't drift between the website and the add-to-calendar
+// scripts. (Pedalpalooza is an imported, read-only calendar, so this
+// read-time free default is the only place it can be applied.)
+const AGE_TAGS = new Set<string>(facets.ageTags);
+const NEIGHBORHOOD_TAGS = new Set<string>(facets.neighborhoodTags);
 
 function classifyTags(tags: string[]): { genres: string[]; age: string; neighborhood: string } {
   const genres: string[] = [];

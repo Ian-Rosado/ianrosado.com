@@ -52,30 +52,13 @@ except Exception:
                 seen.add(t); out.append(t)
         return out
 
-# Use the combined scope so one token works for both calendar + sheets.
-pea.SCOPES = SCOPES_CALENDAR_AND_SHEETS
+# ── Auth (shared token — scripts/google_auth.py) ────────────────────────────
 
+import google_auth
 
-# ── Auth (one creds → calendar service + gspread client) ────────────────────
 
 def get_creds():
-    from google.auth.transport.requests import Request
-    from google.oauth2.credentials import Credentials
-    from google_auth_oauthlib.flow import InstalledAppFlow
-
-    token_path = Path("token.json")
-    creds_path = Path("credentials.json")
-    creds = None
-    if token_path.exists():
-        creds = Credentials.from_authorized_user_file(str(token_path), SCOPES_CALENDAR_AND_SHEETS)
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            flow = InstalledAppFlow.from_client_secrets_file(str(creds_path), SCOPES_CALENDAR_AND_SHEETS)
-            creds = flow.run_local_server(port=0)
-        token_path.write_text(creds.to_json())
-    return creds
+    return google_auth.get_credentials()
 
 
 # ── Title normalization for matching ────────────────────────────────────────

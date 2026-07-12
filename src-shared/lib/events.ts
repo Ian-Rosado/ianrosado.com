@@ -29,24 +29,11 @@ export const EVENT_CATEGORIES: EventCategory[] = [
 ];
 
 // Fetch every calendar in parallel and return one flat, date-sorted list.
-// Trivia is fetched as a group (4 sub-calendars) but all carry slug 'trivia'.
+// Trivia is fetched as a group (4 sub-calendars) but all carry slug 'trivia'
+// and the group's display name.
 export async function fetchAllEvents(): Promise<CalEvent[]> {
-  const [
-    eventsEvents,
-    musicEvents,
-    comedyEvents,
-    karaokeEvents,
-    marketsEvents,
-    sportsEvents,
-    triviaEvents,
-    pedalaEvents,
-  ] = await Promise.all([
-    fetchCalendarEvents(CALENDARS[0].id, CALENDARS[0].name, CALENDARS[0].slug, CALENDARS[0].color),
-    fetchCalendarEvents(CALENDARS[1].id, CALENDARS[1].name, CALENDARS[1].slug, CALENDARS[1].color),
-    fetchCalendarEvents(CALENDARS[2].id, CALENDARS[2].name, CALENDARS[2].slug, CALENDARS[2].color),
-    fetchCalendarEvents(CALENDARS[3].id, CALENDARS[3].name, CALENDARS[3].slug, CALENDARS[3].color),
-    fetchCalendarEvents(CALENDARS[4].id, CALENDARS[4].name, CALENDARS[4].slug, CALENDARS[4].color),
-    fetchCalendarEvents(CALENDARS[5].id, CALENDARS[5].name, CALENDARS[5].slug, CALENDARS[5].color),
+  const results = await Promise.all([
+    ...CALENDARS.map((c) => fetchCalendarEvents(c.id, c.name, c.slug, c.color)),
     fetchMultipleCalendars(
       TRIVIA_CALENDARS.map((c) => ({ id: c.id, name: TRIVIA_GROUP.name, slug: c.slug, color: c.color })),
     ),
@@ -58,14 +45,7 @@ export async function fetchAllEvents(): Promise<CalEvent[]> {
     ),
   ]);
 
-  return [
-    ...eventsEvents,
-    ...musicEvents,
-    ...comedyEvents,
-    ...karaokeEvents,
-    ...marketsEvents,
-    ...sportsEvents,
-    ...triviaEvents,
-    ...pedalaEvents,
-  ].sort((a, b) => a.date.localeCompare(b.date) || a.sortKey - b.sortKey);
+  return results
+    .flat()
+    .sort((a, b) => a.date.localeCompare(b.date) || a.sortKey - b.sortKey);
 }

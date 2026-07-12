@@ -44,3 +44,7 @@ instagram/event_cards_*/
 
 # Add-to-calendar review feedback log (local, per-machine)
 scripts/add-to-calendar/review_corrections.jsonl
+
+# Captured script output from pipeline runs (local debug artifacts)
+scripts/add-to-calendar/_prep_out.txt
+scripts/event-scrapers/_scrape_out.txt

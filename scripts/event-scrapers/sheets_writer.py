@@ -24,41 +24,29 @@ Tab layout (written to "Inbox" tab, created if missing):
   K: URL
   L: Added       (timestamp this row was written)
 
-Setup (one-time):
-  1. Go to https://console.cloud.google.com/
-  2. Create a project (or use an existing one)
-  3. Enable the Google Sheets API and Google Drive API
-  4. Go to APIs & Services > Credentials > Create Credentials > OAuth client ID
-  5. Application type: Desktop app
-  6. Download the JSON — save it as credentials/oauth_client.json
-     (next to this script, inside scripts/event-scrapers/)
-  7. Run this script once — it opens a browser, you log in, done.
-     Token is saved to credentials/token.json and reused automatically.
+Auth: shared token via scripts/google_auth.py — the same
+scripts/add-to-calendar/{credentials.json, token.json} pair every other
+Portland Events script uses. First run opens a browser; the token is cached
+and refreshed automatically. See CLAUDE.md for the one-time credential setup.
 """
 
 import json
-import os
+import sys
 from datetime import datetime, date, timedelta
 from pathlib import Path
 
 import gspread
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
-from google.auth.transport.requests import Request
+
+# Shared OAuth helper (scripts/google_auth.py) — one token for all scripts.
+# (This replaced the separate credentials/ store this script used to keep.)
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+import google_auth
+from google_auth import TOKEN_FILE, CLIENT_SECRET_FILE  # re-exported for reauth_and_push
 
 # ── Config ────────────────────────────────────────────────────────────────────
 
 SHEET_ID = "1mx4U8klkuTeR1E7lmChABlShfE_kVwAFaV37gAjoId4"
 INBOX_TAB = "Inbox"
-
-SCOPES = [
-    "https://www.googleapis.com/auth/spreadsheets",
-    "https://www.googleapis.com/auth/drive.file",
-]
-
-CREDS_DIR = Path(__file__).parent / "credentials"
-CLIENT_SECRET_FILE = CREDS_DIR / "oauth_client.json"
-TOKEN_FILE = CREDS_DIR / "token.json"
 
 # Sheet columns (1-indexed for gspread)
 HEADERS = [
@@ -78,48 +66,13 @@ CALENDAR_LABELS = {
 # ── Auth ──────────────────────────────────────────────────────────────────────
 
 def get_credentials():
-    """Get or refresh OAuth credentials, launching browser if needed."""
-    CREDS_DIR.mkdir(exist_ok=True)
-    creds = None
-
-    if TOKEN_FILE.exists():
-        creds = Credentials.from_authorized_user_file(str(TOKEN_FILE), SCOPES)
-
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            print("Refreshing access token...")
-            creds.refresh(Request())
-        else:
-            if not CLIENT_SECRET_FILE.exists():
-                raise FileNotFoundError(
-                    f"\nOAuth client secret not found at:\n  {CLIENT_SECRET_FILE}\n\n"
-                    "Setup steps:\n"
-                    "  1. Go to https://console.cloud.google.com/\n"
-                    "  2. Create/select a project\n"
-                    "  3. Enable: Google Sheets API + Google Drive API\n"
-                    "  4. APIs & Services > Credentials > Create Credentials > OAuth client ID\n"
-                    "  5. Application type: Desktop app\n"
-                    "  6. Download JSON → save as:\n"
-                    f"     {CLIENT_SECRET_FILE}\n"
-                    "  7. Re-run this script\n"
-                )
-            print("Opening browser for Google login...")
-            flow = InstalledAppFlow.from_client_secrets_file(
-                str(CLIENT_SECRET_FILE), SCOPES
-            )
-            creds = flow.run_local_server(port=0)
-
-        # Cache token for future runs
-        TOKEN_FILE.write_text(creds.to_json())
-        print(f"Token saved to {TOKEN_FILE}")
-
-    return creds
+    """Get or refresh OAuth credentials (shared token, see google_auth)."""
+    return google_auth.get_credentials()
 
 
 def get_client():
     """Return an authenticated gspread client."""
-    creds = get_credentials()
-    return gspread.authorize(creds)
+    return google_auth.get_gspread_client()
 
 # ── Sheet helpers ─────────────────────────────────────────────────────────────
 

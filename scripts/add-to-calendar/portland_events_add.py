@@ -40,6 +40,10 @@ from zoneinfo import ZoneInfo
 
 sys.stdout.reconfigure(encoding="utf-8")
 
+# Shared OAuth helper (scripts/google_auth.py) — one token for all scripts.
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+import google_auth
+
 # Google Sheet inbox (Portland Events Inbox)
 SHEET_ID = "1mx4U8klkuTeR1E7lmChABlShfE_kVwAFaV37gAjoId4"
 INBOX_TAB = "Inbox"
@@ -143,12 +147,10 @@ CALENDAR_ALIASES = {
 
 TIMEZONE = "America/Los_Angeles"
 DEFAULT_DURATION_MINUTES = 120
-SCOPES_CALENDAR = ["https://www.googleapis.com/auth/calendar"]
-SCOPES_CALENDAR_AND_SHEETS = [
-    "https://www.googleapis.com/auth/calendar",
-    "https://www.googleapis.com/auth/spreadsheets",  # full read+write
-]
-SCOPES = SCOPES_CALENDAR  # default; overridden to include sheets when --from-sheets
+# Scopes now live in scripts/google_auth.py (calendar + sheets, one shared
+# token for every script). Kept here as aliases for older imports.
+SCOPES_CALENDAR_AND_SHEETS = google_auth.SCOPES
+SCOPES = google_auth.SCOPES
 
 SHEET_URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/edit"
 
@@ -205,31 +207,8 @@ def get(row, *keys):
 # ─── Shared Google Sheets client ──────────────────────────────────────────────
 
 def get_sheets_client():
-    """Return an authenticated gspread client using the current SCOPES."""
-    import gspread
-    from google.oauth2.credentials import Credentials
-    from google_auth_oauthlib.flow import InstalledAppFlow
-    from google.auth.transport.requests import Request
-
-    creds = None
-    token_path = Path("token.json")
-    creds_path = Path("credentials.json")
-
-    if token_path.exists():
-        creds = Credentials.from_authorized_user_file(str(token_path), SCOPES)
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            if not creds_path.exists():
-                print("ERROR: credentials.json not found.")
-                sys.exit(1)
-            flow = InstalledAppFlow.from_client_secrets_file(str(creds_path), SCOPES)
-            creds = flow.run_local_server(port=0)
-        with open(token_path, "w") as f:
-            f.write(creds.to_json())
-
-    return gspread.authorize(creds)
+    """Return an authenticated gspread client (shared token, see google_auth)."""
+    return google_auth.get_gspread_client()
 
 
 def get_or_clear_tab(sheet, tab_name, cols):
@@ -545,31 +524,8 @@ def step2_deduplicate(rows, existing_by_cal, cross_source_skip=None, cross_sourc
 # ─── Google Calendar auth ─────────────────────────────────────────────────────
 
 def get_service():
-    """Return an authenticated Google Calendar API service."""
-    from google.auth.transport.requests import Request
-    from google.oauth2.credentials import Credentials
-    from google_auth_oauthlib.flow import InstalledAppFlow
-    from googleapiclient.discovery import build
-
-    creds = None
-    token_path = Path("token.json")
-    creds_path = Path("credentials.json")
-
-    if token_path.exists():
-        creds = Credentials.from_authorized_user_file(str(token_path), SCOPES)
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            if not creds_path.exists():
-                print("ERROR: credentials.json not found.")
-                sys.exit(1)
-            flow = InstalledAppFlow.from_client_secrets_file(str(creds_path), SCOPES)
-            creds = flow.run_local_server(port=0)
-        with open(token_path, "w") as f:
-            f.write(creds.to_json())
-
-    return build("calendar", "v3", credentials=creds)
+    """Return an authenticated Google Calendar API service (shared token)."""
+    return google_auth.get_calendar_service()
 
 
 # ─── Fetch existing events ────────────────────────────────────────────────────
@@ -2158,10 +2114,6 @@ if __name__ == "__main__":
     if args.tsv and not Path(args.tsv).exists():
         print(f"ERROR: File not found: {args.tsv}")
         sys.exit(1)
-
-    # Sheets access requires broader scopes
-    if from_sheets:
-        SCOPES = SCOPES_CALENDAR_AND_SHEETS
 
     add_events(
         tsv_path=args.tsv,

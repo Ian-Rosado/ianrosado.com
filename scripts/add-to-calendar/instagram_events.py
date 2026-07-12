@@ -33,8 +33,8 @@ This script only ever writes to the Google Sheet (Inbox + IG Inbox tabs); it
 never touches the calendar directly — the existing `commit` stage does that,
 which is what gives you the phone double-check before anything lands.
 
-Auth: reads token.json + credentials.json from the CURRENT directory, exactly
-like portland_events_add.py — always run it from inside scripts/add-to-calendar/.
+Auth: shared token via scripts/google_auth.py (anchored to that file, not the
+cwd). Still run this from scripts/add-to-calendar/ so ig_work/ lands here.
 
 Requirements:
     pip install gspread google-auth google-auth-oauthlib requests
@@ -55,15 +55,6 @@ sys.stdout.reconfigure(encoding="utf-8")
 SHEET_ID = "1mx4U8klkuTeR1E7lmChABlShfE_kVwAFaV37gAjoId4"
 INBOX_TAB = "Inbox"        # the existing pipeline entry point (13 cols, see below)
 IG_TAB = "IG Inbox"        # where phone-pasted Instagram links land
-
-# This script only needs Sheets, but it shares token.json with
-# portland_events_add.py, which needs Calendar too. Requesting the same
-# combined scope here keeps a fresh sign-in from silently downgrading the
-# shared token to sheets-only (which then 403s the pipeline's calendar calls).
-SCOPES = [
-    "https://www.googleapis.com/auth/calendar",
-    "https://www.googleapis.com/auth/spreadsheets",
-]
 
 WORK_DIR = Path("ig_work")  # gitignored; holds fetched flyers + manifest.json
 
@@ -102,33 +93,14 @@ CALENDAR_CODES = {
 _CODE_TO_NAME = {code: name for name, code in CALENDAR_CODES.items()}
 
 
-# ── Auth (mirrors portland_events_add.get_sheets_client) ─────────────────────
+# ── Auth (shared token — scripts/google_auth.py) ────────────────────────────
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+import google_auth
+
 
 def get_sheet():
-    import gspread
-    from google.oauth2.credentials import Credentials
-    from google_auth_oauthlib.flow import InstalledAppFlow
-    from google.auth.transport.requests import Request
-
-    creds = None
-    token_path = Path("token.json")
-    creds_path = Path("credentials.json")
-
-    if token_path.exists():
-        creds = Credentials.from_authorized_user_file(str(token_path), SCOPES)
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            if not creds_path.exists():
-                print("ERROR: credentials.json not found. Run from scripts/add-to-calendar/.")
-                sys.exit(1)
-            flow = InstalledAppFlow.from_client_secrets_file(str(creds_path), SCOPES)
-            creds = flow.run_local_server(port=0)
-        with open(token_path, "w") as f:
-            f.write(creds.to_json())
-
-    return gspread.authorize(creds).open_by_key(SHEET_ID)
+    return google_auth.get_gspread_client().open_by_key(SHEET_ID)
 
 
 def get_ig_tab(sheet, create=False):

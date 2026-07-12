@@ -36,13 +36,15 @@ import argparse
 from pathlib import Path
 from datetime import datetime, timedelta, date, time as dtime
 
-from google.oauth2.credentials import Credentials
-from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
 sys.stdout.reconfigure(encoding="utf-8")
 
-TOKEN = "token.json"
+# Shared OAuth helper (scripts/google_auth.py) — one token for all scripts,
+# with automatic refresh (the old direct token read had none).
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+import google_auth
+
 SCHEDULE = Path("trivia_schedule.json")
 TIMEZONE = "America/Los_Angeles"
 DEFAULT_DURATION_MIN = 120
@@ -59,8 +61,7 @@ BYDAY_TO_WEEKDAY = {"MO": 0, "TU": 1, "WE": 2, "TH": 3, "FR": 4, "SA": 5, "SU": 
 
 
 def get_service():
-    creds = Credentials.from_authorized_user_file(TOKEN, ["https://www.googleapis.com/auth/calendar"])
-    return build("calendar", "v3", credentials=creds)
+    return google_auth.get_calendar_service()
 
 
 def trivia_key(entry):

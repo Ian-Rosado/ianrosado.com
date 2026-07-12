@@ -48,31 +48,23 @@ import google_auth
 SHEET_ID = "1mx4U8klkuTeR1E7lmChABlShfE_kVwAFaV37gAjoId4"
 INBOX_TAB = "Inbox"
 
-# ─── Calendar IDs ─────────────────────────────────────────────────────────────
+# ─── Calendar IDs (from the shared config, also read by the website build) ───
+# Edit src-shared/config/calendars.json — nothing should hardcode an ID here.
 
-CALENDARS = {
-    "Portland Events":             "6218570f10546f6f03748bbd25adcde299bfd55ef4741d8d1520e79653d9c9f6@group.calendar.google.com",
-    "Portland Live Music":         "34ae96ffcf119eb4dbf6acf86b0886273efeb8a702ed6e9267ef3d24f0e9a1f7@group.calendar.google.com",
-    "Portland Comedy":             "94a06447d97328f27a5e219c8e01c42be692998a7573738132a4405a739efec4@group.calendar.google.com",
-    "Portland Karaoke":            "e911229a59a93265f26cc81a1cbd2c3be4300fad84e935846ddb8fa7909f42fb@group.calendar.google.com",
-    "Trivia Nights - SE":          "441feafdb38c603cde09cd9a60e4f8ed10be90a21eb26dee01db64d0c8594a88@group.calendar.google.com",
-    "Trivia Nights - N/NE":        "561e4a90958248768cba407c23d37f1293e28f3749bc14de503d258fc03a48c7@group.calendar.google.com",
-    "Trivia Nights - NW/SW":       "088af359972350285c1e5bccda5fb38c349d0597d7c795ef3d1c21d7b973e457@group.calendar.google.com",
-    "Trivia Nights - Further Out": "ac0a6fedb05274655f5e68e9ec26c3f9b341866ae0feed97dd703e94f164a0bf@group.calendar.google.com",
-    "Portland Farmers Markets":    "560e859bd2c7b5dfd2262cb6f28389921434606cec955e7ec75f02df9fd2138a@group.calendar.google.com",
-    "Portland Sports":             "90009392b0836189ae31d76a39433224df222f77af28b3000913af23d99add8e@group.calendar.google.com",
-}
+_CONFIG_DIR = Path(__file__).resolve().parent.parent.parent / "src-shared" / "config"
+_CAL_CFG = json.loads((_CONFIG_DIR / "calendars.json").read_text(encoding="utf-8"))
+_FACETS_CFG = json.loads((_CONFIG_DIR / "facets.json").read_text(encoding="utf-8"))
+
+# All calendars this script can write to: the six main ones + the four trivia.
+CALENDARS = {c["name"]: c["id"]
+             for c in _CAL_CFG["calendars"] + _CAL_CFG["triviaCalendars"]}
 
 # Calendars whose events are free by default (no cost unless a price is stated).
-# Mirrors FREE_DEFAULT_SLUGS in src-shared/lib/google-calendar.ts. (Bike rides
-# live on the imported Pedalpalooza calendar, which isn't written by this script.)
-FREE_DEFAULT_CALENDARS = {
-    "Portland Farmers Markets",
-    "Trivia Nights - SE",
-    "Trivia Nights - N/NE",
-    "Trivia Nights - NW/SW",
-    "Trivia Nights - Further Out",
-}
+# (Bike rides live on the imported Pedalpalooza calendar, which isn't written
+# by this script — the website applies its free default at read time.)
+FREE_DEFAULT_CALENDARS = {c["name"]
+                          for c in _CAL_CFG["calendars"] + _CAL_CFG["triviaCalendars"]
+                          if c.get("freeDefault")}
 
 # Trivia companies whose full venue schedule is already authoritatively
 # maintained by trivia_generate.py / trivia_schedule.json as recurring weekly
@@ -97,7 +89,7 @@ def is_redundant_trivia(title):
 # Imported, read-only calendar of Shift / Pedalpalooza bike rides. This script
 # never writes it, but its events are folded into the Portland Events dedup set
 # so bike rides already listed here don't get re-added as new Events events.
-PEDALPALOOZA_CALENDAR_ID = "d11s65r5vlq540k2aicdm8c7ndrp6dsl@import.calendar.google.com"
+PEDALPALOOZA_CALENDAR_ID = _CAL_CFG["pedalpalooza"]["id"]
 
 # Recurring listings the user consistently drops at Review (e.g. tourist cruise
 # schedules) — dropped before Categorize, like redundant trivia. Grow this from
@@ -696,14 +688,10 @@ def resolve_event_url(url, location):
 
 # ─── Facet classification (for calendar extendedProperties) ──────────────────
 
-AGE_TAGS = {"all-ages", "21+", "18+", "19+", "16+"}
-NEIGHBORHOOD_TAGS = {
-    "se", "ne", "nw", "sw", "n", "downtown", "pearl", "alberta", "hawthorne",
-    "belmont", "division", "mississippi", "sellwood", "hollywood", "st johns",
-    "st-johns", "foster", "burnside", "goose hollow", "nob hill", "82nd",
-    "montavilla", "woodstock", "kenton", "old town", "central eastside",
-    "laurelhurst", "beaverton", "hillsboro", "vancouver", "troutdale",
-}
+# Facet tag lists come from the shared config, the same file the website
+# build reads (src-shared/config/facets.json) — edit there, not here.
+AGE_TAGS = set(_FACETS_CFG["ageTags"])
+NEIGHBORHOOD_TAGS = set(_FACETS_CFG["neighborhoodTags"])
 
 
 def classify_cost(cost):

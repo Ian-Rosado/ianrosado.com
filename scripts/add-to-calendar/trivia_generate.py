@@ -50,12 +50,11 @@ TIMEZONE = "America/Los_Angeles"
 DEFAULT_DURATION_MIN = 120
 MANAGED_TAG = "trivia_generate"   # private extendedProperty marker
 
-CALENDARS = {
-    "Trivia Nights - SE":          "441feafdb38c603cde09cd9a60e4f8ed10be90a21eb26dee01db64d0c8594a88@group.calendar.google.com",
-    "Trivia Nights - N/NE":        "561e4a90958248768cba407c23d37f1293e28f3749bc14de503d258fc03a48c7@group.calendar.google.com",
-    "Trivia Nights - NW/SW":       "088af359972350285c1e5bccda5fb38c349d0597d7c795ef3d1c21d7b973e457@group.calendar.google.com",
-    "Trivia Nights - Further Out": "ac0a6fedb05274655f5e68e9ec26c3f9b341866ae0feed97dd703e94f164a0bf@group.calendar.google.com",
-}
+# Trivia calendar IDs from the shared config (src-shared/config/calendars.json).
+_CAL_CFG = json.loads(
+    (Path(__file__).resolve().parent.parent.parent / "src-shared" / "config" / "calendars.json")
+    .read_text(encoding="utf-8"))
+CALENDARS = {c["name"]: c["id"] for c in _CAL_CFG["triviaCalendars"]}
 
 BYDAY_TO_WEEKDAY = {"MO": 0, "TU": 1, "WE": 2, "TH": 3, "FR": 4, "SA": 5, "SU": 6}
 

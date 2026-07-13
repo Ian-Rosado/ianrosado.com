@@ -53,6 +53,14 @@ def get_credentials():
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
         else:
+            # Unattended runs (the scheduled weekly prep) must fail loudly in
+            # the log, not block forever on a browser consent nobody will see.
+            import os
+            if os.environ.get("GOOGLE_AUTH_NONINTERACTIVE"):
+                print("ERROR: token needs a browser re-consent but this is a "
+                      "non-interactive run. Run any pipeline script manually "
+                      "once to re-authenticate.")
+                sys.exit(1)
             if not CLIENT_SECRET_FILE.exists():
                 print(f"ERROR: OAuth client secret not found at:\n  {CLIENT_SECRET_FILE}\n"
                       "Copy credentials.json into scripts/add-to-calendar/ (see CLAUDE.md).")

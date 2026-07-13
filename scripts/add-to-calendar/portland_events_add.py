@@ -98,6 +98,39 @@ KNOWN_DROP_PATTERNS = [
     "portland spirit",   # recurring sightseeing / dinner-cruise listings
 ]
 
+# Single-purpose sources whose calendar is definitionally correct — a sports
+# team's schedule is always Portland Sports, Laughs PDX is comedy-only, and the
+# dedicated concert listers are music. Rows from these sources are forced to
+# their calendar and marked auto-assigned in the Categorize tab, so the
+# AI-assisted pass only reads the rows that actually need judgment. Mixed/noisy
+# sources (PDX After Dark, Community Playlist, PDX Pipeline, Do PDX, Willamette
+# Week, Calagator, Travel Portland, …) are deliberately NOT here.
+TRUSTED_SOURCES = {
+    "Laughs PDX":            "Portland Comedy",
+    "Bandsintown":           "Portland Live Music",
+    "NearHear":              "Portland Live Music",
+    "19hz PNW":              "Portland Live Music",
+    "PC-PDX Show Guide":     "Portland Live Music",
+    "Flyer Escape":          "Portland Live Music",
+    "Portland Timbers":      "Portland Sports",
+    "Portland Thorns":       "Portland Sports",
+    "Portland Trail Blazers": "Portland Sports",
+    "Portland Fire":         "Portland Sports",
+    "Rip City Remix":        "Portland Sports",
+    "Portland Winterhawks":  "Portland Sports",
+    "Hillsboro Hops":        "Portland Sports",
+    "Portland Pickles":      "Portland Sports",
+    "Portland Bangers":      "Portland Sports",
+    "Portland Cherry Bombs": "Portland Sports",
+    "Rose City Rollers":     "Portland Sports",
+}
+
+# Exception to source trust: comedians and speakers tour through music venues
+# and land on the concert listers as "<Name> ... Tour" (Jacqueline Novak,
+# Chelsea Handler came through as Live Music). A music-source row whose title
+# says "tour" keeps needing a human/AI look.
+_TOUR_RE = re.compile(r"\btour\b", re.I)
+
 
 def is_unwanted_recurring(title):
     """True for recurring listings the user has repeatedly dropped at Review."""
@@ -236,13 +269,17 @@ CATEGORIZE_TAB = "Categorize"
 CATEGORIZE_HEADERS = [
     "#", "Title", "Location", "Tags", "Source",
     "Current Calendar", "→ Assigned Calendar (edit this column)",
+    "Auto-assigned (blank = needs review)",
 ]
 CATEGORIZE_INSTRUCTIONS = (
     "Fill in the '→ Assigned Calendar' column for each event. "
     "Valid values: Portland Events | Portland Live Music | Portland Comedy | Portland Karaoke | Portland Farmers Markets | "
     "Portland Sports | "
     "Trivia Nights - SE | Trivia Nights - N/NE | Trivia Nights - NW/SW | Trivia Nights - Further Out. "
-    "Leave blank to keep the current value. Then return to the terminal and press Enter."
+    "Leave blank to keep the current value. Rows with a value in the "
+    "'Auto-assigned' column were rule-assigned (trusted source / keyword / venue) "
+    "and only need a glance — focus on rows where it's blank. "
+    "Then return to the terminal and press Enter."
 )
 
 
@@ -254,8 +291,8 @@ def step1_categorize(rows, interactive=True):
     # Header + instructions
     ws.update([CATEGORIZE_HEADERS, [CATEGORIZE_INSTRUCTIONS] + [""] * (len(CATEGORIZE_HEADERS) - 1)], "A1")
     ws.batch_format([
-        {"range": "A1:G1", "format": {"textFormat": {"bold": True}}},
-        {"range": "A2:G2", "format": {"textFormat": {"italic": True},
+        {"range": "A1:H1", "format": {"textFormat": {"bold": True}}},
+        {"range": "A2:H2", "format": {"textFormat": {"italic": True},
                                        "backgroundColor": {"red": 1.0, "green": 0.95, "blue": 0.8}}},
     ])
 
@@ -270,14 +307,26 @@ def step1_categorize(rows, interactive=True):
             get(row, "Source", "source"),
             get(row, "Calendar", "calendar"),
             "",  # Assigned Calendar — user fills this in
+            row.get("_assigned_by", ""),  # blank = needs review
         ])
     ws.append_rows(data, value_input_option="USER_ENTERED")
+    needs_review = sum(1 for row in rows if not row.get("_assigned_by"))
 
     tab_url = f"{SHEET_URL}#gid={ws.id}"
     print(f"\n{'─' * 70}")
     print("STEP 1: CALENDAR CATEGORIZATION")
     print(f"{'─' * 70}")
     print(f"Sheet tab: {tab_url}")
+    # Staged (non-interactive) runs are driven by Claude/the skill, which reads
+    # the tab via the Sheets API — don't dump every event to the console (the
+    # full listing ran to hundreds of KB and just bloats context/logs).
+    if not interactive:
+        print(f"  {len(rows)} events written to the Categorize tab; "
+              f"{needs_review} need review (blank 'Auto-assigned' column), "
+              f"{len(rows) - needs_review} rule-assigned.")
+        print("Categorize tab written. Fill the '→ Assigned Calendar' column, then run --stage review:")
+        print(f"  {tab_url}")
+        return None
     print()
     print("── Paste this into Claude if you want help categorizing: ──")
     print()
@@ -295,10 +344,6 @@ def step1_categorize(rows, interactive=True):
         print(f'  {i:3d}. "{title}" | venue: "{venue}" | tags: "{tags}" | source: "{source}" | current: "{existing}"')
     print()
     print(f"{'─' * 70}")
-    if not interactive:
-        print("Categorize tab written. Fill the '→ Assigned Calendar' column, then run --stage review:")
-        print(f"  {tab_url}")
-        return None
     print(f"Fill in the '→ Assigned Calendar' column in the sheet, then press Enter:")
     print(f"  {tab_url}")
     print("\nPress Enter when done...")
@@ -462,6 +507,15 @@ def step2_deduplicate(rows, existing_by_cal, cross_source_skip=None, cross_sourc
     print("STEP 2: DUPLICATE DETECTION")
     print(f"{'─' * 70}")
     print(f"Sheet tab: {tab_url}")
+    # Staged runs read the tab via the Sheets API — skip the full console dump
+    # (incoming + existing listings were the bulk of a ~650KB prep log).
+    if not interactive:
+        print(f"  {len(incoming_data)} incoming events written"
+              + (f", {prefilled} pre-marked 'y' as cross-source dups" if prefilled else "")
+              + (f"; {len(existing_data)} existing events listed for reference" if existing_data else ""))
+        print("Dedup tab written. Mark 'y' on any duplicates, then run --stage review:")
+        print(f"  {tab_url}")
+        return None
     print()
     print("── Paste this into Claude if you want help spotting duplicates: ──")
     print()
@@ -483,10 +537,6 @@ def step2_deduplicate(rows, existing_by_cal, cross_source_skip=None, cross_sourc
         print(f'  ... and {len(existing_data) - 50} more (see sheet tab for full list)')
     print()
     print(f"{'─' * 70}")
-    if not interactive:
-        print("Dedup tab written. Mark 'y' on any duplicates, then run --stage review:")
-        print(f"  {tab_url}")
-        return None
     print(f"Mark 'y' in the Skip column for duplicates in the sheet, then press Enter:")
     print(f"  {tab_url}")
     print("\nPress Enter when done...")
@@ -1578,21 +1628,41 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
     KNOWN_COMEDY_VENUES = ["helium comedy club"]
     KNOWN_NON_MUSIC_VENUES = ["funhouse lounge"]
 
+    # Each row also gets a "_assigned_by" marker recording HOW its calendar was
+    # determined. Non-empty = rule-based and safe to skip in the AI-assisted
+    # Categorize pass; blank = a generic source's guess that needs judgment.
     comedy_fixed = karaoke_fixed = dance_fixed = venue_comedy_fixed = venue_nonmusic_fixed = 0
+    source_trusted = 0
     for row in rows:
         title_l = get(row, "Title", "title", "summary").lower()
         location_l = get(row, "Location", "location", "Venue", "venue").lower()
+        source = get(row, "Source", "source")
+        row["_assigned_by"] = ""
+
+        # Single-purpose sources: force their calendar. Exception: "tour"
+        # titles from music sources can be comedians/speakers — keep those
+        # flagged for review even though the calendar guess stands.
+        trusted_cal = TRUSTED_SOURCES.get(source)
+        if trusted_cal:
+            row["Calendar"] = trusted_cal
+            if not (trusted_cal == "Portland Live Music" and _TOUR_RE.search(title_l)):
+                row["_assigned_by"] = f"source: {source}"
+                source_trusted += 1
+            continue
 
         current = row.get("Calendar", "")
         if current in ("Portland Events", "Portland Live Music"):
             if any(kw in title_l for kw in KARAOKE_KEYWORDS):
                 row["Calendar"] = "Portland Karaoke"
+                row["_assigned_by"] = "keyword: karaoke"
                 karaoke_fixed += 1
             elif any(kw in title_l for kw in COMEDY_KEYWORDS):
                 row["Calendar"] = "Portland Comedy"
+                row["_assigned_by"] = "keyword: comedy"
                 comedy_fixed += 1
             elif current == "Portland Live Music" and any(kw in title_l for kw in DANCE_PARTY_KEYWORDS):
                 row["Calendar"] = "Portland Events"
+                row["_assigned_by"] = "keyword: dance party"
                 dance_fixed += 1
 
         # Venue overrides apply after title-keyword detection, since a known
@@ -1600,10 +1670,15 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
         current = row.get("Calendar", "")
         if current in ("Portland Events", "Portland Live Music") and any(v in location_l for v in KNOWN_COMEDY_VENUES):
             row["Calendar"] = "Portland Comedy"
+            row["_assigned_by"] = "venue: comedy venue"
             venue_comedy_fixed += 1
         elif current == "Portland Live Music" and any(v in location_l for v in KNOWN_NON_MUSIC_VENUES):
             row["Calendar"] = "Portland Events"
+            row["_assigned_by"] = "venue: non-music venue"
             venue_nonmusic_fixed += 1
+
+    if source_trusted:
+        print(f"  {source_trusted} events auto-assigned from single-purpose sources")
 
     if comedy_fixed:
         print(f"  Auto-detected {comedy_fixed} comedy events -> Portland Comedy")

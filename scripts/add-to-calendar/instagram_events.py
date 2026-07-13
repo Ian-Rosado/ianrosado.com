@@ -58,6 +58,15 @@ IG_TAB = "IG Inbox"        # where phone-pasted Instagram links land
 
 WORK_DIR = Path("ig_work")  # gitignored; holds fetched flyers + manifest.json
 
+# Netscape-format cookies.txt exported from a browser signed into Instagram
+# (gitignored — it's a login credential). If this file exists it's used
+# automatically; it beats --cookies-from-browser on Windows, where yt-dlp
+# can't decrypt Chrome's cookie store. One-time export: install a
+# "Get cookies.txt LOCALLY"-style browser extension, open instagram.com while
+# logged in, export, save as this filename. Re-export if fetches start 403ing
+# (session expired).
+IG_COOKIES_FILE = Path(__file__).resolve().parent / "ig_cookies.txt"
+
 # IG Inbox tab columns (1-indexed):
 #   A URL | B Status | C Note
 # Status: blank/"pending" = to do, "done" = added, "skip" = ignored, "error".
@@ -151,17 +160,20 @@ def shortcode(url):
     return m.group(1) if m else None
 
 
-def fetch_post(url, dest_dir, cookies_from_browser=None):
+def fetch_post(url, dest_dir, cookies_from_browser=None, cookies_file=None):
     """
-    Best-effort fetch of a public post's first image + caption, no login.
+    Best-effort fetch of a public post's first image + caption.
 
     Returns {"url", "shortcode", "caption", "image": <path or None>, "error"}.
     Instagram 403s anonymous requests, so the reliable path is a logged-in
-    fetch. Pass `cookies_from_browser` (e.g. "chrome") to have yt-dlp reuse the
-    browser you're already signed into Instagram on — that gets past the wall
-    without you exporting anything. Without cookies it falls back to public
-    og: meta tags, which often fail; failures are reported (not raised) so the
-    batch keeps going.
+    fetch. Two ways to supply the login:
+      - `cookies_file`: a Netscape-format cookies.txt exported from a browser
+        signed into Instagram (see IG_COOKIES_FILE). Most reliable on Windows,
+        where yt-dlp can't decrypt Chrome's cookie store (DPAPI).
+      - `cookies_from_browser` (e.g. "chrome"): yt-dlp reads the browser's
+        cookie store directly. Often fails on Windows Chrome.
+    Without either it falls back to public og: meta tags, which often fail;
+    failures are reported (not raised) so the batch keeps going.
 
     Order: with cookies, try the logged-in yt-dlp fetch first (most reliable);
     without, try the anonymous og: tags first, then yt-dlp as a long shot.
@@ -177,7 +189,12 @@ def fetch_post(url, dest_dir, cookies_from_browser=None):
                               "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36",
                 "Accept-Language": "en-US,en;q=0.9",
             }
-            resp = requests.get(url, headers=headers, timeout=20)
+            cookies = None
+            if cookies_file:
+                import http.cookiejar
+                cookies = http.cookiejar.MozillaCookieJar(str(cookies_file))
+                cookies.load(ignore_discard=True, ignore_expires=True)
+            resp = requests.get(url, headers=headers, timeout=20, cookies=cookies)
             html = resp.text
             og_img = re.search(r'property=["\']og:image["\']\s+content=["\']([^"\']+)', html)
             og_desc = re.search(r'property=["\']og:description["\']\s+content=["\']([^"\']+)', html)
@@ -207,7 +224,11 @@ def fetch_post(url, dest_dir, cookies_from_browser=None):
                 "outtmpl": str(dest_dir / f"{code}.%(ext)s"),
                 "writethumbnail": True,
             }
-            if cookies_from_browser:
+            if cookies_file:
+                # Netscape cookies.txt export — works where the direct browser
+                # read fails (Windows Chrome DPAPI).
+                opts["cookiefile"] = str(cookies_file)
+            elif cookies_from_browser:
                 # e.g. ("chrome",) — yt-dlp reads the logged-in browser's cookies.
                 opts["cookiesfrombrowser"] = (cookies_from_browser,)
             with yt_dlp.YoutubeDL(opts) as ydl:
@@ -230,7 +251,8 @@ def fetch_post(url, dest_dir, cookies_from_browser=None):
             result["error"] = result["error"] or f"yt-dlp: {e}"
             return False
 
-    attempts = [try_ytdlp, try_og] if cookies_from_browser else [try_og, try_ytdlp]
+    has_cookies = bool(cookies_file or cookies_from_browser)
+    attempts = [try_ytdlp, try_og] if has_cookies else [try_og, try_ytdlp]
     for attempt in attempts:
         if attempt():
             return result
@@ -270,10 +292,23 @@ def cmd_fetch(args):
         return
 
     WORK_DIR.mkdir(exist_ok=True)
+
+    # Cookie source priority: explicit --cookies-file > ig_cookies.txt if
+    # present > --cookies-from-browser (unreliable on Windows Chrome).
+    cookies_file = Path(args.cookies_file) if args.cookies_file else (
+        IG_COOKIES_FILE if IG_COOKIES_FILE.exists() else None)
+    if cookies_file and not cookies_file.exists():
+        print(f"ERROR: cookies file not found: {cookies_file}")
+        sys.exit(1)
+    if cookies_file:
+        print(f"Using cookies file: {cookies_file}")
+
     manifest = []
     for r in pend:
         print(f"fetching row {r['row']}: {r['url']}")
-        info = fetch_post(r["url"], WORK_DIR, cookies_from_browser=args.cookies_from_browser)
+        info = fetch_post(r["url"], WORK_DIR,
+                          cookies_from_browser=args.cookies_from_browser,
+                          cookies_file=cookies_file)
         info["ig_row"] = r["row"]
         manifest.append(info)
         status = "ok" if (info["image"] or info["caption"]) else f"FAILED ({info['error']})"
@@ -379,9 +414,14 @@ def main():
 
     f = sub.add_parser("fetch", help="Download flyer + caption for pending links into ig_work/.")
     f.add_argument("--url", help="Fetch a single URL instead of the pending list.")
+    f.add_argument("--cookies-file",
+                   help="Path to a Netscape cookies.txt exported from a browser signed into "
+                        f"Instagram. Defaults to {IG_COOKIES_FILE.name} next to this script "
+                        "when it exists. Beats --cookies-from-browser on Windows.")
     f.add_argument("--cookies-from-browser", default="chrome",
                    help="Browser to read Instagram login cookies from (chrome/firefox/edge/safari/brave). "
-                        "Pass '' to disable and fetch anonymously. Default: chrome.")
+                        "Only used when no cookies file is available (fails on Windows Chrome — "
+                        "prefer --cookies-file). Pass '' to disable and fetch anonymously. Default: chrome.")
     f.set_defaults(func=cmd_fetch)
 
     w = sub.add_parser("write", help="Append extracted events (rows.json) to Inbox, mark links done.")

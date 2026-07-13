@@ -37,90 +37,30 @@ See `portland-events-context` for voice/hashtag guidance and account details.
 
 ---
 
-## Step 1 — Look up the pasted events by ID
+## Step 1 — Look up the pasted events (one command)
 
-Ian's table has one row per chosen event with its calendar event ID (and usually
-which day/slot it's for). Fetch full details from the Portland calendars by ID.
+Ian's table has one row per chosen event, usually as a Google Calendar **edit
+URL** (`…/r/eventedit/<BLOB>`), sometimes a bare event ID. Fetch everything in
+ONE batch call — do not write per-event lookup code:
 
-**Parsing the ID out of an event-edit URL.** Ian usually pastes the Google Calendar
-**edit URL** (easier for him to grab) rather than the bare ID, e.g.:
-`https://calendar.google.com/calendar/u/0/r/eventedit/<BLOB>`. The `<BLOB>` after
-`/eventedit/` is URL-safe base64 that decodes to `"<eventId> <calendarId>"` (space-
-separated). The decoded calendar ID's **domain is truncated** (ends `@g`, not
-`@group.calendar.google.com`), but the **hex prefix before the `@` is complete** —
-so reconstruct the full ID as `<hexprefix>@group.calendar.google.com` and do a
-**direct `events().get(calendarId=…, eventId=…)`**. This is the most robust path:
-it works for *any* group calendar, including ones NOT in the `CALENDARS` map below
-(e.g. this skill's posts have pulled events off a third-party trivia calendar that
-isn't listed). Remember to pad the base64 before decoding.
-
-```python
-import base64
-def parse_event_url(url_or_blob):
-    """Return (event_id, reconstructed_calendar_id) from an eventedit URL."""
-    blob = url_or_blob.rsplit("/eventedit/", 1)[-1].strip()
-    blob += "=" * (-len(blob) % 4)                       # restore base64 padding
-    eid, cal_raw = base64.urlsafe_b64decode(blob).decode("utf-8", "replace").split(" ")
-    cal_id = cal_raw.split("@")[0] + "@group.calendar.google.com"  # un-truncate domain
-    return eid, cal_id
-# Recurring instances decode to e.g. "abc123_20260605T030000Z" — use the whole token as-is.
-# Fall back to scanning the known CALENDARS (Option B) only if a direct get 404s.
+```
+cd scripts/add-to-calendar
+python get_events.py <url-or-id> <url-or-id> ...
+# or, for a long list:  python get_events.py --file picks.txt
 ```
 
-**Sanity-check for duplicates.** Before building, confirm no two table rows decoded
-to the **same event ID** — a copy/paste slip (e.g. the same blob pasted into two
-cells) shows up as two slots resolving to identical title+date. Flag it to Ian and
-ask for the correct event rather than rendering the duplicate.
+The script accepts any mix of edit URLs / eventedit blobs / bare IDs (bare IDs
+are searched across every configured calendar, including trivia and
+Pedalpalooza), and prints a JSON list in input order with exactly the fields a
+post needs: `title, date, end_date, time, end_time, all_day, location, cost,
+url, calendar`. It also:
+- decodes/reconstructs the truncated calendar ID from eventedit blobs itself
+- flags copy/paste slips — a second input resolving to the same event gets
+  `"error": "DUPLICATE of input: …"`. Ask Ian for the intended event instead
+  of rendering the duplicate.
+- exits 2 with a list of not-found inputs — tell Ian which ones to re-paste.
 
-Robust approach: pull all events from the Portland calendars over the target week
-into an `{id: event}` map, then look up each pasted ID (handles not knowing which
-calendar each ID is on).
-
-```python
-import sys
-from datetime import datetime, timezone
-from google.oauth2.credentials import Credentials
-from googleapiclient.discovery import build
-sys.stdout.reconfigure(encoding="utf-8")
-
-# Calendar token (has calendar scope) — written by the add-to-calendar script
-TOKEN = r"C:\Users\nai19\Documents\GitHub\ianrosado.com\scripts\add-to-calendar\token.json"
-creds = Credentials.from_authorized_user_file(TOKEN, ["https://www.googleapis.com/auth/calendar"])
-svc = build("calendar", "v3", credentials=creds)
-
-CALENDARS = {
-    "Portland Events":        "6218570f10546f6f03748bbd25adcde299bfd55ef4741d8d1520e79653d9c9f6@group.calendar.google.com",
-    "Portland Live Music":    "34ae96ffcf119eb4dbf6acf86b0886273efeb8a702ed6e9267ef3d24f0e9a1f7@group.calendar.google.com",
-    "Portland Comedy":        "94a06447d97328f27a5e219c8e01c42be692998a7573738132a4405a739efec4@group.calendar.google.com",
-    "Portland Karaoke":       "e911229a59a93265f26cc81a1cbd2c3be4300fad84e935846ddb8fa7909f42fb@group.calendar.google.com",
-    "Portland Farmers Markets":"560e859bd2c7b5dfd2262cb6f28389921434606cec955e7ec75f02df9fd2138a@group.calendar.google.com",
-}
-
-# Option A — direct get when you know the calendar:
-#   ev = svc.events().get(calendarId=CAL_ID, eventId=EVENT_ID).execute()
-
-# Option B — build an id->event map across all calendars for the week:
-by_id = {}
-for cal_id in CALENDARS.values():
-    page = None
-    while True:
-        resp = svc.events().list(
-            calendarId=cal_id, timeMin="2026-05-29T00:00:00-07:00",
-            timeMax="2026-06-01T00:00:00-07:00", singleEvents=True,
-            maxResults=250, pageToken=page,
-        ).execute()
-        for ev in resp.get("items", []):
-            by_id[ev["id"]] = ev
-        page = resp.get("nextPageToken")
-        if not page:
-            break
-
-# Then for each pasted id: ev = by_id.get(event_id)
-# Pull: ev["summary"], ev["start"]["dateTime"], ev.get("location"), ev.get("description")
-# Cost is the first line of the description ("cost\nurl").
-```
-
-If a pasted ID isn't found, tell Ian which one so he can correct it.
+Use the JSON as-is for Step 2; there is nothing else to look up.
 
 ---
 

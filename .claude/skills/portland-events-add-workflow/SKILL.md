@@ -367,16 +367,18 @@ two different sources) and suggest which to mark `n`.
 | `?` | venue+time overlap needing a human call | `venue+time overlap (review): …` |
 | `y` | trusted recurring event, approved 3+ times | `recurring: approved Nx — pre-filled y` |
 
-### Trusted recurring events (auto-'y')
+### Trusted recurring events (tally only — auto-'y' currently DISABLED)
 
 Every event the user marks `y` at commit is tallied in the **Trusted** sheet tab,
 keyed by a date-stripped title + normalized venue (so "Trivia at X — July 16" and
-"… July 23" count as the same series). At `TRUSTED_AUTO_Y_COUNT` (3) approvals,
-future occurrences arrive in Review pre-filled `y` (green, with the Note text).
-**Flipping a pre-filled `y` to `n` is a permanent veto** — the Trusted row is
-marked `vetoed` and that event never auto-'y's again (it does NOT go to the
-blocklist; it just returns to manual review). The Trusted tab is hand-editable:
-delete a row or clear its Status to reset it.
+"… July 23" count as the same series). The pre-fill itself is **off**
+(`TRUSTED_AUTO_Y_ENABLED = False` in `portland_events_add.py`): Ian bulk-fills
+`y` and flips standouts rather than reviewing line-by-line, so a Trusted count
+means "was committed", not "was consciously approved" — he doesn't yet trust
+that as a pre-approval signal. Don't re-enable it without asking him. If it is
+enabled later: 3+ approvals pre-fills `y` (green + Note text), and flipping a
+pre-filled `y` to `n` permanently vetoes that series (Trusted Status column;
+hand-editable to reset).
 
 ### Fuzzy blocklist
 
@@ -398,11 +400,20 @@ the script wrongly flagged as dup/blocklisted), `dropped` (events the user
 caught as dupes/unwanted that the script proposed to add), and `field_edits`.
 
 **The user wants these mined, not narrated during review.** Don't interrupt their
-review to ask about a fix. When they ask to "profile my corrections" (or
-periodically), run:
+review to ask about a fix. **At the END of every add-events session you drive
+(after the commit stage, or after review if no commit happens), run:**
 
 ```
-python mine_corrections.py        # recurring patterns (2+ occurrences)
+python mine_corrections.py --new   # only patterns not shown before; quiet if none
+```
+
+If it prints new patterns, give Ian a 2–4 line profile ("these 3 keep recurring —
+want them blocked / re-routed?") and apply what he confirms. `--new` remembers
+what it has shown (`mined_state.json`), so this never re-nags old patterns —
+that's why it's safe to run every session. For a full re-profile on request:
+
+```
+python mine_corrections.py        # all recurring patterns (2+ occurrences)
 ```
 
 It groups the log into proposed rule additions — repeat drops (blocklist /

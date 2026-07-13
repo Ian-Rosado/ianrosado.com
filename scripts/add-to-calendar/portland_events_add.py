@@ -172,6 +172,15 @@ CALENDAR_ALIASES = {
 
 TIMEZONE = "America/Los_Angeles"
 DEFAULT_DURATION_MINUTES = 120
+
+# Trusted recurring events: approvals needed before a series pre-fills 'y' in
+# Review. The pre-fill is OFF for now: Ian bulk-fills 'y' and flips standouts
+# rather than reviewing line-by-line, so a Trusted count means "was committed",
+# not "was consciously approved" — not yet a strong enough signal to
+# pre-approve on. The tally still runs at every commit; flip to True once the
+# Trusted tab has enough history to trust (and ask Ian first).
+TRUSTED_AUTO_Y_COUNT = 3
+TRUSTED_AUTO_Y_ENABLED = False
 # Scopes now live in scripts/google_auth.py (calendar + sheets, one shared
 # token for every script). Kept here as aliases for older imports.
 SCOPES_CALENDAR_AND_SHEETS = google_auth.SCOPES
@@ -853,9 +862,10 @@ REVIEW_INSTRUCTIONS = (
     "Suggested duplicates are pre-filled 'n'. "
     "Rows pre-filled '?' overlap an existing event at the same venue+time — "
     "see 'Note' and change to 'y' to add or 'n' to skip. "
-    "Rows pre-filled 'y' are trusted recurring events you've approved 3+ times "
-    "(see 'Note') — flip one to 'n' and it will never be pre-filled 'y' again. "
-    "'Calendar Link' shows the link the event will get; rows flagged 'look up venue' "
+    + ("Rows pre-filled 'y' are trusted recurring events you've approved 3+ times "
+       "(see 'Note') — flip one to 'n' and it will never be pre-filled 'y' again. "
+       if TRUSTED_AUTO_Y_ENABLED else "")
+    + "'Calendar Link' shows the link the event will get; rows flagged 'look up venue' "
     "have no specific link (add the venue to venues.json, or paste a URL in the URL column). "
     "When done, return to the terminal and press Enter."
 )
@@ -1450,7 +1460,8 @@ def update_blocklist(skipped_events):
 TRUSTED_TAB = "Trusted"
 TRUSTED_HEADERS = ["Key", "Example Title", "Venue", "Calendar",
                    "Count", "Last Approved", "Status"]
-TRUSTED_AUTO_Y_COUNT = 3
+# TRUSTED_AUTO_Y_COUNT / TRUSTED_AUTO_Y_ENABLED are defined with the top-level
+# config (REVIEW_INSTRUCTIONS references the flag).
 
 # Strip date-ish tokens so "Trivia at X — July 16" and "... July 23" share a
 # key. Month names, day numbers/ordinals, and years go; weekday names stay
@@ -2063,7 +2074,7 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
         # Trusted recurring event: approved often enough to pre-fill 'y'.
         # Never on a row that's also flagged as a dup/blocked/venue-time hit.
         trusted_note = ""
-        if not suggested_skip and i not in vt_review_flags:
+        if TRUSTED_AUTO_Y_ENABLED and not suggested_skip and i not in vt_review_flags:
             ent = trusted.get(trusted_key(title, loc))
             if ent and ent["status"] != "vetoed" and ent["count"] >= TRUSTED_AUTO_Y_COUNT:
                 trusted_note = f"recurring: approved {ent['count']}x — pre-filled y"

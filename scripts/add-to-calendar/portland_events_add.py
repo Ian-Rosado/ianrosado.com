@@ -1289,6 +1289,20 @@ def _start_minutes(dt_iso):
     return int(m.group(1)) * 60 + int(m.group(2)) if m else None
 
 
+def _venues_match(a, b):
+    """True when two normalized venue strings are the same place. Beyond
+    equality, one CONTAINING the other counts: sources describe the same venue
+    at different specificity ("edgefield" vs "mcmenamins edgefield",
+    "atlantis lounge" vs "mississippi pizza pub & atlantis lounge") — real
+    duplicate pairs that equality missed. The ≥6-char floor keeps short
+    fragments ("bar", "park") from matching everything."""
+    if not a or not b:
+        return False
+    if a == b:
+        return True
+    return (len(a) >= 6 and len(b) >= 6) and (a in b or b in a)
+
+
 def build_venue_time_index(existing_by_cal):
     """date(str) -> list of (venue_norm, start_minutes|None, summary, is_festival).
     Pooled across every calendar so a concert can match a festival umbrella or a
@@ -1327,7 +1341,7 @@ def find_venue_time_dup(title, date_str, location, time_str, vt_index):
     wt = _title_words(title)
     fallback = None
     for (evenue, estart, esum, is_fest) in vt_index.get(date_str, []):
-        if evenue != vnorm:
+        if not _venues_match(evenue, vnorm):
             continue
         if cm is not None and estart is not None and abs(cm - estart) > VENUE_TIME_THRESHOLD_MIN:
             continue
@@ -1657,7 +1671,9 @@ def _fuzzy_dedup_incoming(rows):
     def _venue_time_dup(ra, rb):
         va = _venue_key(get(ra, "Location", "location", "Venue", "venue"))
         vb = _venue_key(get(rb, "Location", "location", "Venue", "venue"))
-        if not va or va != vb or va in GENERIC_VENUES:
+        if not va or not vb or va in GENERIC_VENUES or vb in GENERIC_VENUES:
+            return False
+        if not _venues_match(va, vb):
             return False
         wa, wb = _window(ra), _window(rb)
         if not wa or not wb:
@@ -1669,6 +1685,30 @@ def _fuzzy_dedup_incoming(rows):
                 + bool(get(row, "URL", "url", "link", "Link"))
                 + bool(get(row, "Location", "location", "Venue", "venue")))
 
+    skip = set()
+    dup_of = {}
+
+    # ── URL identity ─────────────────────────────────────────────────────────
+    # The same specific event URL twice on one date IS the same event, no
+    # matter what the titles/venues say (Bandsintown lists a co-headliner bill
+    # and each act separately, all pointing at one event page). Venue homepage
+    # URLs (venues.json values) are excluded — many events legitimately share
+    # those — as are generic listing pages.
+    venue_sites = {v.rstrip("/").lower() for v in load_venue_map().values()}
+    by_url = {}
+    for i, row in enumerate(rows):
+        url = get(row, "URL", "url", "link", "Link").strip().rstrip("/").lower()
+        date = get(row, "Date", "date")
+        if not url or not date or is_generic_url(url) or url in venue_sites:
+            continue
+        by_url.setdefault((date, url), []).append(i)
+    for idxs in by_url.values():
+        if len(idxs) > 1:
+            idxs.sort(key=lambda i: -_completeness(rows[i]))  # keep the fullest
+            for loser in idxs[1:]:
+                skip.add(loser)
+                dup_of[loser] = idxs[0]
+
     # Group by date
     by_date = {}
     for i, row in enumerate(rows):
@@ -1676,8 +1716,6 @@ def _fuzzy_dedup_incoming(rows):
         if date:
             by_date.setdefault(date, []).append(i)
 
-    skip = set()
-    dup_of = {}
     for date, indices in by_date.items():
         for a in range(len(indices)):
             for b in range(a + 1, len(indices)):
@@ -1687,8 +1725,10 @@ def _fuzzy_dedup_incoming(rows):
                 ra, rb = rows[ia], rows[ib]
                 src_a = get(ra, "Source", "source")
                 src_b = get(rb, "Source", "source")
-                if src_a == src_b:
-                    continue  # same source handled by scraper-level dedup
+                # NOTE: same-source pairs are checked too. Scraper-level dedup
+                # only catches EXACT (title, date) repeats; one source can list
+                # the same show under variant titles ("Charley Crockett, Twin
+                # Temple" vs "Charley Crockett" — both Bandsintown).
                 ta = get(ra, "Title", "title", "summary")
                 tb = get(rb, "Title", "title", "summary")
                 title_dup = _overlap(ta, tb) >= OVERLAP_THRESHOLD
@@ -1963,7 +2003,24 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
             ai_skip = step2_deduplicate(rows, existing_by_cal,
                                         cross_source_skip, cross_source_dup_of)
 
-    # ── Exact-match dedup against existing calendar events ──────────────────
+    # ── Exact-match + URL-identity dedup against existing calendar events ───
+    # URL identity: an existing event whose description links the same specific
+    # event page on the same date IS this event, regardless of title/venue
+    # spelling (catches cross-batch variants like "Haley Harkin" arriving a
+    # week after "Haley Harkin + Sophie Bird + Not Lenny"). Venue homepages
+    # (venues.json values, shared by many events) and generic listing pages
+    # never count as identity.
+    venue_sites = {v.rstrip("/").lower() for v in load_venue_map().values()}
+    existing_url_dates = set()
+    for evs in existing_by_cal.values():
+        for ev in evs:
+            u = parse_url_from_description(ev.get("description", ""))
+            d = (ev.get("start", {}).get("dateTime") or ev.get("start", {}).get("date") or "")[:10]
+            if u and d:
+                u = u.rstrip("/").lower()
+                if not is_generic_url(u) and u not in venue_sites:
+                    existing_url_dates.add((d, u))
+
     exact_skip = set()
     for i, row in enumerate(rows):
         calendar_str = row.get("_calendar_assigned") or get(row, "Calendar", "calendar")
@@ -1977,6 +2034,11 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
         title     = build_title(title_raw, cal_name, tags)
         existing_titles = existing_titles_by_cal.get(cal_id, set())
         if title.lower().strip() in existing_titles or title_raw.lower().strip() in existing_titles:
+            exact_skip.add(i)
+            continue
+        url = get(row, "URL", "url", "link", "Link").strip().rstrip("/").lower()
+        date_str = get(row, "Date", "date")
+        if url and (date_str, url) in existing_url_dates:
             exact_skip.add(i)
 
     # ── Refresh existing-calendar duplicates with better scraped data ────────

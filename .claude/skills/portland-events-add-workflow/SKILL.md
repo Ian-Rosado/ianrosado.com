@@ -274,11 +274,21 @@ duplicate if any of:
 - Normalized titles are equal (lowercase, strip non-alphanumeric)
 - One normalized title is a prefix of the other (≥ ~15 chars)
 - Significant-word overlap ≥ 0.8 (drop stopwords: the, a, and, with, at, of, feat, vs, …)
+- **Same specific event URL on the same date = same event, always** — applied
+  both intra-batch and against existing calendar events (venue homepages from
+  venues.json and generic listing pages never count). This catches one source
+  listing a bill and each act separately (Bandsintown does this).
 - Same venue + same/similar time, even if titles differ across sources —
   `_fuzzy_dedup_incoming` now **auto-flags** these (normalized venue + an actual
   time-window overlap, generic venues like "Portland, OR" excluded), keeping the
   more complete record. They arrive pre-filled `y` in the Dedup tab; clear the
   `y` if it wrongly merged two simultaneous shows at a multi-room venue.
+  Venue comparison uses **containment**, not equality: "Edgefield" matches
+  "McMenamins Edgefield", "Atlantis Lounge" matches "Mississippi Pizza Pub &
+  Atlantis Lounge".
+- **Same-source pairs are checked too** (the old exemption is gone): scrapers
+  only exact-dedup on (title, date), and Bandsintown emits variant titles for
+  one show.
 
 ```python
 import re

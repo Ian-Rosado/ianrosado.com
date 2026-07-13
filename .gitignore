@@ -51,3 +51,6 @@ scripts/event-scrapers/_scrape_out.txt
 
 # Instagram session cookies for the IG-ingest fetch (login credential — never commit)
 scripts/add-to-calendar/ig_cookies.txt
+
+# Scheduled weekly-prep run logs (local, per-machine)
+scripts/logs/

@@ -62,6 +62,21 @@ Once those three are done, the calendar-add and Instagram-post skills work ident
 other machine — paste event-edit URLs, the skill looks them up, fills the template, renders the
 PNG, and you commit/PR as usual.
 
+4. **(Optional, one machine only) Scheduled weekly prep** — the desktop runs
+   `scripts/weekly_prep.cmd` via Task Scheduler ("PortlandEvents Weekly Prep",
+   Mondays 6:00 AM): scrape → push to Inbox (cleared) → `--stage prep` →
+   `--stage review`, so the Review tab is phone-ready with no commands. Logs in
+   `scripts/logs/`. After the y/n pass, commit with
+   `python portland_events_add.py --stage commit --yes`. Register on a new machine:
+   ```powershell
+   schtasks /Create /TN "PortlandEvents Weekly Prep" /TR '"<repo>\scripts\weekly_prep.cmd"' /SC WEEKLY /D MON /ST 06:00
+   ```
+
+5. **(Optional) Instagram fetch cookies** — export a Netscape `cookies.txt` from a
+   browser logged into instagram.com and save it as
+   `scripts/add-to-calendar/ig_cookies.txt` (gitignored). The IG-ingest fetch uses
+   it automatically; without it, yt-dlp's Chrome-cookie fallback fails on Windows.
+
 ---
 
 ## Project Structure

@@ -21,7 +21,13 @@ Accepts, in any mix:
 
 Output: a JSON list, one object per input, in input order:
   {input, event_id, calendar, title, date, end_date, time, end_time, all_day,
-   location, cost, url, description, found, error}
+   location, cost, url, ig_handle, description, found, error}
+
+ig_handle is the venue's Instagram handle (no @) for the post's tag list:
+looked up in ig_handles.json by venue name (lowercase, before the first comma
+of the location), falling back to an instagram.com profile link in the event
+description. Empty when unknown — find it and add it to ig_handles.json
+(see find_ig_handles.py).
 
 Auth: shared token via scripts/google_auth.py.
 """
@@ -49,6 +55,29 @@ CALENDARS = {c["name"]: c["id"]
 _ID_TO_NAME = {v: k for k, v in CALENDARS.items()}
 
 TZ = ZoneInfo("America/Los_Angeles")
+
+# Venue/organizer name -> Instagram handle, maintained by find_ig_handles.py.
+try:
+    IG_HANDLES = {k: v for k, v in json.loads(
+        (Path(__file__).resolve().parent / "ig_handles.json").read_text(encoding="utf-8")
+    ).items() if not k.startswith("_")}
+except FileNotFoundError:
+    IG_HANDLES = {}
+
+# instagram.com first path segments that are NOT profile handles.
+_IG_RESERVED = {"p", "reel", "reels", "tv", "stories", "explore", "accounts",
+                "share", "sharer", "hashtag", "embed"}
+
+
+def _ig_handle(location, desc):
+    key = (location or "").split(",")[0].strip().lower()
+    if key in IG_HANDLES:
+        return IG_HANDLES[key]
+    for m in re.finditer(r"instagram\.com/(?:#!/)?([A-Za-z0-9._]{2,30})", desc or ""):
+        h = m.group(1).strip("._").lower()
+        if h not in _IG_RESERVED:
+            return h
+    return ""
 
 
 def parse_input(token):
@@ -112,6 +141,7 @@ def shape(ev, cal_id, original_input):
         "location": ev.get("location", ""),
         "cost": _desc_cost(desc),
         "url": _desc_first_url(desc),
+        "ig_handle": _ig_handle(ev.get("location", ""), desc),
         "description": desc,
         "found": True,
         "error": "",

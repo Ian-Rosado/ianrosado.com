@@ -1235,9 +1235,13 @@ def parse_tags_from_description(desc):
 
 def _title_words(s):
     """Significant words only — same stopword set as _fuzzy_dedup_incoming.
-    Accent-insensitive (so 'Andrés' matches 'ANDRES')."""
+    Accent-insensitive (so 'Andrés' matches 'ANDRES'). A leading "[genre]" /
+    "[comedy]" tag (added by build_title) is stripped first — two different
+    Helium shows must not count as sharing a word just because both carry
+    the [comedy] prefix."""
     stop = {"the", "a", "an", "and", "&", "with", "w", "at", "in", "of",
             "feat", "ft", "vs", "plus", "+", "•", "-"}
+    s = re.sub(r"^\s*\[[^\]]+\]\s*", "", s or "")
     s = unicodedata.normalize("NFKD", s)
     s = "".join(c for c in s if not unicodedata.combining(c))
     return {w for w in re.sub(r"[^a-z0-9 ]", " ", s.lower()).split() if w not in stop and len(w) > 1}
@@ -1703,7 +1707,9 @@ def _fuzzy_dedup_incoming(rows):
             continue
         by_url.setdefault((date, url), []).append(i)
     for idxs in by_url.values():
-        if len(idxs) > 1:
+        # >3 rows on one URL is a hub page (a company/series site every
+        # instance links), not one event listed under variant titles.
+        if 1 < len(idxs) <= 3:
             idxs.sort(key=lambda i: -_completeness(rows[i]))  # keep the fullest
             for loser in idxs[1:]:
                 skip.add(loser)
@@ -1731,7 +1737,18 @@ def _fuzzy_dedup_incoming(rows):
                 # Temple" vs "Charley Crockett" — both Bandsintown).
                 ta = get(ra, "Title", "title", "summary")
                 tb = get(rb, "Title", "title", "summary")
-                title_dup = _overlap(ta, tb) >= OVERLAP_THRESHOLD
+                # Venue conflict: both venues known and NOT the same place —
+                # similar titles then mean a venue-blind series (one trivia
+                # brand at many bars, "Candlelight:" concerts), not a dup.
+                # Same-venue variants with different spellings are still
+                # caught via _venues_match containment; totally different
+                # venue strings for one event fall to the URL-identity check.
+                va = _venue_key(get(ra, "Location", "location", "Venue", "venue"))
+                vb = _venue_key(get(rb, "Location", "location", "Venue", "venue"))
+                venue_conflict = (va and vb
+                                  and va not in GENERIC_VENUES and vb not in GENERIC_VENUES
+                                  and not _venues_match(va, vb))
+                title_dup = (not venue_conflict) and _overlap(ta, tb) >= OVERLAP_THRESHOLD
                 venue_time_dup = (not title_dup) and _venue_time_dup(ra, rb)
                 if title_dup or venue_time_dup:
                     if title_dup:
@@ -2011,7 +2028,7 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
     # (venues.json values, shared by many events) and generic listing pages
     # never count as identity.
     venue_sites = {v.rstrip("/").lower() for v in load_venue_map().values()}
-    existing_url_dates = set()
+    _url_date_pairs = []
     for evs in existing_by_cal.values():
         for ev in evs:
             u = parse_url_from_description(ev.get("description", ""))
@@ -2019,7 +2036,12 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
             if u and d:
                 u = u.rstrip("/").lower()
                 if not is_generic_url(u) and u not in venue_sites:
-                    existing_url_dates.add((d, u))
+                    _url_date_pairs.append((d, u))
+    # Hub URLs — shared by 3+ existing events (a trivia company's site, a
+    # recurring series page) — are not an event identity.
+    from collections import Counter as _Counter
+    _url_freq = _Counter(u for _, u in _url_date_pairs)
+    existing_url_dates = {(d, u) for d, u in _url_date_pairs if _url_freq[u] <= 2}
 
     exact_skip = set()
     for i, row in enumerate(rows):

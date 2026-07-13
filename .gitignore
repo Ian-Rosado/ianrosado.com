@@ -48,3 +48,6 @@ scripts/add-to-calendar/review_corrections.jsonl
 # Captured script output from pipeline runs (local debug artifacts)
 scripts/add-to-calendar/_prep_out.txt
 scripts/event-scrapers/_scrape_out.txt
+
+# Instagram session cookies for the IG-ingest fetch (login credential — never commit)
+scripts/add-to-calendar/ig_cookies.txt

@@ -40,20 +40,25 @@ The first time ever: `python instagram_events.py init` creates the IG Inbox tab.
 
 2. **Fetch flyers + captions**
    ```
-   python instagram_events.py fetch          # uses Chrome login cookies by default
+   python instagram_events.py fetch          # uses ig_cookies.txt if present
    ```
    Downloads each pending post's first image + caption into `ig_work/` and
    writes `ig_work/manifest.json` — a list of
    `{ig_row, url, shortcode, caption, image, error}`.
 
    **Instagram 403s anonymous requests, so the fetch needs a logged-in
-   session.** By default `fetch` reads the cookies from the browser Ian is
-   signed into Instagram on (`--cookies-from-browser chrome`, via yt-dlp) — so
-   it works from just the links with nothing to paste, *as long as it runs on a
-   machine where he's logged into IG in that browser* (his desktop). Override
-   the browser with `--cookies-from-browser firefox|edge|safari|brave`, or pass
-   `--cookies-from-browser ''` to attempt an anonymous og:-tag fetch (usually
-   fails now).
+   session.** Cookie sources, in priority order:
+   1. **`scripts/add-to-calendar/ig_cookies.txt`** (gitignored) — a
+      Netscape-format cookies.txt exported from a browser signed into
+      Instagram. Used automatically when present; this is the reliable path
+      on Windows. One-time setup: a "Get cookies.txt LOCALLY"-style browser
+      extension on instagram.com → export → save under that name. If fetches
+      start 403ing again, the session expired — re-export.
+   2. `--cookies-from-browser chrome` (default fallback) — yt-dlp reads the
+      browser's cookie store directly. **Known to fail on Windows Chrome**
+      (DPAPI decryption), which is exactly why the cookies file exists.
+      Override with `firefox|edge|safari|brave`, or pass `''` for an
+      anonymous og:-tag attempt (usually fails now).
 
    > This is why the fetch can't run from a Claude-on-the-web/cloud session:
    > those sandboxes are firewalled off from instagram.com by the environment's
@@ -131,13 +136,12 @@ The first time ever: `python instagram_events.py init` creates the IG Inbox tab.
 
 ## Notes & failure modes
 
-- **Logged-in fetch is the reliable path.** With `--cookies-from-browser`
-  (default `chrome`), yt-dlp reuses Ian's Instagram login, which gets past the
-  wall from just the links — needs `pip install yt-dlp` and that he's signed
-  into IG in that browser on the machine running the fetch. Anonymous fetches
-  (no cookies) mostly 403 now. Carousels only yield the first image — usually
-  the flyer, which is what we want; if details are on a later slide, fall back to
-  the caption or ask Ian.
+- **Logged-in fetch is the reliable path.** `ig_cookies.txt` (see step 2) is
+  the dependable login source on Windows; `--cookies-from-browser` is the
+  fallback and fails on Windows Chrome. Needs `pip install yt-dlp`. Anonymous
+  fetches (no cookies) mostly 403 now. Carousels only yield the first image —
+  usually the flyer, which is what we want; if details are on a later slide,
+  fall back to the caption or ask Ian.
 - **Dedup is handled downstream.** Don't worry about an Instagram event already
   being on the calendar from a scraper — the Dedup stage catches it. Just extract
   faithfully.

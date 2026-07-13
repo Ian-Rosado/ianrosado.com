@@ -29,7 +29,8 @@ with steps 1 and 2 (and can spot-check 3). See `portland-events-context` for sha
   at each tab for the user to press Enter. Works, but blocks on a local terminal.
 - **Staged (preferred when *you* are driving):** each step runs as a separate
   non-blocking command, with the Sheet as shared state. Run from inside
-  `scripts/add-to-calendar/` (it reads `token.json`/`credentials.json` from the cwd):
+  `scripts/add-to-calendar/` (auth is cwd-independent now, but `venues.json` and
+  the corrections log are still read from the cwd):
 
   | Stage | Command | Does |
   |---|---|---|
@@ -49,18 +50,17 @@ with steps 1 and 2 (and can spot-check 3). See `portland-events-context` for sha
 ## Sheet access (used by every step)
 
 **Do not use the Drive MCP** — the sheet is too large (100K+ chars). Use Python
-with the event-scrapers OAuth token:
+with the shared OAuth helper (`scripts/google_auth.py` — one token for every
+script, auto-refreshed):
 
 ```python
-import gspread, re, sys
-from google.oauth2.credentials import Credentials
-
+import re, sys
 sys.stdout.reconfigure(encoding="utf-8")
-SHEET_ID = "1mx4U8klkuTeR1E7lmChABlShfE_kVwAFaV37gAjoId4"
-TOKEN = r"C:\Users\nai19\Documents\GitHub\ianrosado.com\scripts\event-scrapers\credentials\token.json"
+sys.path.insert(0, r"C:\Users\nai19\Documents\GitHub\ianrosado.com\scripts")
+from google_auth import get_gspread_client
 
-creds = Credentials.from_authorized_user_file(TOKEN, ["https://www.googleapis.com/auth/spreadsheets"])
-sheet = gspread.authorize(creds).open_by_key(SHEET_ID)
+SHEET_ID = "1mx4U8klkuTeR1E7lmChABlShfE_kVwAFaV37gAjoId4"
+sheet = get_gspread_client().open_by_key(SHEET_ID)
 ws = sheet.worksheet("Categorize")   # or "Dedup"
 rows = ws.get_all_values()
 ```
@@ -89,6 +89,17 @@ write-rate quota.
 
 Fill the **"→ Assigned Calendar"** column. Only write cells that should change;
 leave blank to keep the "Current Calendar" value.
+
+### Only review rows where "Auto-assigned" (column H) is blank
+
+The script pre-assigns everything it can and records HOW in column H:
+`source: <name>` (single-purpose source — sports teams, Laughs PDX, dedicated
+concert listers), `keyword: …`, or `venue: …`. **Rows with a non-blank column H
+are already correct — do not re-read or re-categorize them.** Filter to blank-H
+rows first and spend judgment only there; this is the whole point of the column
+(it typically cuts the review set by well over half). One deliberate exception
+already handled for you: "…Tour" titles from music sources stay blank-H because
+touring comedians/speakers masquerade as concerts.
 
 ### Valid calendars (exact names)
 
@@ -134,8 +145,8 @@ sources are noisy. Don't trust the bucket — scan for these patterns:
   Ballroom, Mission Theater), **movie nights**, **D&D nights**, **bingo**, **drag
   brunch**, **classes/workshops**, **book trades**, and **poetry readings**. Scan
   Live Music from these sources and move the non-music ones to **Portland Events**.
-- **Laughs PDX** is a comedy-only source → every event is **Portland Comedy**, but
-  they often land in **Portland Events**. Re-route them all.
+- **Laughs PDX** is a comedy-only source → the script now forces every Laughs PDX
+  row to **Portland Comedy** (`TRUSTED_SOURCES`), so these arrive pre-assigned.
 - **Comedians slip in by name.** Keyword matching can't catch a comedian whose show
   title has no comedy word (e.g. *Jacqueline Novak*, *Chelsea Handler* came through
   as Live Music "…Tour"). Eyeball "…Tour" events at music venues; if the headliner
@@ -163,6 +174,7 @@ or food-vendor markets (e.g. *Portland Saturday Market*, vegan pop-up markets, a
 | E | 4 | Source |
 | F | 5 | Current Calendar |
 | G | 6 | → Assigned Calendar (write here) |
+| H | 7 | Auto-assigned (read-only; blank = needs review) |
 
 ```python
 updates = [{"range": f"G{idx + 3}", "values": [["Portland Comedy"]]} for idx in changed]

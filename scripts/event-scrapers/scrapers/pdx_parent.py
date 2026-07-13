@@ -60,7 +60,10 @@ def scrape():
         if start_el:
             raw = start_el.get("title", "") or start_el.get_text(strip=True)
             try:
-                dt = dp.parse(raw, fuzzy=True)
+                # Drop any tz so start/end stay comparable — some tribe events
+                # carry a tz offset in the abbr title and some don't, which made
+                # multiday_end_date() subtract a tz-aware and a tz-naive datetime.
+                dt = dp.parse(raw, fuzzy=True).replace(tzinfo=None)
                 date_str = dt.strftime("%Y-%m-%d")
                 time_str = dt.strftime("%H:%M") if (dt.hour or dt.minute) else ""
             except Exception:
@@ -70,7 +73,7 @@ def scrape():
         if end_el:
             raw_end = end_el.get("title", "") or end_el.get_text(strip=True)
             try:
-                dt_end = dp.parse(raw_end, fuzzy=True)
+                dt_end = dp.parse(raw_end, fuzzy=True).replace(tzinfo=None)
                 end_time_str = dt_end.strftime("%H:%M") if (dt_end.hour or dt_end.minute) else ""
             except Exception:
                 pass

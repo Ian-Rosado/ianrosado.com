@@ -53,7 +53,7 @@ The script accepts any mix of edit URLs / eventedit blobs / bare IDs (bare IDs
 are searched across every configured calendar, including trivia and
 Pedalpalooza), and prints a JSON list in input order with exactly the fields a
 post needs: `title, date, end_date, time, end_time, all_day, location, cost,
-url, calendar`. It also:
+url, ig_handle, calendar`. It also:
 - decodes/reconstructs the truncated calendar ID from eventedit blobs itself
 - flags copy/paste slips — a second input resolving to the same event gets
   `"error": "DUPLICATE of input: …"`. Ask Ian for the intended event instead
@@ -220,12 +220,35 @@ use `1` for an exact 1080×1080. Open the PNG to eyeball it before posting.
 
 ---
 
-## Step 5 — Caption
+## Step 5 — Caption + tag list
 
 Write a short caption in the account voice (see `portland-events-context` for tone
 and hashtag sets). Lead with the weekend/week, 1–2 lines of flavor, then hashtags
 like `#PDXEvents #Portland #FreePDX`. The graphic already carries the details, so
 the caption stays brief.
+
+**Tag list** — Ian tags the venues/orgs behind each event so they can re-share.
+Build it from the lookup:
+
+1. Each event's `ig_handle` (from Step 1) is the venue's handle, resolved via
+   `scripts/add-to-calendar/ig_handles.json`. Collect the non-empty ones.
+2. For events with an **empty** `ig_handle`, find the handle — never guess one:
+   - If the venue has a website (check `venues.json` or the event's `url`), run
+     `python find_ig_handles.py "venue name=https://site"` from
+     `scripts/add-to-calendar/` — it extracts the IG link from the org's own
+     site and saves it to `ig_handles.json` automatically.
+   - Otherwise web-search `"<venue> Portland instagram"` and confirm the account
+     matches (right city, right kind of org). Add it to `ig_handles.json` by
+     hand (key = lowercase venue name before the first comma, value = handle
+     without @) so it's automatic next time.
+   - If no credible account turns up, leave that event untagged and say so.
+3. Some events are run by an **organizer distinct from the venue** (a comedy
+   producer at a bar, a market collective, a run club). If the title/description
+   names one, find its handle the same way and include both. Organizer handles
+   go in `ig_handles.json` too, keyed by the organizer name.
+4. Deliver the tag list with the caption as one paste-ready line, e.g.
+   `@revolutionhall @holocene_portland @goodfootlounge` — Ian uses it to tag
+   the accounts on the post/photo.
 
 ---
 

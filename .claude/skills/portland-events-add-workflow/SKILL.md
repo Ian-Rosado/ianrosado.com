@@ -274,11 +274,21 @@ duplicate if any of:
 - Normalized titles are equal (lowercase, strip non-alphanumeric)
 - One normalized title is a prefix of the other (≥ ~15 chars)
 - Significant-word overlap ≥ 0.8 (drop stopwords: the, a, and, with, at, of, feat, vs, …)
+- **Same specific event URL on the same date = same event, always** — applied
+  both intra-batch and against existing calendar events (venue homepages from
+  venues.json and generic listing pages never count). This catches one source
+  listing a bill and each act separately (Bandsintown does this).
 - Same venue + same/similar time, even if titles differ across sources —
   `_fuzzy_dedup_incoming` now **auto-flags** these (normalized venue + an actual
   time-window overlap, generic venues like "Portland, OR" excluded), keeping the
   more complete record. They arrive pre-filled `y` in the Dedup tab; clear the
   `y` if it wrongly merged two simultaneous shows at a multi-room venue.
+  Venue comparison uses **containment**, not equality: "Edgefield" matches
+  "McMenamins Edgefield", "Atlantis Lounge" matches "Mississippi Pizza Pub &
+  Atlantis Lounge".
+- **Same-source pairs are checked too** (the old exemption is gone): scrapers
+  only exact-dedup on (title, date), and Bandsintown emits variant titles for
+  one show.
 
 ```python
 import re
@@ -359,6 +369,36 @@ Cost, Tags, or URL — those edits flow to the calendar write. If asked, you can
 help spot remaining cross-source duplicates here (same date + similar title from
 two different sources) and suggest which to mark `n`.
 
+### Pre-filled Include values (the "Note" column says why — trust the text, not the color)
+
+| Pre-fill | Meaning | Note column |
+|---|---|---|
+| `n` | auto-flagged duplicate / blocklisted / "sold out" | `blocklist: <entry>` when a fuzzy blocklist hit |
+| `?` | venue+time overlap needing a human call | `venue+time overlap (review): …` |
+| `y` | trusted recurring event, approved 3+ times | `recurring: approved Nx — pre-filled y` |
+
+### Trusted recurring events (tally only — auto-'y' currently DISABLED)
+
+Every event the user marks `y` at commit is tallied in the **Trusted** sheet tab,
+keyed by a date-stripped title + normalized venue (so "Trivia at X — July 16" and
+"… July 23" count as the same series). The pre-fill itself is **off**
+(`TRUSTED_AUTO_Y_ENABLED = False` in `portland_events_add.py`): Ian bulk-fills
+`y` and flips standouts rather than reviewing line-by-line, so a Trusted count
+means "was committed", not "was consciously approved" — he doesn't yet trust
+that as a pre-approval signal. Don't re-enable it without asking him. If it is
+enabled later: 3+ approvals pre-fills `y` (green + Note text), and flipping a
+pre-filled `y` to `n` permanently vetoes that series (Trusted Status column;
+hand-editable to reset).
+
+### Fuzzy blocklist
+
+Blocklist entries now also match **title variants**: a shared 25-char normalized
+prefix, or ≥0.85 significant-word overlap (both sides ≥3 words — short generic
+titles like "Karaoke" only ever match exactly). This catches series like
+"Chamber Music Northwest's CONFLUENCE: <different program each night>", which
+previously had to be hand-dropped every occurrence. Fuzzy hits show
+`blocklist: <matched entry>` in the Note column.
+
 ### Review-corrections feedback loop (learn from the user's edits)
 
 At commit, the script diffs its own proposed dispositions against the user's
@@ -370,13 +410,32 @@ the script wrongly flagged as dup/blocklisted), `dropped` (events the user
 caught as dupes/unwanted that the script proposed to add), and `field_edits`.
 
 **The user wants these mined, not narrated during review.** Don't interrupt their
-review to ask about a fix. Instead, periodically (or when they ask) read the log,
-group recurring patterns, and bring a short **profile of mistakes** to confirm —
-then fold confirmed ones into the durable rules: venue→calendar entries in the
-trivia table above, `KNOWN_COMEDY_VENUES` / `KNOWN_NON_MUSIC_VENUES` /
-`KNOWN_TRIVIA_COMPANIES` / `DANCE_PARTY_KEYWORDS` in `portland_events_add.py`,
-the dedup false-positive guards, or `venues.json`. A recategorization that
-recurs for the same venue/keyword is a rule waiting to be written.
+review to ask about a fix. **At the END of every add-events session you drive
+(after the commit stage, or after review if no commit happens), run:**
+
+```
+python mine_corrections.py --new   # only patterns not shown before; quiet if none
+```
+
+If it prints new patterns, give Ian a 2–4 line profile ("these 3 keep recurring —
+want them blocked / re-routed?") and apply what he confirms. `--new` remembers
+what it has shown (`mined_state.json`), so this never re-nags old patterns —
+that's why it's safe to run every session. For a full re-profile on request:
+
+```
+python mine_corrections.py        # all recurring patterns (2+ occurrences)
+```
+
+It groups the log into proposed rule additions — repeat drops (blocklist /
+`KNOWN_DROP_PATTERNS` candidates), repeat recategorizations (venue-rule
+candidates), repeat field edits (`venues.json` candidates), and rescued skips
+(dedup false positives; should stay ~zero). Bring the report to the user as a
+short **profile of mistakes** to confirm — then fold confirmed ones into the
+durable rules: venue→calendar entries in the trivia table above,
+`KNOWN_COMEDY_VENUES` / `KNOWN_NON_MUSIC_VENUES` / `KNOWN_TRIVIA_COMPANIES` /
+`DANCE_PARTY_KEYWORDS` / `TRUSTED_SOURCES` in `portland_events_add.py`, the
+dedup false-positive guards, or `venues.json`. A recategorization that recurs
+for the same venue/keyword is a rule waiting to be written.
 
 ### Venue → URL mappings live in `venues.json` (NOT this skill)
 

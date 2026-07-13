@@ -42,8 +42,9 @@ public/images/sabbatical-from-site/
 instagram/*.png
 instagram/event_cards_*/
 
-# Add-to-calendar review feedback log (local, per-machine)
+# Add-to-calendar review feedback log + mining state (local, per-machine)
 scripts/add-to-calendar/review_corrections.jsonl
+scripts/add-to-calendar/mined_state.json
 
 # Captured script output from pipeline runs (local debug artifacts)
 scripts/add-to-calendar/_prep_out.txt

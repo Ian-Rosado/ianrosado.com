@@ -844,15 +844,17 @@ REVIEW_TAB = "Review"
 REVIEW_HEADERS = [
     "→ Include? (y/n)", "#", "Date", "Time", "Calendar",
     "Title", "Location", "Cost", "Tags", "Source", "URL", "Calendar Link",
-    "Dedup Note",
+    "Note",
 ]
 REVIEW_INSTRUCTIONS = (
     "Type 'y' in the Include column to add an event, 'n' to skip. "
     "You can also EDIT any of Date, Time, Calendar, Title, Location, Cost, Tags, URL — "
     "your edits are written to the calendar. "
-    "Suggested duplicates are pre-filled 'n' (highlighted). "
-    "Rows pre-filled '?' (orange) overlap an existing event at the same venue+time — "
-    "see 'Dedup Note' and change to 'y' to add or 'n' to skip. "
+    "Suggested duplicates are pre-filled 'n'. "
+    "Rows pre-filled '?' overlap an existing event at the same venue+time — "
+    "see 'Note' and change to 'y' to add or 'n' to skip. "
+    "Rows pre-filled 'y' are trusted recurring events you've approved 3+ times "
+    "(see 'Note') — flip one to 'n' and it will never be pre-filled 'y' again. "
     "'Calendar Link' shows the link the event will get; rows flagged 'look up venue' "
     "have no specific link (add the venue to venues.json, or paste a URL in the URL column). "
     "When done, return to the terminal and press Enter."
@@ -880,13 +882,17 @@ def write_review_tab(events, interactive=True):
     data = []
     dup_rows = []     # 1-indexed sheet rows to highlight (duplicates)
     review_rows = []  # 1-indexed sheet rows to highlight (venue+time '?' review)
+    trusted_rows = [] # 1-indexed sheet rows to highlight (pre-filled 'y')
     lookup_rows = []  # 1-indexed sheet rows needing a venue lookup
     for e in events:
         vt_note = e.get("vt_review_note", "")
+        trusted_note = e.get("trusted_note", "")
         if e.get("suggested_skip"):
             include_suggestion = "n"
         elif vt_note:
             include_suggestion = "?"  # venue+time overlap — needs a human call
+        elif trusted_note:
+            include_suggestion = "y"  # trusted recurring — flip to 'n' to veto
         else:
             include_suggestion = ""
 
@@ -908,13 +914,17 @@ def write_review_tab(events, interactive=True):
             e["source"],
             e["url"],
             link_display,
-            vt_note,
+            # One note column; the text (not the highlight) is the reliable
+            # signal for WHY a row arrived pre-filled.
+            vt_note or trusted_note or e.get("block_note", ""),
         ])
         sheet_row = len(data) + 2  # +2 for header + instructions rows
         if e.get("suggested_skip"):
             dup_rows.append(sheet_row)
         elif vt_note:
             review_rows.append(sheet_row)
+        elif trusted_note:
+            trusted_rows.append(sheet_row)
         if not resolved_url:
             lookup_rows.append(sheet_row)
 
@@ -922,7 +932,20 @@ def write_review_tab(events, interactive=True):
         ws.append_rows(data, value_input_option="USER_ENTERED")
         time.sleep(1)
 
-    # Format header + instructions + dup rows + lookup-link cells in one batch
+    # ── Highlighting ─────────────────────────────────────────────────────────
+    # Adjacent rows are coalesced into single ranges and the format requests
+    # are sent in chunks: a run with ~1600 auto-skips used to issue one
+    # batch_format with 1600+ single-row requests, which failed silently /
+    # partially — the "inconsistent highlighting" bug.
+    def _coalesce(nums):
+        runs = []
+        for n in sorted(nums):
+            if runs and n == runs[-1][1] + 1:
+                runs[-1][1] = n
+            else:
+                runs.append([n, n])
+        return runs
+
     formats = [
         {"range": "A1:M1", "format": {"textFormat": {"bold": True}}},
         {"range": "A2:M2", "format": {
@@ -931,17 +954,26 @@ def write_review_tab(events, interactive=True):
         }},
     ]
     dup_fmt = {"backgroundColor": {"red": 1.0, "green": 0.95, "blue": 0.6}}
-    for row_num in dup_rows:
-        formats.append({"range": f"A{row_num}:M{row_num}", "format": dup_fmt})
+    for a, b in _coalesce(dup_rows):
+        formats.append({"range": f"A{a}:M{b}", "format": dup_fmt})
     # Venue+time '?' rows — orange so they stand out from yellow auto-skips
     review_fmt = {"backgroundColor": {"red": 1.0, "green": 0.8, "blue": 0.6}}
-    for row_num in review_rows:
-        formats.append({"range": f"A{row_num}:M{row_num}", "format": review_fmt})
+    for a, b in _coalesce(review_rows):
+        formats.append({"range": f"A{a}:M{b}", "format": review_fmt})
+    # Trusted recurring pre-filled 'y' rows — green
+    trusted_fmt = {"backgroundColor": {"red": 0.85, "green": 0.95, "blue": 0.85}}
+    for a, b in _coalesce(trusted_rows):
+        formats.append({"range": f"A{a}:M{b}", "format": trusted_fmt})
     # Highlight just the Calendar Link cell (column L) for lookup-needed rows
     lookup_fmt = {"backgroundColor": {"red": 1.0, "green": 0.85, "blue": 0.85}}
-    for row_num in lookup_rows:
-        formats.append({"range": f"L{row_num}", "format": lookup_fmt})
-    ws.batch_format(formats)
+    for a, b in _coalesce(lookup_rows):
+        formats.append({"range": f"L{a}:L{b}", "format": lookup_fmt})
+
+    CHUNK = 80  # requests per batch_format call — stay well under API limits
+    for start in range(0, len(formats), CHUNK):
+        ws.batch_format(formats[start:start + CHUNK])
+        if start + CHUNK < len(formats):
+            time.sleep(1)
 
     tab_url = f"{SHEET_URL}#gid={ws.id}"
     print(f"\n{'─' * 70}")
@@ -1340,6 +1372,37 @@ def load_blocklist():
     return {row[0].strip() for row in rows[1:] if row and row[0].strip()}
 
 
+# Exact blocklist matching misses title VARIANTS of the same unwanted series —
+# "Chamber Music Northwest's CONFLUENCE: <different program each night>" was
+# hand-dropped six times because each night normalized differently. The fuzzy
+# match below catches those. Thresholds are deliberately conservative: with the
+# filter-out-'n' review style, a false blocklist hit silently loses a real
+# event, so short/generic titles never fuzzy-match.
+_FUZZY_PREFIX_LEN = 25      # shared normalized prefix this long = same series
+_FUZZY_OVERLAP = 0.85       # significant-word overlap threshold
+_FUZZY_MIN_WORDS = 3        # both sides need at least this many words
+
+
+def build_blocklist_matcher(blocklist):
+    """Precompute per-entry word sets; returns match(norm_title, title) -> matched entry or ''."""
+    entries = [(b, _title_words(b)) for b in blocklist]
+
+    def match(norm_title, title):
+        if norm_title in blocklist:
+            return norm_title
+        wt = _title_words(title)
+        for entry, we in entries:
+            if (len(norm_title) >= _FUZZY_PREFIX_LEN and len(entry) >= _FUZZY_PREFIX_LEN
+                    and norm_title[:_FUZZY_PREFIX_LEN] == entry[:_FUZZY_PREFIX_LEN]):
+                return entry
+            if (len(wt) >= _FUZZY_MIN_WORDS and len(we) >= _FUZZY_MIN_WORDS
+                    and len(wt & we) / min(len(wt), len(we)) >= _FUZZY_OVERLAP):
+                return entry
+        return ""
+
+    return match
+
+
 def update_blocklist(skipped_events):
     """Add newly user-skipped events to the Blocklist tab.
 
@@ -1375,6 +1438,120 @@ def update_blocklist(skipped_events):
     if new_rows:
         ws.append_rows(new_rows, value_input_option="USER_ENTERED")
         print(f"  Added {len(new_rows)} title(s) to blocklist")
+
+
+# ─── Trusted recurring events (auto-'y') ──────────────────────────────────────
+# The mirror image of the blocklist: every event the user marks 'y' at commit
+# is tallied in the Trusted sheet tab, keyed by a date-stripped title + venue.
+# Once the same event has been approved TRUSTED_AUTO_Y_COUNT times, future
+# occurrences arrive in Review pre-filled 'y' with a note — the user can still
+# flip any one to 'n', and that veto permanently disables the auto-'y' for it.
+
+TRUSTED_TAB = "Trusted"
+TRUSTED_HEADERS = ["Key", "Example Title", "Venue", "Calendar",
+                   "Count", "Last Approved", "Status"]
+TRUSTED_AUTO_Y_COUNT = 3
+
+# Strip date-ish tokens so "Trivia at X — July 16" and "... July 23" share a
+# key. Month names, day numbers/ordinals, and years go; weekday names stay
+# (a weekly event's weekday is part of its identity).
+_DATEISH_RE = re.compile(
+    r"\b(jan(uary)?|feb(ruary)?|mar(ch)?|apr(il)?|may|jun(e)?|jul(y)?|aug(ust)?|"
+    r"sep(t(ember)?)?|oct(ober)?|nov(ember)?|dec(ember)?)\b|"
+    r"\b\d{1,4}(st|nd|rd|th)?\b", re.I)
+
+
+def trusted_key(title, location):
+    """Stable identity for a recurring event: date-stripped title + venue."""
+    t = re.sub(r"^\[[^\]]+\]\s*", "", (title or "").lower())  # drop [genre] prefix
+    t = _DATEISH_RE.sub(" ", t)
+    t = re.sub(r"[^a-z0-9 ]", "", t)
+    t = re.sub(r"\s+", " ", t).strip()[:60]
+    return f"{t}|{normalize_venue(location)[:40]}"
+
+
+def load_trusted():
+    """Return {key: {"count": int, "status": str, "row": sheet_row}}."""
+    import gspread
+    client = get_sheets_client()
+    sheet = client.open_by_key(SHEET_ID)
+    try:
+        ws = sheet.worksheet(TRUSTED_TAB)
+    except gspread.WorksheetNotFound:
+        return {}
+    out = {}
+    for n, row in enumerate(ws.get_all_values()[1:], start=2):
+        if not row or not row[0].strip():
+            continue
+        try:
+            count = int(row[4]) if len(row) > 4 and row[4].strip() else 0
+        except ValueError:
+            count = 0
+        out[row[0].strip()] = {
+            "count": count,
+            "status": (row[6].strip().lower() if len(row) > 6 else ""),
+            "row": n,
+        }
+    return out
+
+
+def update_trusted(approved_events, vetoed_events):
+    """Tally this commit's approvals into the Trusted tab and mark vetoes.
+
+    approved_events: review_event dicts the user marked 'y'.
+    vetoed_events:   review_event dicts that arrived pre-filled 'y' (trusted)
+                     but the user flipped to 'n' — their keys are marked
+                     'vetoed' and never auto-'y' again.
+    """
+    if not approved_events and not vetoed_events:
+        return
+    import gspread
+    from datetime import date
+    client = get_sheets_client()
+    sheet = client.open_by_key(SHEET_ID)
+    try:
+        ws = sheet.worksheet(TRUSTED_TAB)
+    except gspread.WorksheetNotFound:
+        ws = sheet.add_worksheet(title=TRUSTED_TAB, rows=2000, cols=len(TRUSTED_HEADERS))
+        ws.update([TRUSTED_HEADERS], "A1")
+        ws.batch_format([{"range": "A1:G1", "format": {"textFormat": {"bold": True}}}])
+
+    existing = load_trusted()
+    today = date.today().isoformat()
+    updates, new_rows = [], []
+    seen_this_run = set()
+
+    for e in approved_events:
+        key = trusted_key(e["title"], e.get("location", ""))
+        if not key.split("|")[0] or key in seen_this_run:
+            continue  # blank title or same series twice in one batch
+        seen_this_run.add(key)
+        if key in existing:
+            ent = existing[key]
+            if ent["status"] == "vetoed":
+                continue  # a veto is permanent — don't resume counting
+            updates.append({"range": f"E{ent['row']}:F{ent['row']}",
+                            "values": [[ent["count"] + 1, today]]})
+        else:
+            new_rows.append([key, e["title"], e.get("location", ""),
+                             e.get("calendar", ""), 1, today, ""])
+
+    for e in vetoed_events:
+        key = trusted_key(e["title"], e.get("location", ""))
+        ent = existing.get(key)
+        if ent and ent["status"] != "vetoed":
+            updates.append({"range": f"G{ent['row']}", "values": [["vetoed"]]})
+
+    if updates:
+        ws.batch_update(updates)
+    if new_rows:
+        ws.append_rows(new_rows, value_input_option="USER_ENTERED")
+    parts = []
+    if updates or new_rows:
+        parts.append(f"{len(new_rows)} new, {len(updates)} updated")
+    if vetoed_events:
+        parts.append(f"{len(vetoed_events)} vetoed")
+    print(f"  Trusted tab: {'; '.join(parts)}")
 
 
 # ─── Load from Google Sheet ───────────────────────────────────────────────────
@@ -1841,11 +2018,15 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
     if pending_updates:
         print(f"  {len(pending_updates)} existing event(s) have better data available to refresh")
 
-    # ── Load blocklist ───────────────────────────────────────────────────────
+    # ── Load blocklist + trusted recurring events ────────────────────────────
     print("Loading blocklist...")
     blocklist = load_blocklist()
     if blocklist:
         print(f"  {len(blocklist)} blocked titles loaded")
+    blocklist_match = build_blocklist_matcher(blocklist)
+    trusted = load_trusted()
+    if trusted:
+        print(f"  {len(trusted)} trusted recurring event(s) loaded")
 
     # ── Build Review tab entries ─────────────────────────────────────────────
     review_events = []
@@ -1875,6 +2056,18 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
         if loc and not any(c in loc for c in cities):
             loc = f"{loc}, Portland, OR"
 
+        block_hit = blocklist_match(_norm_title(title), title)
+        suggested_skip = (i in ai_skip or i in exact_skip or bool(block_hit)
+                          or "sold out" in title.lower())
+
+        # Trusted recurring event: approved often enough to pre-fill 'y'.
+        # Never on a row that's also flagged as a dup/blocked/venue-time hit.
+        trusted_note = ""
+        if not suggested_skip and i not in vt_review_flags:
+            ent = trusted.get(trusted_key(title, loc))
+            if ent and ent["status"] != "vetoed" and ent["count"] >= TRUSTED_AUTO_Y_COUNT:
+                trusted_note = f"recurring: approved {ent['count']}x — pre-filled y"
+
         review_events.append({
             "index":          i,
             "title":          title,
@@ -1888,11 +2081,14 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
             "url":            url,
             # ai_skip already includes intra-batch cross-source dupes (via the
             # Dedup tab, or set(cross_source_skip) under --no-ai).
-            "suggested_skip": (i in ai_skip or i in exact_skip
-                               or _norm_title(title) in blocklist
-                               or "sold out" in title.lower()),
+            "suggested_skip": suggested_skip,
+            # fuzzy blocklist hits carry the matched entry as a visible note
+            "block_note":     (f"blocklist: {block_hit[:45]}" if block_hit
+                               and _norm_title(title) != block_hit else ""),
             # venue+time overlap that needs a human call ('?' + note), if any
             "vt_review_note": vt_review_flags.get(i, ""),
+            # non-empty = arrives pre-filled 'y'; flipping to 'n' vetoes it
+            "trusted_note":   trusted_note,
             # stash for later use
             "_row":           row,
         })
@@ -1963,10 +2159,21 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
         if e["index"] not in include_indices
         and e["index"] not in already_flagged
         and not e.get("suggested_skip")  # wasn't pre-suggested, user chose this
+        and not e.get("trusted_note")    # trusted vetoes go to the Trusted tab, not the blocklist
     ]
     if user_skipped:
         print(f"\nAdding {len(user_skipped)} user-skipped event(s) to blocklist...")
         update_blocklist(user_skipped)
+
+    # ── Tally approvals + vetoes into the Trusted tab ────────────────────────
+    # Every 'y' feeds the recurring-approval counts; a trusted pre-fill the
+    # user flipped to 'n' is a veto and permanently stops that auto-'y'.
+    if not dry_run:
+        approved = [e for e in review_events if e["index"] in include_indices]
+        vetoed = [e for e in review_events
+                  if e.get("trusted_note") and e["index"] not in include_indices]
+        if approved or vetoed:
+            update_trusted(approved, vetoed)
 
     print(f"\n{len(include_indices)} events marked 'y' to add.")
     if pending_updates:

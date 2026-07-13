@@ -359,6 +359,34 @@ Cost, Tags, or URL — those edits flow to the calendar write. If asked, you can
 help spot remaining cross-source duplicates here (same date + similar title from
 two different sources) and suggest which to mark `n`.
 
+### Pre-filled Include values (the "Note" column says why — trust the text, not the color)
+
+| Pre-fill | Meaning | Note column |
+|---|---|---|
+| `n` | auto-flagged duplicate / blocklisted / "sold out" | `blocklist: <entry>` when a fuzzy blocklist hit |
+| `?` | venue+time overlap needing a human call | `venue+time overlap (review): …` |
+| `y` | trusted recurring event, approved 3+ times | `recurring: approved Nx — pre-filled y` |
+
+### Trusted recurring events (auto-'y')
+
+Every event the user marks `y` at commit is tallied in the **Trusted** sheet tab,
+keyed by a date-stripped title + normalized venue (so "Trivia at X — July 16" and
+"… July 23" count as the same series). At `TRUSTED_AUTO_Y_COUNT` (3) approvals,
+future occurrences arrive in Review pre-filled `y` (green, with the Note text).
+**Flipping a pre-filled `y` to `n` is a permanent veto** — the Trusted row is
+marked `vetoed` and that event never auto-'y's again (it does NOT go to the
+blocklist; it just returns to manual review). The Trusted tab is hand-editable:
+delete a row or clear its Status to reset it.
+
+### Fuzzy blocklist
+
+Blocklist entries now also match **title variants**: a shared 25-char normalized
+prefix, or ≥0.85 significant-word overlap (both sides ≥3 words — short generic
+titles like "Karaoke" only ever match exactly). This catches series like
+"Chamber Music Northwest's CONFLUENCE: <different program each night>", which
+previously had to be hand-dropped every occurrence. Fuzzy hits show
+`blocklist: <matched entry>` in the Note column.
+
 ### Review-corrections feedback loop (learn from the user's edits)
 
 At commit, the script diffs its own proposed dispositions against the user's
@@ -370,13 +398,23 @@ the script wrongly flagged as dup/blocklisted), `dropped` (events the user
 caught as dupes/unwanted that the script proposed to add), and `field_edits`.
 
 **The user wants these mined, not narrated during review.** Don't interrupt their
-review to ask about a fix. Instead, periodically (or when they ask) read the log,
-group recurring patterns, and bring a short **profile of mistakes** to confirm —
-then fold confirmed ones into the durable rules: venue→calendar entries in the
-trivia table above, `KNOWN_COMEDY_VENUES` / `KNOWN_NON_MUSIC_VENUES` /
-`KNOWN_TRIVIA_COMPANIES` / `DANCE_PARTY_KEYWORDS` in `portland_events_add.py`,
-the dedup false-positive guards, or `venues.json`. A recategorization that
-recurs for the same venue/keyword is a rule waiting to be written.
+review to ask about a fix. When they ask to "profile my corrections" (or
+periodically), run:
+
+```
+python mine_corrections.py        # recurring patterns (2+ occurrences)
+```
+
+It groups the log into proposed rule additions — repeat drops (blocklist /
+`KNOWN_DROP_PATTERNS` candidates), repeat recategorizations (venue-rule
+candidates), repeat field edits (`venues.json` candidates), and rescued skips
+(dedup false positives; should stay ~zero). Bring the report to the user as a
+short **profile of mistakes** to confirm — then fold confirmed ones into the
+durable rules: venue→calendar entries in the trivia table above,
+`KNOWN_COMEDY_VENUES` / `KNOWN_NON_MUSIC_VENUES` / `KNOWN_TRIVIA_COMPANIES` /
+`DANCE_PARTY_KEYWORDS` / `TRUSTED_SOURCES` in `portland_events_add.py`, the
+dedup false-positive guards, or `venues.json`. A recategorization that recurs
+for the same venue/keyword is a rule waiting to be written.
 
 ### Venue → URL mappings live in `venues.json` (NOT this skill)
 

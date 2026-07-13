@@ -278,6 +278,14 @@ def step1_categorize(rows, interactive=True):
     print("STEP 1: CALENDAR CATEGORIZATION")
     print(f"{'─' * 70}")
     print(f"Sheet tab: {tab_url}")
+    # Staged (non-interactive) runs are driven by Claude/the skill, which reads
+    # the tab via the Sheets API — don't dump every event to the console (the
+    # full listing ran to hundreds of KB and just bloats context/logs).
+    if not interactive:
+        print(f"  {len(rows)} events written to the Categorize tab.")
+        print("Categorize tab written. Fill the '→ Assigned Calendar' column, then run --stage review:")
+        print(f"  {tab_url}")
+        return None
     print()
     print("── Paste this into Claude if you want help categorizing: ──")
     print()
@@ -295,10 +303,6 @@ def step1_categorize(rows, interactive=True):
         print(f'  {i:3d}. "{title}" | venue: "{venue}" | tags: "{tags}" | source: "{source}" | current: "{existing}"')
     print()
     print(f"{'─' * 70}")
-    if not interactive:
-        print("Categorize tab written. Fill the '→ Assigned Calendar' column, then run --stage review:")
-        print(f"  {tab_url}")
-        return None
     print(f"Fill in the '→ Assigned Calendar' column in the sheet, then press Enter:")
     print(f"  {tab_url}")
     print("\nPress Enter when done...")
@@ -462,6 +466,15 @@ def step2_deduplicate(rows, existing_by_cal, cross_source_skip=None, cross_sourc
     print("STEP 2: DUPLICATE DETECTION")
     print(f"{'─' * 70}")
     print(f"Sheet tab: {tab_url}")
+    # Staged runs read the tab via the Sheets API — skip the full console dump
+    # (incoming + existing listings were the bulk of a ~650KB prep log).
+    if not interactive:
+        print(f"  {len(incoming_data)} incoming events written"
+              + (f", {prefilled} pre-marked 'y' as cross-source dups" if prefilled else "")
+              + (f"; {len(existing_data)} existing events listed for reference" if existing_data else ""))
+        print("Dedup tab written. Mark 'y' on any duplicates, then run --stage review:")
+        print(f"  {tab_url}")
+        return None
     print()
     print("── Paste this into Claude if you want help spotting duplicates: ──")
     print()
@@ -483,10 +496,6 @@ def step2_deduplicate(rows, existing_by_cal, cross_source_skip=None, cross_sourc
         print(f'  ... and {len(existing_data) - 50} more (see sheet tab for full list)')
     print()
     print(f"{'─' * 70}")
-    if not interactive:
-        print("Dedup tab written. Mark 'y' on any duplicates, then run --stage review:")
-        print(f"  {tab_url}")
-        return None
     print(f"Mark 'y' in the Skip column for duplicates in the sheet, then press Enter:")
     print(f"  {tab_url}")
     print("\nPress Enter when done...")

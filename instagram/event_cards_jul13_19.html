@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<!--
+  EVENT DETAIL CARDS — Jul 13–19, two events per card (7 cards total)
+  Render all 7 PNGs with Playwright:
+
+    from playwright.sync_api import sync_playwright
+    import os
+    html = r'C:\Users\nai19\Documents\GitHub\ianrosado.com\instagram\event_cards_jul13_19.html'
+    out  = r'C:\Users\nai19\Documents\GitHub\ianrosado.com\instagram\event_cards_jul13_19'
+    os.makedirs(out, exist_ok=True)
+    with sync_playwright() as p:
+        browser = p.chromium.launch()
+        page = browser.new_page(viewport={'width': 1200, 'height': 1200})
+        page.goto('file:///' + html.replace('\\', '/'))
+        page.wait_for_load_state('networkidle')
+        page.wait_for_timeout(800)
+        for i, el in enumerate(page.query_selector_all('.post')):
+            el.screenshot(path=os.path.join(out, f'card_{i+1:02d}.png'))
+        browser.close()
+-->
+<title>Portland Events – Event Cards Jul 13–19</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;900&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #111;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    padding: 24px;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .post {
+    width: 1080px;
+    height: 1080px;
+    background: #0a1f3a;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .card-header {
+    padding: 32px 48px 16px;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .week-label {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+    margin-bottom: 4px;
+  }
+  .title { font-family: 'DM Serif Display', serif; font-size: 46px; color: #fff; line-height: 1.05; }
+  .title span { color: #5ca8ff; }
+  .logo { position: absolute; top: 32px; right: 48px; width: 68px; height: 68px; }
+
+  .divider {
+    height: 3px;
+    margin: 0 48px;
+    background: linear-gradient(90deg, #5ca8ff, #8a9bff, transparent);
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  .card-body {
+    flex: 1;
+    padding: 24px 40px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    min-height: 0;
+  }
+
+  .day-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+  .day-name {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.38);
+  }
+  .day-num {
+    font-size: 52px;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1;
+  }
+
+  .events-pair {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    flex: 1;
+    min-height: 0;
+  }
+
+  .event-tile {
+    border-radius: 18px;
+    padding: 22px 28px 20px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+  .event-tile.teal   { --accent: #3ecfb0; background: #003d35; }
+  .event-tile.blue   { --accent: #5ca8ff; background: #0a2050; }
+  .event-tile.coral  { --accent: #ff7a5c; background: #5c1a10; }
+  .event-tile.purple { --accent: #b39dff; background: #2d1a5e; }
+  .event-tile.pink   { --accent: #f07ad8; background: #4a1040; }
+  .event-tile.amber  { --accent: #f0a500; background: #7a3d00; }
+  .event-tile.green  { --accent: #5cdc80; background: #0a3520; }
+
+  .category {
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .event-name {
+    font-family: 'DM Serif Display', serif;
+    font-size: 42px;
+    color: #fff;
+    line-height: 1.07;
+    margin-bottom: 10px;
+  }
+  .description {
+    font-size: 27px;
+    font-weight: 400;
+    color: rgba(255,255,255,0.68);
+    line-height: 1.5;
+    flex: 1;
+  }
+  .tile-meta {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    font-size: 19px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.5);
+  }
+
+  .card-footer {
+    padding: 12px 48px 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  .footer-site, .footer-handle { font-size: 19px; color: rgba(255,255,255,0.38); }
+</style>
+</head>
+<body>
+
+<!-- ─── Card 1 · Monday Jul 13 ────────────────────────────────── -->
+<div class="post">
+  <div class="card-header">
+    <div class="week-label">This week in Portland · JUL 13–19</div>
+    <div class="title">Events of the <span>Week</span></div>
+    <svg class="logo" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="5" width="30" height="26" rx="4" fill="#F28C28"/><rect x="1" y="5" width="30" height="9" rx="4" fill="#d4720e"/><rect x="1" y="10" width="30" height="4" fill="#d4720e"/><rect x="9" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="19.5" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.6"/></svg>
+  </div>
+  <div class="divider"></div>
+  <div class="card-body">
+    <div class="day-header">
+      <span class="day-name">Mon</span><span class="day-num">13</span>
+    </div>
+    <div class="events-pair">
+      <div class="event-tile teal">
+        <div class="category">🎧 DJ / Music</div>
+        <div class="event-name">DJ Time with DJ George</div>
+        <div class="description">An outdoor DJ set at Gateway Discovery Park — one of Portland's newer east side green spaces. Free and open to all, perfect for a Monday afternoon on the grass.</div>
+        <div class="tile-meta">Mon Jul 13 · Gateway Discovery Park · 11am · Free</div>
+      </div>
+      <div class="event-tile purple">
+        <div class="category">⚡ Tech Art</div>
+        <div class="event-name">Dorkbot: July Edition</div>
+        <div class="description">Portland's long-running "people doing strange things with electricity" meetup. Short talks, demos, and open conversation at CTRL-H hackerspace — free and open to curious minds of all kinds.</div>
+        <div class="tile-meta">Mon Jul 13 · CTRL-H · 6:30pm · Free</div>
+      </div>
+    </div>
+  </div>
+  <div class="card-footer">
+    <span class="footer-site">pdx-events.com</span>
+    <span class="footer-handle">@portland_events_calendar</span>
+  </div>
+</div>
+
+<!-- ─── Card 2 · Tuesday Jul 14 ───────────────────────────────── -->
+<div class="post">
+  <div class="card-header">
+    <div class="week-label">This week in Portland · JUL 13–19</div>
+    <div class="title">Events of the <span>Week</span></div>
+    <svg class="logo" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="5" width="30" height="26" rx="4" fill="#F28C28"/><rect x="1" y="5" width="30" height="9" rx="4" fill="#d4720e"/><rect x="1" y="10" width="30" height="4" fill="#d4720e"/><rect x="9" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="19.5" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.6"/></svg>
+  </div>
+  <div class="divider"></div>
+  <div class="card-body">
+    <div class="day-header">
+      <span class="day-name">Tue</span><span class="day-num">14</span>
+    </div>
+    <div class="events-pair">
+      <div class="event-tile coral">
+        <div class="category">⚽ World Cup</div>
+        <div class="event-name">WC Semi: France vs Spain</div>
+        <div class="description">World Cup semi-final between two of Europe's biggest rivals. Portland's soccer bars will be packed — check PDX Monthly's viewing guide to find the best spot to watch with a crowd.</div>
+        <div class="tile-meta">Tue Jul 14 · Bars around Portland · 12pm · Free</div>
+      </div>
+      <div class="event-tile pink">
+        <div class="category">🎭 Performance</div>
+        <div class="event-name">Normal Human Face Simulator</div>
+        <div class="description">Poser Tom's Roadshow Arcade at No Fun Bar. Roadshow Arcade is a video game competition with an entry fee. Watching people play this "totally normal" video game is free, however!</div>
+        <div class="tile-meta">Tue Jul 14 · No Fun Bar · 7pm · Ticketed</div>
+      </div>
+    </div>
+  </div>
+  <div class="card-footer">
+    <span class="footer-site">pdx-events.com</span>
+    <span class="footer-handle">@portland_events_calendar</span>
+  </div>
+</div>
+
+<!-- ─── Card 3 · Wednesday Jul 15 ─────────────────────────────── -->
+<div class="post">
+  <div class="card-header">
+    <div class="week-label">This week in Portland · JUL 13–19</div>
+    <div class="title">Events of the <span>Week</span></div>
+    <svg class="logo" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="5" width="30" height="26" rx="4" fill="#F28C28"/><rect x="1" y="5" width="30" height="9" rx="4" fill="#d4720e"/><rect x="1" y="10" width="30" height="4" fill="#d4720e"/><rect x="9" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="19.5" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.6"/></svg>
+  </div>
+  <div class="divider"></div>
+  <div class="card-body">
+    <div class="day-header">
+      <span class="day-name">Wed</span><span class="day-num">15</span>
+    </div>
+    <div class="events-pair">
+      <div class="event-tile amber">
+        <div class="category">⚽ World Cup</div>
+        <div class="event-name">WC Semi: England vs Argentina</div>
+        <div class="description">The second World Cup semi-final, with England taking on Argentina — a match loaded with history. Head to a soccer bar and watch with a crowd for the full experience.</div>
+        <div class="tile-meta">Wed Jul 15 · Bars around Portland · 12pm · Free</div>
+      </div>
+      <div class="event-tile green">
+        <div class="category">🚲 Bike Party</div>
+        <div class="event-name">Sandy Smash 2026</div>
+        <div class="description">This is one of the more intense bike events in Portland. Participation is not for the faint of heart. No requirements on spectating and partying afterward. The event ENDS at the Sandy Hut.</div>
+        <div class="tile-meta">Wed Jul 15 · Sandy Hut · 6pm · Free</div>
+      </div>
+    </div>
+  </div>
+  <div class="card-footer">
+    <span class="footer-site">pdx-events.com</span>
+    <span class="footer-handle">@portland_events_calendar</span>
+  </div>
+</div>
+
+<!-- ─── Card 4 · Thursday Jul 16 ──────────────────────────────── -->
+<div class="post">
+  <div class="card-header">
+    <div class="week-label">This week in Portland · JUL 13–19</div>
+    <div class="title">Events of the <span>Week</span></div>
+    <svg class="logo" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="5" width="30" height="26" rx="4" fill="#F28C28"/><rect x="1" y="5" width="30" height="9" rx="4" fill="#d4720e"/><rect x="1" y="10" width="30" height="4" fill="#d4720e"/><rect x="9" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="19.5" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.6"/></svg>
+  </div>
+  <div class="divider"></div>
+  <div class="card-body">
+    <div class="day-header">
+      <span class="day-name">Thu</span><span class="day-num">16</span>
+    </div>
+    <div class="events-pair">
+      <div class="event-tile teal">
+        <div class="category">🎵 Kids Music</div>
+        <div class="event-name">Andy Z (Children's Show)</div>
+        <div class="description">Andy Z brings high-energy children's music to an outdoor stage at the Valley Community United Presbyterian Church Park &amp; Ride. Free and family-friendly — singing, dancing, and a whole lot of silly.</div>
+        <div class="tile-meta">Thu Jul 16 · Valley Community Park &amp; Ride · 10am · Free</div>
+      </div>
+      <div class="event-tile coral">
+        <div class="category">🎻 Bluegrass</div>
+        <div class="event-name">Topaz Farm: Sierra Hull</div>
+        <div class="description">Grammy-nominated mandolinist Sierra Hull performs at Topaz Farm's intimate outdoor venue. A 16+ show with a beautiful farm backdrop — bring a blanket and plan for a genuinely special evening. Buy tickets early, Topaz Farm concerts usually sell out.</div>
+        <div class="tile-meta">Thu Jul 16 · Topaz Farm · 6:30pm · $27.50</div>
+      </div>
+    </div>
+  </div>
+  <div class="card-footer">
+    <span class="footer-site">pdx-events.com</span>
+    <span class="footer-handle">@portland_events_calendar</span>
+  </div>
+</div>
+
+<!-- ─── Card 5 · Friday Jul 17 ────────────────────────────────── -->
+<div class="post">
+  <div class="card-header">
+    <div class="week-label">This week in Portland · JUL 13–19</div>
+    <div class="title">Events of the <span>Week</span></div>
+    <svg class="logo" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="5" width="30" height="26" rx="4" fill="#F28C28"/><rect x="1" y="5" width="30" height="9" rx="4" fill="#d4720e"/><rect x="1" y="10" width="30" height="4" fill="#d4720e"/><rect x="9" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="19.5" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.6"/></svg>
+  </div>
+  <div class="divider"></div>
+  <div class="card-body">
+    <div class="day-header">
+      <span class="day-name">Fri</span><span class="day-num">17</span>
+    </div>
+    <div class="events-pair">
+      <div class="event-tile purple">
+        <div class="category">🎺 Jazz</div>
+        <div class="event-name">Cathedral Park Jazz Festival</div>
+        <div class="description">One of Portland's finest summer traditions returns to Cathedral Park beneath the St. Johns Bridge. A full day of live jazz — all free. Bring a blanket and make a whole day of it.</div>
+        <div class="tile-meta">Fri Jul 17 · Cathedral Park · All day · Free</div>
+      </div>
+      <div class="event-tile amber">
+        <div class="category">🎵 Porchfest</div>
+        <div class="event-name">Milwaukie Porchfest</div>
+        <div class="description">Musicians play from front porches throughout Milwaukie as visitors wander the streets discovering sets. Free, casual, and community-driven — Milwaukie's take on Portland's beloved porchfest tradition.</div>
+        <div class="tile-meta">Fri Jul 17 · Milwaukie · 6:30pm · Free</div>
+      </div>
+    </div>
+  </div>
+  <div class="card-footer">
+    <span class="footer-site">pdx-events.com</span>
+    <span class="footer-handle">@portland_events_calendar</span>
+  </div>
+</div>
+
+<!-- ─── Card 6 · Saturday Jul 18 ──────────────────────────────── -->
+<div class="post">
+  <div class="card-header">
+    <div class="week-label">This week in Portland · JUL 13–19</div>
+    <div class="title">Events of the <span>Week</span></div>
+    <svg class="logo" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="5" width="30" height="26" rx="4" fill="#F28C28"/><rect x="1" y="5" width="30" height="9" rx="4" fill="#d4720e"/><rect x="1" y="10" width="30" height="4" fill="#d4720e"/><rect x="9" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="19.5" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.6"/></svg>
+  </div>
+  <div class="divider"></div>
+  <div class="card-body">
+    <div class="day-header">
+      <span class="day-name">Sat</span><span class="day-num">18</span>
+    </div>
+    <div class="events-pair">
+      <div class="event-tile pink">
+        <div class="category">⚔️ Ren Faire</div>
+        <div class="event-name">Canterbury Ren Faire</div>
+        <div class="description">The 16th annual Canterbury Renaissance Faire in Silverton features jousting, costumes, vendors, food, and entertainment all day. About 45 minutes south of Portland — worth the trip.</div>
+        <div class="tile-meta">Sat Jul 18 · Silverton, OR · 10am · Ticketed</div>
+      </div>
+      <div class="event-tile green">
+        <div class="category">🎸 Music Festival</div>
+        <div class="event-name">Harefest</div>
+        <div class="description">The Mother of All Tribute Festivals returns to the Clackamas County Fairgrounds — a massive multi-day event with tribute bands across multiple stages and genres. Saturday doors at 9am.</div>
+        <div class="tile-meta">Sat Jul 18 · Clackamas Fairgrounds · 9am · Ticketed</div>
+      </div>
+    </div>
+  </div>
+  <div class="card-footer">
+    <span class="footer-site">pdx-events.com</span>
+    <span class="footer-handle">@portland_events_calendar</span>
+  </div>
+</div>
+
+<!-- ─── Card 7 · Sunday Jul 19 ────────────────────────────────── -->
+<div class="post">
+  <div class="card-header">
+    <div class="week-label">This week in Portland · JUL 13–19</div>
+    <div class="title">Events of the <span>Week</span></div>
+    <svg class="logo" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="5" width="30" height="26" rx="4" fill="#F28C28"/><rect x="1" y="5" width="30" height="9" rx="4" fill="#d4720e"/><rect x="1" y="10" width="30" height="4" fill="#d4720e"/><rect x="9" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="19.5" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.6"/></svg>
+  </div>
+  <div class="divider"></div>
+  <div class="card-body">
+    <div class="day-header">
+      <span class="day-name">Sun</span><span class="day-num">19</span>
+    </div>
+    <div class="events-pair">
+      <div class="event-tile teal">
+        <div class="category">🌈 Pride</div>
+        <div class="event-name">Portland Pride Parade</div>
+        <div class="description">Portland Pride Parade rolls through Downtown — one of the biggest Pride celebrations in the Pacific Northwest. Come to cheer, march, or just soak in the energy of one of the city's most joyful days of the year.</div>
+        <div class="tile-meta">Sun Jul 19 · Downtown Portland · 11am · Free</div>
+      </div>
+      <div class="event-tile purple">
+        <div class="category">🐱 Cat Walk</div>
+        <div class="event-name">Cats of Sunnyside Walk</div>
+        <div class="description">A neighborhood cat walk through Sunnyside where residents show off their beloved cats along a mapped route. Free and genuinely delightful — please be respectful of the neighbors and the cats.</div>
+        <div class="tile-meta">Sun Jul 19 · SE Sunnyside · 6pm · Free</div>
+      </div>
+    </div>
+  </div>
+  <div class="card-footer">
+    <span class="footer-site">pdx-events.com</span>
+    <span class="footer-handle">@portland_events_calendar</span>
+  </div>
+</div>
+
+</body>
+</html>

@@ -289,6 +289,16 @@ duplicate if any of:
 - **Same-source pairs are checked too** (the old exemption is gone): scrapers
   only exact-dedup on (title, date), and Bandsintown emits variant titles for
   one show.
+- **Title match vs the calendar** — `find_title_dup_existing` (in
+  `step2_deduplicate`) also flags an incoming event whose title matches an
+  EXISTING calendar event on the same date+calendar: normalized-equal or prefix
+  → pre-filled `y`; high word-overlap (e.g. "Molly Tuttle" vs "Topaz Farm: Molly
+  Tuttle") → `?`. This is the **mechanical layer** — it deliberately can't tell
+  "X" ⊂ "X Tribute" from a real dup, and downgrades generic titles ("Trivia
+  Night", "Karaoke") to `?`. **The Claude semantic dedup pass still runs on top**
+  (before or after the human review) to resolve the `?` rows and catch matches
+  the mechanical layer misses (re-phrasings, headliner-vs-lineup, nicknames).
+  `?` means *surfaced, not skipped* — read_dedup_tab only treats `y` as skip.
 
 ```python
 import re

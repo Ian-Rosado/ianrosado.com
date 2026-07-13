@@ -395,6 +395,54 @@ DEDUP_INSTRUCTIONS = (
 )
 
 
+def find_title_dup_existing(title, date_str, cal_name, existing_by_cal):
+    """Title-match an incoming event against EXISTING calendar events on the same
+    date + calendar. Returns (existing_summary, is_sure) or None.
+
+      is_sure=True  -> normalized-title equal, or one title is a prefix of the
+                       other (>=15 chars). Safe to auto-skip ('y').
+      is_sure=False -> high significant-word overlap only. Marked '?' and left
+                       for the dedup pass — a mechanical overlap can't tell
+                       "Molly Tuttle" ⊂ "Topaz Farm: Molly Tuttle" (a dup) from
+                       "The Killers" ⊂ "The Killers Tribute" (not a dup); that
+                       semantic call belongs to the Claude dedup step.
+    """
+    cal_id = CALENDARS.get(cal_name)
+    if not cal_id:
+        return None
+    # Generic titles recur at many venues on the same night (e.g. two different
+    # trivia nights) — an exact-title match there isn't proof of a dup, so it's
+    # downgraded to '?' rather than auto-skipped. (Same-venue recurring ones are
+    # already caught by the venue+time pass above.)
+    GENERIC = {"trivianight", "trivia", "openmic", "comedyopenmic", "comedynight",
+               "comedyshow", "karaoke", "musicbingo", "bingo", "dragbingo",
+               "quiznight", "happyhour", "danceparty", "openjam", "jamsession",
+               "brunch", "dragbrunch", "livemusic", "openmicnight"}
+    nt = re.sub(r"[^a-z0-9]", "", title.lower())
+    if len(nt) < 4:
+        return None  # too short to match reliably
+    wt = _title_words(title)
+    overlap_match = None
+    for ev in existing_by_cal.get(cal_id, []):
+        start = ev.get("start", {})
+        ev_date = (start.get("dateTime") or start.get("date") or "")[:10]
+        if ev_date != date_str:
+            continue
+        esum = ev.get("summary", "")
+        ne = re.sub(r"[^a-z0-9]", "", esum.lower())
+        if not ne:
+            continue
+        if nt == ne:
+            return (esum, nt not in GENERIC)
+        if len(nt) >= 15 and (nt.startswith(ne[:20]) or ne.startswith(nt[:20])):
+            return (esum, True)
+        we = _title_words(esum)
+        if wt and we and min(len(wt), len(we)) >= 2 and \
+                len(wt & we) / min(len(wt), len(we)) >= 0.8:
+            overlap_match = esum
+    return (overlap_match, False) if overlap_match else None
+
+
 def step2_deduplicate(rows, existing_by_cal, cross_source_skip=None, cross_source_dup_of=None,
                       interactive=True):
     cross_source_skip = cross_source_skip or set()
@@ -447,6 +495,7 @@ def step2_deduplicate(rows, existing_by_cal, cross_source_skip=None, cross_sourc
     incoming_data = []
     prefilled = 0
     vt_sure = vt_unsure = 0
+    title_sure = title_unsure = 0
     for orig_idx, row, cal_name in ordered:
         title    = get(row, "Title", "title", "summary")
         date_str = get(row, "Date", "date")
@@ -474,6 +523,20 @@ def step2_deduplicate(rows, existing_by_cal, cross_source_skip=None, cross_sourc
                     skip_flag = "?"  # unsure — surfaced in Review for a human call
                     note = f"venue+time overlap (review): {esum[:55]}"
                     vt_unsure += 1
+            else:
+                # Title match against existing calendar events (catches venue/genre
+                # prefixes like "Molly Tuttle" vs "Topaz Farm: Molly Tuttle").
+                tm = find_title_dup_existing(title, date_str, cal_name, existing_by_cal)
+                if tm:
+                    esum, is_sure = tm
+                    if is_sure:
+                        skip_flag = "y"
+                        note = f"title dup of on-cal: {esum[:55]}"
+                        title_sure += 1
+                    else:
+                        skip_flag = "?"  # overlap only — left for the dedup pass
+                        note = f"title overlap (review): {esum[:55]}"
+                        title_unsure += 1
         incoming_data.append([
             orig_idx, title, date_str, location,
             get(row, "Source", "source"), cal_name,
@@ -484,6 +547,9 @@ def step2_deduplicate(rows, existing_by_cal, cross_source_skip=None, cross_sourc
     if vt_sure or vt_unsure:
         print(f"  Venue+time match: {vt_sure} sure dup(s) auto-skipped, "
               f"{vt_unsure} unsure flagged '?' for review")
+    if title_sure or title_unsure:
+        print(f"  Title match vs calendar: {title_sure} sure dup(s) auto-skipped, "
+              f"{title_unsure} overlap(s) flagged '?' for review")
 
     ws.append_rows(incoming_data, value_input_option="USER_ENTERED")
 

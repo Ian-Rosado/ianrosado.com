@@ -227,12 +227,13 @@ and hashtag sets). Lead with the weekend/week, 1–2 lines of flavor, then hasht
 like `#PDXEvents #Portland #FreePDX`. The graphic already carries the details, so
 the caption stays brief.
 
-**Tag list** — Ian tags the venues/orgs behind each event so they can re-share.
-Build it from the lookup:
+**Tag list** — Ian tags, per event, the **venue**, the **organizer**, and the
+**performers** — every one that exists and has a findable account. Work through
+all three for each event:
 
-1. Each event's `ig_handle` (from Step 1) is the venue's handle, resolved via
-   `scripts/add-to-calendar/ig_handles.json`. Collect the non-empty ones.
-2. For events with an **empty** `ig_handle`, find the handle — never guess one:
+1. **Venue** — each event's `ig_handle` (from Step 1) is the venue's handle,
+   resolved via `scripts/add-to-calendar/ig_handles.json`. For events with an
+   **empty** `ig_handle`:
    - If the venue has a website (check `venues.json` or the event's `url`), run
      `python find_ig_handles.py "venue name=https://site"` from
      `scripts/add-to-calendar/` — it extracts the IG link from the org's own
@@ -241,14 +242,28 @@ Build it from the lookup:
      matches (right city, right kind of org). Add it to `ig_handles.json` by
      hand (key = lowercase venue name before the first comma, value = handle
      without @) so it's automatic next time.
-   - If no credible account turns up, leave that event untagged and say so.
-3. Some events are run by an **organizer distinct from the venue** (a comedy
-   producer at a bar, a market collective, a run club). If the title/description
-   names one, find its handle the same way and include both. Organizer handles
-   go in `ig_handles.json` too, keyed by the organizer name.
-4. Deliver the tag list with the caption as one paste-ready line, e.g.
-   `@revolutionhall @holocene_portland @goodfootlounge` — Ian uses it to tag
-   the accounts on the post/photo.
+2. **Organizer** — if the title/description names an organizer distinct from
+   the venue (a comedy producer at a bar, a market collective, a run club),
+   find its handle the same way. Organizers recur, so add them to
+   `ig_handles.json` too, keyed by the organizer name.
+3. **Performers** — the acts themselves: bands, DJs, comedians, artists,
+   speakers. For concerts/shows the event **title is usually the performer**
+   (e.g. "Big Band Name" at Star Theater → find the band's account); the
+   description may list openers/lineups worth tagging too. Find these by web
+   search (`"<act> band instagram"`, etc.) and verify it's the right act —
+   touring acts have national profiles, so check it's the same genre/city/tour.
+   One-off touring performers don't need to go in `ig_handles.json`; recurring
+   local acts (a house DJ, a resident comedy host) do.
+
+Rules for the whole list:
+- **Never guess a handle** — only include accounts verified from the org's own
+  site, a search result clearly showing their profile, or the IG post the event
+  was ingested from. A wrong tag pings a stranger.
+- If any slot has no credible account (or the event genuinely has no separate
+  organizer/performer), skip that slot and say so.
+- Deliver the tag list with the caption, grouped per event so Ian can see
+  what's covered, plus one paste-ready line of all handles, e.g.
+  `@revolutionhall @bandname @goodfootlounge @soulstewdjs`.
 
 ---
 

@@ -722,6 +722,21 @@ GENERIC_URL_PATTERNS = [
 
 NOTE_LOOKUP_VENUE = "Look up venue for more details"
 
+# Venue-level URLs: specific to a venue but not to one event (e.g. NearHear's
+# per-venue page, since NearHear has no per-event pages). Prefer the real venue
+# website from venues.json when we have it, but keep these as the fallback rather
+# than flagging "look up venue".
+VENUE_LEVEL_URL_PATTERNS = [
+    r'^https?://(www\.)?nearhear\.app/venues/\d+',
+]
+
+
+def is_venue_level_url(url):
+    """True if the URL is venue-specific but not event-specific (see above)."""
+    if not url:
+        return False
+    return any(re.match(p, url.strip(), re.I) for p in VENUE_LEVEL_URL_PATTERNS)
+
 
 def is_generic_url(url):
     """True if the URL is a listing/index page, not specific to one event."""
@@ -800,13 +815,21 @@ def resolve_event_url(url, location):
     - Specific event URL → keep it, no note.
     - Generic/missing URL → venue website if known, else a 'look up venue' note.
     """
-    if url and not is_generic_url(url):
+    venue_level = is_venue_level_url(url)
+
+    # A specific event/ticket URL beats the venue homepage — keep it. A bare
+    # venue-directory page is only venue-level, so fall through to prefer the
+    # real venue website when venues.json has it.
+    if url and not is_generic_url(url) and not venue_level:
         return url, ""
 
     venue_key = normalize_venue(location)
     venue_map = load_venue_map()
     if venue_key and venue_key in venue_map:
         return venue_map[venue_key], ""
+
+    if venue_level:
+        return url, ""  # usable venue-level fallback (e.g. NearHear venue page)
 
     return "", NOTE_LOOKUP_VENUE
 

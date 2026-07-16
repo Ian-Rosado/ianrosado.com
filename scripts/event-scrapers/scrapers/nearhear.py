@@ -38,7 +38,23 @@ def _parse_gcal_dates(dates_param: str) -> tuple[str, str]:
     return dt_pac.strftime("%Y-%m-%d"), dt_pac.strftime("%H:%M")
 
 
-def _parse_render_url(href: str) -> dict | None:
+def _find_venue_page(render_anchor) -> str:
+    """From an event's 'Add to Calendar' anchor, walk up to the smallest
+    enclosing card and return its NearHear venue-page URL (/venues/<id>/<slug>).
+    NearHear has no per-event pages, so the venue page is the most specific link
+    on the card. Returns "" if none is found."""
+    node = render_anchor
+    for _ in range(8):
+        node = getattr(node, "parent", None)
+        if node is None:
+            break
+        v = node.find("a", href=re.compile(r"^/venues/\d+"))
+        if v and v.get("href"):
+            return "https://nearhear.app" + v["href"].split("?")[0]
+    return ""
+
+
+def _parse_render_url(href: str, venue_page: str = "") -> dict | None:
     decoded = unquote(href)
     qs = parse_qs(urlparse(href).query)
 
@@ -94,7 +110,8 @@ def _parse_render_url(href: str) -> dict | None:
         time=time_str,
         location=location,
         cost=cost,
-        url=ticket_url or URL,
+        # ticket page (most specific) > NearHear venue page > generic calendar hub
+        url=ticket_url or venue_page or URL,
         tags=tags,
         calendar=CALENDAR_MUSIC,
         source=SOURCE,
@@ -126,7 +143,7 @@ async def _fetch() -> list:
 
         soup = BeautifulSoup(content, "lxml")
         for a in soup.find_all("a", href=re.compile(r"calendar\.google\.com/calendar/render")):
-            ev = _parse_render_url(a.get("href", ""))
+            ev = _parse_render_url(a.get("href", ""), _find_venue_page(a))
             if ev:
                 events.append(ev)
     except Exception as e:

@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<!--
+  EVENT DETAIL CARDS — Events of the Week Jul 20–26 (Purple theme)
+
+  Render script:
+    from playwright.sync_api import sync_playwright
+    import os
+    html = r'C:\Users\nai19\Documents\GitHub\ianrosado.com\instagram\event_cards_jul20_26.html'
+    out  = r'C:\Users\nai19\Documents\GitHub\ianrosado.com\instagram\event_cards_jul20_26'
+    os.makedirs(out, exist_ok=True)
+    with sync_playwright() as p:
+        browser = p.chromium.launch()
+        page = browser.new_page(viewport={'width': 1200, 'height': 1200})
+        page.goto('file:///' + html.replace('\\', '/'))
+        page.wait_for_load_state('networkidle')
+        page.wait_for_timeout(800)
+        for i, el in enumerate(page.query_selector_all('.post')):
+            el.screenshot(path=os.path.join(out, f'card_{i+1:02d}.png'))
+        browser.close()
+-->
+<title>Portland Events – Event Detail Cards Jul 20–26</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;900&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #111;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    padding: 24px;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .post {
+    width: 1080px;
+    height: 1080px;
+    background: #1c0e30;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .card-header {
+    padding: 32px 48px 16px;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .week-label {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+    margin-bottom: 4px;
+  }
+  .title { font-family: 'DM Serif Display', serif; font-size: 46px; color: #fff; line-height: 1.05; }
+  .title span { color: #b39dff; }
+  .logo { position: absolute; top: 32px; right: 48px; width: 68px; height: 68px; }
+
+  .divider {
+    height: 3px;
+    margin: 0 48px;
+    background: linear-gradient(90deg, #b39dff, transparent);
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  .card-body {
+    flex: 1;
+    padding: 24px 40px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    min-height: 0;
+  }
+
+  .day-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+  .day-name {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.38);
+  }
+  .day-num {
+    font-size: 52px;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1;
+  }
+
+  .events-pair {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    flex: 1;
+    min-height: 0;
+  }
+
+  .event-tile {
+    border-radius: 18px;
+    padding: 22px 28px 20px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+  .event-tile.teal   { --accent: #3ecfb0; background: #003d35; }
+  .event-tile.blue   { --accent: #5ca8ff; background: #0a2050; }
+  .event-tile.coral  { --accent: #ff7a5c; background: #5c1a10; }
+  .event-tile.purple { --accent: #b39dff; background: #2d1a5e; }
+  .event-tile.pink   { --accent: #f07ad8; background: #4a1040; }
+  .event-tile.amber  { --accent: #f0a500; background: #7a3d00; }
+  .event-tile.green  { --accent: #5cdc80; background: #0a3520; }
+
+  .category {
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .event-name {
+    font-family: 'DM Serif Display', serif;
+    font-size: 42px;
+    color: #fff;
+    line-height: 1.07;
+    margin-bottom: 10px;
+  }
+  .description {
+    font-size: 27px;
+    font-weight: 400;
+    color: rgba(255,255,255,0.68);
+    line-height: 1.5;
+    flex: 1;
+  }
+  .tile-meta {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    font-size: 19px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.5);
+  }
+
+  .card-footer {
+    padding: 12px 48px 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  .footer-site, .footer-handle { font-size: 19px; color: rgba(255,255,255,0.38); }
+</style>
+</head>
+<body>
+
+<!-- ─── Card 1 · Monday Jul 20 ─────────────────────────────────── -->
+<div class="post">
+  <div class="card-header">
+    <div class="week-label">This week in Portland · JUL 20–26</div>
+    <div class="title">Events of the <span>Week</span></div>
+    <svg class="logo" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="5" width="30" height="26" rx="4" fill="#F28C28"/><rect x="1" y="5" width="30" height="9" rx="4" fill="#d4720e"/><rect x="1" y="10" width="30" height="4" fill="#d4720e"/><rect x="9" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="19.5" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.6"/></svg>
+  </div>
+  <div class="divider"></div>
+  <div class="card-body">
+    <div class="day-header">
+      <span class="day-name">Monday</span><span class="day-num">20</span>
+    </div>
+    <div class="events-pair">
+      <div class="event-tile amber">
+        <div class="category">☀ Live Music · Free</div>
+        <div class="event-name">Dan Hubbard</div>
+        <div class="description">Free live music at Covert Café — Dan Hubbard brings his style to one of Portland's cozy neighborhood spots. No cover, 21+.</div>
+        <div class="tile-meta">Covert Café · 4 PM · Free · 21+</div>
+      </div>
+      <div class="event-tile teal">
+        <div class="category">🌙 Spoken Word</div>
+        <div class="event-name">Poet vs. Poet Slam</div>
+        <div class="description">Two poets face off, and the audience decides. Portland's competitive spoken word scene at its most raw and electric.</div>
+        <div class="tile-meta">Barrel Room · 7 PM</div>
+      </div>
+    </div>
+  </div>
+  <div class="card-footer">
+    <span class="footer-site">pdx-events.com</span>
+    <span class="footer-handle">@portland_events_calendar</span>
+  </div>
+</div>
+
+<!-- ─── Card 2 · Tuesday Jul 21 ────────────────────────────────── -->
+<div class="post">
+  <div class="card-header">
+    <div class="week-label">This week in Portland · JUL 20–26</div>
+    <div class="title">Events of the <span>Week</span></div>
+    <svg class="logo" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="5" width="30" height="26" rx="4" fill="#F28C28"/><rect x="1" y="5" width="30" height="9" rx="4" fill="#d4720e"/><rect x="1" y="10" width="30" height="4" fill="#d4720e"/><rect x="9" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="19.5" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.6"/></svg>
+  </div>
+  <div class="divider"></div>
+  <div class="card-body">
+    <div class="day-header">
+      <span class="day-name">Tuesday</span><span class="day-num">21</span>
+    </div>
+    <div class="events-pair">
+      <div class="event-tile green">
+        <div class="category">☀ Craft · Free</div>
+        <div class="event-name">Pride Piñata Making</div>
+        <div class="description">Bilingual, all-ages craft workshop at Central Library — make your own piñata and celebrate Pride. All materials provided, no registration required.</div>
+        <div class="tile-meta">Central Library · 1 PM · Free</div>
+      </div>
+      <div class="event-tile coral">
+        <div class="category">🌙 Social</div>
+        <div class="event-name">Chuesday</div>
+        <div class="description">Wonderlove's weekly Tuesday gathering — a welcoming spot for an early-evening drink and dancing. Free entry!</div>
+        <div class="tile-meta">Wonderlove · 5 PM · Free</div>
+      </div>
+    </div>
+  </div>
+  <div class="card-footer">
+    <span class="footer-site">pdx-events.com</span>
+    <span class="footer-handle">@portland_events_calendar</span>
+  </div>
+</div>
+
+<!-- ─── Card 3 · Wednesday Jul 22 ──────────────────────────────── -->
+<div class="post">
+  <div class="card-header">
+    <div class="week-label">This week in Portland · JUL 20–26</div>
+    <div class="title">Events of the <span>Week</span></div>
+    <svg class="logo" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="5" width="30" height="26" rx="4" fill="#F28C28"/><rect x="1" y="5" width="30" height="9" rx="4" fill="#d4720e"/><rect x="1" y="10" width="30" height="4" fill="#d4720e"/><rect x="9" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="19.5" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.6"/></svg>
+  </div>
+  <div class="divider"></div>
+  <div class="card-body">
+    <div class="day-header">
+      <span class="day-name">Wednesday</span><span class="day-num">22</span>
+    </div>
+    <div class="events-pair">
+      <div class="event-tile blue">
+        <div class="category">☀ Swimming · Free</div>
+        <div class="event-name">Free Swim at Grant Pool</div>
+        <div class="description">Cool off at one of Portland's beloved outdoor pools. Portland Parks runs free open-play swim sessions all summer — no registration needed, no cost.</div>
+        <div class="tile-meta">Grant Pool, NE 33rd · 1 PM · Free</div>
+      </div>
+      <div class="event-tile pink">
+        <div class="category">🌙 Live Music · Free</div>
+        <div class="event-name">Duckworth Wednesdays</div>
+        <div class="description">The vibes are immaculate at Duckworth Wednesdays — bring snacks and some drinks, chill on the dock or in the water, and soak in the sunset while listening to free music. The dock gets busy so be prepared to get there early or pack in close.</div>
+        <div class="tile-meta">Lloyd Esplanade · 5:30 PM · Free</div>
+      </div>
+    </div>
+  </div>
+  <div class="card-footer">
+    <span class="footer-site">pdx-events.com</span>
+    <span class="footer-handle">@portland_events_calendar</span>
+  </div>
+</div>
+
+<!-- ─── Card 4 · Thursday Jul 23 ───────────────────────────────── -->
+<div class="post">
+  <div class="card-header">
+    <div class="week-label">This week in Portland · JUL 20–26</div>
+    <div class="title">Events of the <span>Week</span></div>
+    <svg class="logo" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="5" width="30" height="26" rx="4" fill="#F28C28"/><rect x="1" y="5" width="30" height="9" rx="4" fill="#d4720e"/><rect x="1" y="10" width="30" height="4" fill="#d4720e"/><rect x="9" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="19.5" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.6"/></svg>
+  </div>
+  <div class="divider"></div>
+  <div class="card-body">
+    <div class="day-header">
+      <span class="day-name">Thursday</span><span class="day-num">23</span>
+    </div>
+    <div class="events-pair">
+      <div class="event-tile coral">
+        <div class="category">☀ Market · Free</div>
+        <div class="event-name">SW Farmers Market</div>
+        <div class="description">Every Thursday in South Waterfront — local farmers and artisans with fresh produce, specialty goods, and prepared food. Free to browse all afternoon.</div>
+        <div class="tile-meta">South Waterfront · 12 PM · Free</div>
+      </div>
+      <div class="event-tile amber">
+        <div class="category">🌙 Dance · Aerial Arts</div>
+        <div class="event-name">Art in the Dark</div>
+        <div class="description">AWOL Dance Collective performs aerial dance among the trees in Mary S Young Park at dusk — suspended performance as natural light fades. Tickets are a little $$, but this is a unique experience.</div>
+        <div class="tile-meta">Mary S Young Park, West Linn · 9 PM · $45</div>
+      </div>
+    </div>
+  </div>
+  <div class="card-footer">
+    <span class="footer-site">pdx-events.com</span>
+    <span class="footer-handle">@portland_events_calendar</span>
+  </div>
+</div>
+
+<!-- ─── Card 5 · Friday Jul 24 ──────────────────────────────────── -->
+<div class="post">
+  <div class="card-header">
+    <div class="week-label">This week in Portland · JUL 20–26</div>
+    <div class="title">Events of the <span>Week</span></div>
+    <svg class="logo" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="5" width="30" height="26" rx="4" fill="#F28C28"/><rect x="1" y="5" width="30" height="9" rx="4" fill="#d4720e"/><rect x="1" y="10" width="30" height="4" fill="#d4720e"/><rect x="9" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="19.5" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.6"/></svg>
+  </div>
+  <div class="divider"></div>
+  <div class="card-body">
+    <div class="day-header">
+      <span class="day-name">Friday</span><span class="day-num">24</span>
+    </div>
+    <div class="events-pair">
+      <div class="event-tile teal">
+        <div class="category">☀ Tech · Maker</div>
+        <div class="event-name">Teardown 2026</div>
+        <div class="description">Crowd Supply's annual open hardware conference at the Jupiter Hotel — talks, demos, and community for engineers, makers, and electronics enthusiasts. All-day celebration of building things. Pre-registration required.</div>
+        <div class="tile-meta">Jupiter Hotel · 9:30 AM</div>
+      </div>
+      <div class="event-tile green">
+        <div class="category">🌙 Opera · Free</div>
+        <div class="event-name">Mariachi Opera in the Park</div>
+        <div class="description">A free outdoor performance of "Cruzar la Cara de la Luna" — a Grammy-winning mariachi opera blending classical storytelling with the soul of traditional Mexican music.</div>
+        <div class="tile-meta">6:30 PM · Free</div>
+      </div>
+    </div>
+  </div>
+  <div class="card-footer">
+    <span class="footer-site">pdx-events.com</span>
+    <span class="footer-handle">@portland_events_calendar</span>
+  </div>
+</div>
+
+<!-- ─── Card 6 · Saturday Jul 25 ───────────────────────────────── -->
+<div class="post">
+  <div class="card-header">
+    <div class="week-label">This week in Portland · JUL 20–26</div>
+    <div class="title">Events of the <span>Week</span></div>
+    <svg class="logo" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="5" width="30" height="26" rx="4" fill="#F28C28"/><rect x="1" y="5" width="30" height="9" rx="4" fill="#d4720e"/><rect x="1" y="10" width="30" height="4" fill="#d4720e"/><rect x="9" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="19.5" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.6"/></svg>
+  </div>
+  <div class="divider"></div>
+  <div class="card-body">
+    <div class="day-header">
+      <span class="day-name">Saturday</span><span class="day-num">25</span>
+    </div>
+    <div class="events-pair">
+      <div class="event-tile pink">
+        <div class="category">☀ Street Fair · Free</div>
+        <div class="event-name">Community Blocks Street Fair</div>
+        <div class="description">SE 42nd Avenue closes for a full day of live music, food trucks, comedy, a beer garden, and an art walk. Family-friendly, all-ages, and completely free.</div>
+        <div class="tile-meta">SE 42nd (Francis–Holgate) · 10 AM · Free</div>
+      </div>
+      <div class="event-tile blue">
+        <div class="category">🌙 Dance Party</div>
+        <div class="event-name">90s &amp; 2000s GLOW Night</div>
+        <div class="description">Break out the neon — Crystal Ballroom's GLOW Night brings back the best of the 90s and early 2000s for a blacklight dance party on Portland's most iconic dance floor. This will be packed with millennials ready to boogie. If you like to dance, check this one out.</div>
+        <div class="tile-meta">Crystal Ballroom · 8 PM</div>
+      </div>
+    </div>
+  </div>
+  <div class="card-footer">
+    <span class="footer-site">pdx-events.com</span>
+    <span class="footer-handle">@portland_events_calendar</span>
+  </div>
+</div>
+
+<!-- ─── Card 7 · Sunday Jul 26 ──────────────────────────────────── -->
+<div class="post">
+  <div class="card-header">
+    <div class="week-label">This week in Portland · JUL 20–26</div>
+    <div class="title">Events of the <span>Week</span></div>
+    <svg class="logo" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="5" width="30" height="26" rx="4" fill="#F28C28"/><rect x="1" y="5" width="30" height="9" rx="4" fill="#d4720e"/><rect x="1" y="10" width="30" height="4" fill="#d4720e"/><rect x="9" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="19.5" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.6"/></svg>
+  </div>
+  <div class="divider"></div>
+  <div class="card-body">
+    <div class="day-header">
+      <span class="day-name">Sunday</span><span class="day-num">26</span>
+    </div>
+    <div class="events-pair">
+      <div class="event-tile amber">
+        <div class="category">☀ Street Fair · Free</div>
+        <div class="event-name">Montavilla Street Fair</div>
+        <div class="description">The Montavilla neighborhood's beloved annual street fair returns to SE Stark Street. Local vendors, food, live music, and community energy — all free, all day.</div>
+        <div class="tile-meta">SE Stark &amp; 76th · 10 AM · Free</div>
+      </div>
+      <div class="event-tile coral">
+        <div class="category">🌙 Fun &amp; Games</div>
+        <div class="event-name">Rubber Duck Races</div>
+        <div class="description">Adopt a numbered rubber duck, cheer it on to the finish line, and enjoy the beautiful silliness of competitive waterfowl racing. This is the Portland whimsy you're looking for.</div>
+        <div class="tile-meta">Starday Tavern · 4 PM · Free</div>
+      </div>
+    </div>
+  </div>
+  <div class="card-footer">
+    <span class="footer-site">pdx-events.com</span>
+    <span class="footer-handle">@portland_events_calendar</span>
+  </div>
+</div>
+
+</body>
+</html>

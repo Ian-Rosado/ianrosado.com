@@ -945,7 +945,7 @@ REVIEW_HEADERS = [
     "Note",
 ]
 REVIEW_INSTRUCTIONS = (
-    "Type 'y' in the Include column to add an event, 'n' to skip. "
+    "Keepers are pre-filled 'y' (will be added) — flip to 'n' to skip. "
     "You can also EDIT any of Date, Time, Calendar, Title, Location, Cost, Tags, URL — "
     "your edits are written to the calendar. "
     "Suggested duplicates are pre-filled 'n'. "
@@ -969,13 +969,19 @@ def write_review_tab(events, interactive=True):
     caller is expected to read it back in a later `commit` stage).
     """
     import time
+    from datetime import datetime
 
     client = get_sheets_client()
     sheet = client.open_by_key(SHEET_ID)
     ws = get_or_clear_tab(sheet, REVIEW_TAB, len(REVIEW_HEADERS))
 
+    # Prepend a generation timestamp so it's obvious whether the tab is fresh
+    # (from the latest scheduled/manual run) or left over from a previous one.
+    stamp = datetime.now().strftime("%a %Y-%m-%d %H:%M")
+    instructions = f"⏱ Generated {stamp} · {len(events)} events. " + REVIEW_INSTRUCTIONS
+
     # Write header + instructions in one batch, then pause to avoid quota
-    ws.update([REVIEW_HEADERS, [REVIEW_INSTRUCTIONS] + [""] * (len(REVIEW_HEADERS) - 1)], "A1")
+    ws.update([REVIEW_HEADERS, [instructions] + [""] * (len(REVIEW_HEADERS) - 1)], "A1")
     time.sleep(1)
 
     data = []
@@ -993,7 +999,7 @@ def write_review_tab(events, interactive=True):
         elif trusted_note:
             include_suggestion = "y"  # trusted recurring — flip to 'n' to veto
         else:
-            include_suggestion = ""
+            include_suggestion = "y"  # keeper — pre-filled to add; flip to 'n' to skip
 
         # Resolve what calendar link this event will actually get
         loc_for_url = e["location"]

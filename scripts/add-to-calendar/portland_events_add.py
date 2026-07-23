@@ -923,6 +923,81 @@ def build_title(title_raw, cal_name, tags):
             return f"[comedy] {title}"
     return title
 
+
+def build_calendar_event_body(e):
+    """Build a Google Calendar event body from a Review-tab event dict.
+
+    Shared by the add (insert) and replace (patch/move) paths at commit so the
+    two never drift. Returns (event_body, cal_name, cal_id, date_str). Expects
+    `e` to carry the disposition fields (title, date, time, calendar, location,
+    cost, url, tags, source) plus the original `_row` for End Time / Duration.
+    """
+    row          = e["_row"]
+    title        = e["title"]
+    date_str     = e["date"]
+    time_str     = e["time"]
+    cal_name     = e["calendar"]
+    loc          = e["location"]
+    cost         = e["cost"]
+    url          = e["url"]
+    tags         = e.get("tags", "")
+    source       = e.get("source", "")
+    end_time_str = get(row, "End Time", "end_time", "EndTime")
+    duration_str = get(row, "Duration (min)", "duration", "Duration")
+
+    # Farmers markets and trivia are free by default — only carry a cost when
+    # a price is explicitly stated. (The website applies the same default at
+    # read time, incl. for the imported Pedalpalooza bike calendar.)
+    if cal_name in FREE_DEFAULT_CALENDARS and classify_cost(cost) != "paid":
+        cost = "Free"
+
+    cal_id = CALENDARS[cal_name]
+
+    start_t = parse_time(time_str)
+    end_t   = parse_time(end_time_str)
+
+    if start_t:
+        start_dt = build_datetime(date_str, start_t)
+        if end_t and end_t != start_t:
+            end_hm   = int(end_t.split(":")[0]) * 60 + int(end_t.split(":")[1])
+            start_hm = int(start_t.split(":")[0]) * 60 + int(start_t.split(":")[1])
+            if end_hm <= start_hm:
+                next_day = (datetime.strptime(date_str, "%Y-%m-%d") + timedelta(days=1)).strftime("%Y-%m-%d")
+                end_dt = build_datetime(next_day, end_t)
+            else:
+                end_dt = build_datetime(date_str, end_t)
+        elif duration_str and duration_str.isdigit():
+            end_dt = add_duration(date_str, start_t, int(duration_str))
+        else:
+            end_dt = add_duration(date_str, start_t, DEFAULT_DURATION_MINUTES)
+        all_day = False
+    else:
+        start_dt = f"{date_str}T00:00:00"
+        # All-day event. For a multi-day span (e.g. a week-long "Restaurant
+        # Week"), the End Time column may hold an end DATE (YYYY-MM-DD,
+        # inclusive last day); span through it. Otherwise it's a single day.
+        # Google's all-day end.date is exclusive, so add one day either way.
+        last_day = date_str
+        if end_time_str and re.match(r"^\d{4}-\d{2}-\d{2}$", end_time_str.strip()) \
+                and end_time_str.strip() >= date_str:
+            last_day = end_time_str.strip()
+        next_day = (datetime.strptime(last_day, "%Y-%m-%d") + timedelta(days=1)).strftime("%Y-%m-%d")
+        end_dt   = f"{next_day}T00:00:00"
+        all_day  = True
+
+    resolved_url, url_note = resolve_event_url(url, loc)
+    description = build_description(cost, resolved_url, url_note, tags)
+    event_body = {
+        "summary":     title,
+        "description": description,
+        "location":    loc,
+        "start": {"dateTime": start_dt, "timeZone": TIMEZONE} if not all_day else {"date": date_str},
+        "end":   {"dateTime": end_dt,   "timeZone": TIMEZONE} if not all_day else {"date": next_day},
+        "extendedProperties": build_extended_properties(cost, tags, source),
+    }
+    return event_body, cal_name, cal_id, date_str
+
+
 def resolve_calendar(calendar_str):
     key = calendar_str.strip().lower()
     canonical = CALENDAR_ALIASES.get(key)
@@ -940,7 +1015,7 @@ def resolve_calendar(calendar_str):
 
 REVIEW_TAB = "Review"
 REVIEW_HEADERS = [
-    "→ Include? (y/n)", "#", "Date", "Time", "Calendar",
+    "→ Include? (y/n/r)", "#", "Date", "Time", "Calendar",
     "Title", "Location", "Cost", "Tags", "Source", "URL", "Calendar Link",
     "Note",
 ]
@@ -950,7 +1025,8 @@ REVIEW_INSTRUCTIONS = (
     "your edits are written to the calendar. "
     "Suggested duplicates are pre-filled 'n'. "
     "Rows pre-filled '?' overlap an existing event at the same venue+time — "
-    "see 'Note' and change to 'y' to add or 'n' to skip. "
+    "see 'Note' and change to 'y' to add a new event, 'r' to REPLACE the existing "
+    "event with this one (updates it in place, keeping its link), or 'n' to skip. "
     + ("Rows pre-filled 'y' are trusted recurring events you've approved 3+ times "
        "(see 'Note') — flip one to 'n' and it will never be pre-filled 'y' again. "
        if TRUSTED_AUTO_Y_ENABLED else "")
@@ -1110,12 +1186,20 @@ def read_review_tab(ws):
       0 Include | 1 # | 2 Date | 3 Time | 4 Calendar | 5 Title
       6 Location | 7 Cost | 8 Tags | 9 Source | 10 URL | 11 Calendar Link
 
+    The Include column accepts 'y' (add as a new event), 'r' / 'replace'
+    (update the existing calendar event this row overlaps in place), or
+    'n'/blank (skip). 'r' is only meaningful on a '?' venue+time/title overlap
+    row, but is honored wherever it's typed.
+
     Returns:
         include_indices: set of original indices marked 'y'
-        overrides: dict {idx: {field: value}} of the current cell values
+        replace_indices: set of original indices marked 'r' (replace-in-place)
+        overrides: dict {idx: {field: value}} of the current cell values, for
+                   every 'y' AND 'r' row (field edits apply to both)
     """
     all_values = ws.get_all_values()
     include_indices = set()
+    replace_indices = set()
     overrides = {}
 
     def cell(row, i):
@@ -1125,13 +1209,16 @@ def read_review_tab(ws):
         if not sheet_row:
             continue
         include_flag = cell(sheet_row, 0).lower()
-        if include_flag != "y":
+        if include_flag not in ("y", "r", "replace"):
             continue
         try:
             idx = int(sheet_row[1])
         except (ValueError, IndexError):
             continue
-        include_indices.add(idx)
+        if include_flag == "y":
+            include_indices.add(idx)
+        else:
+            replace_indices.add(idx)
 
         ov = {
             "date":     cell(sheet_row, 2),
@@ -1150,7 +1237,7 @@ def read_review_tab(ws):
 
         overrides[idx] = ov
 
-    return include_indices, overrides
+    return include_indices, replace_indices, overrides
 
 
 # ─── Review-corrections feedback log ─────────────────────────────────────────
@@ -1451,6 +1538,51 @@ def find_venue_time_dup(title, date_str, location, time_str, vt_index):
         if fallback is None:
             fallback = (esum, False)    # same slot, different billing — hold '?'
     return fallback
+
+
+def find_existing_event_to_replace(title, date_str, location, time_str, cal_id, existing_by_cal):
+    """Locate the existing calendar event a '?'-flagged incoming row overlaps, so
+    a Review 'r' (replace) can update it in place. Returns (event, event_cal_id)
+    — the matched event object and the calendar id it lives on — or None.
+
+    Mirrors the '?' detection this row came from: first a venue+date+overlapping
+    -start-time collision (pooled across every calendar, since the overlap flag
+    itself is), preferring a title-word match in the same slot; then a
+    same-calendar title-word match. Never returns a dedup-only (read-only) event.
+    """
+    vnorm = normalize_venue(location)
+    m = re.match(r"^\s*(\d{1,2}):(\d{2})\s*$", time_str or "")
+    cm = int(m.group(1)) * 60 + int(m.group(2)) if m else None
+    wt = _title_words(title)
+
+    # 1) Venue + time overlap across all calendars.
+    vt_fallback = None
+    if vnorm:
+        for ev_cal_id, evs in existing_by_cal.items():
+            for ev in evs:
+                if ev.get("_dedup_only"):
+                    continue
+                start = ev.get("start", {})
+                ev_date = (start.get("dateTime") or start.get("date") or "")[:10]
+                if ev_date != date_str:
+                    continue
+                if not _venues_match(normalize_venue(ev.get("location", "")), vnorm):
+                    continue
+                estart = _start_minutes(start.get("dateTime", ""))
+                if cm is not None and estart is not None and abs(cm - estart) > VENUE_TIME_THRESHOLD_MIN:
+                    continue
+                if wt & _title_words(ev.get("summary", "")):
+                    return (ev, ev_cal_id)   # act appears in that bill — best match
+                if vt_fallback is None:
+                    vt_fallback = (ev, ev_cal_id)  # same slot, different billing
+    if vt_fallback:
+        return vt_fallback
+
+    # 2) Title-word match on the incoming event's assigned calendar.
+    match = find_matching_existing_event(title, date_str, cal_id, existing_by_cal)
+    if match and not match.get("_dedup_only"):
+        return (match, cal_id)
+    return None
 
 
 def compute_event_refresh(existing_event, new_url, new_cost, new_tags_str, source):
@@ -2309,13 +2441,17 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
         review_ws = open_existing_tab(REVIEW_TAB)
     else:
         review_ws = write_review_tab(review_events)
-    include_indices, overrides = read_review_tab(review_ws)
+    include_indices, replace_indices, overrides = read_review_tab(review_ws)
+
+    # A 'replace' is a kept event too (it lands on the calendar, just in place of
+    # an existing one) — treat it as an approval everywhere disposition matters.
+    kept_indices = include_indices | replace_indices
 
     # Log how the user's final choices differ from the script's proposed
     # dispositions (recategorizations, rescued skips, dropped dupes, field edits)
     # so recurring mistakes can be profiled later. review_events still holds the
     # ORIGINAL proposals here — edits are applied just below.
-    log_review_corrections(review_events, include_indices, overrides)
+    log_review_corrections(review_events, kept_indices, overrides)
 
     # Apply any manual field edits made in the Review tab. Any of these columns
     # can be edited in the sheet and the edit flows to the calendar write.
@@ -2339,6 +2475,30 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
     if edited_count:
         print(f"  {edited_count} event(s) had manual edits from the Review tab applied")
 
+    # ── Resolve replace ('r') targets ────────────────────────────────────────
+    # Each 'r' row updates the existing calendar event it overlaps, in place.
+    # Find that event now (after edits, so venue/time/calendar tweaks count). A
+    # row we can't match falls back to a plain add so the event is never lost.
+    replace_targets = {}  # idx -> (existing_event, existing_cal_id)
+    unmatched_replaces = []
+    for idx in sorted(replace_indices):
+        e = review_by_index.get(idx)
+        if not e:
+            continue
+        cal_id = CALENDARS.get(e["calendar"])
+        target = find_existing_event_to_replace(
+            e["title"], e["date"], e["location"], e["time"], cal_id, existing_by_cal)
+        if target:
+            replace_targets[idx] = target
+        else:
+            unmatched_replaces.append(idx)
+    if unmatched_replaces:
+        print(f"  {len(unmatched_replaces)} 'r' row(s) had no matching existing event — "
+              f"adding them as new events instead.")
+        for idx in unmatched_replaces:
+            replace_indices.discard(idx)
+            include_indices.add(idx)
+
     # ── Update blocklist with user-skipped events ────────────────────────────
     # Only add events the user actively chose to skip — not ones already flagged
     # as duplicates (those are handled by dedup, not user preference).
@@ -2346,7 +2506,7 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
     user_skipped = [
         review_by_index[e["index"]]
         for e in review_events
-        if e["index"] not in include_indices
+        if e["index"] not in kept_indices  # neither added ('y') nor replaced ('r')
         and e["index"] not in already_flagged
         and not e.get("suggested_skip")  # wasn't pre-suggested, user chose this
         and not e.get("trusted_note")    # trusted vetoes go to the Trusted tab, not the blocklist
@@ -2356,20 +2516,23 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
         update_blocklist(user_skipped)
 
     # ── Tally approvals + vetoes into the Trusted tab ────────────────────────
-    # Every 'y' feeds the recurring-approval counts; a trusted pre-fill the
-    # user flipped to 'n' is a veto and permanently stops that auto-'y'.
+    # Every kept event ('y' add or 'r' replace) feeds the recurring-approval
+    # counts; a trusted pre-fill the user flipped to 'n' is a veto and
+    # permanently stops that auto-'y'.
     if not dry_run:
-        approved = [e for e in review_events if e["index"] in include_indices]
+        approved = [e for e in review_events if e["index"] in kept_indices]
         vetoed = [e for e in review_events
-                  if e.get("trusted_note") and e["index"] not in include_indices]
+                  if e.get("trusted_note") and e["index"] not in kept_indices]
         if approved or vetoed:
             update_trusted(approved, vetoed)
 
     print(f"\n{len(include_indices)} events marked 'y' to add.")
+    if replace_indices:
+        print(f"{len(replace_indices)} event(s) marked 'r' to replace an existing event in place.")
     if pending_updates:
         print(f"{len(pending_updates)} existing event(s) will be refreshed with better data.")
 
-    if not include_indices and not pending_updates:
+    if not include_indices and not replace_indices and not pending_updates:
         print("Nothing to add or update.")
         return
 
@@ -2381,6 +2544,14 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
                 e = _review_by_index.get(idx)
                 if e:
                     print(f"  {e['date']}  {e['calendar']:<30}  {e['title']}")
+        if replace_targets:
+            print("\n[DRY RUN] The following existing events would be replaced in place:")
+            for idx in sorted(replace_targets):
+                e = _review_by_index.get(idx)
+                old_ev, old_cal_id = replace_targets[idx]
+                if e:
+                    print(f"  {e['date']}  {e['calendar']:<30}  {e['title']}")
+                    print(f"      replaces existing: {old_ev.get('summary', '')!r}")
         if pending_updates:
             print("\n[DRY RUN] The following existing events would be refreshed:")
             for u in pending_updates:
@@ -2393,6 +2564,8 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
     parts = []
     if include_indices:
         parts.append(f"add {len(include_indices)} events")
+    if replace_targets:
+        parts.append(f"replace {len(replace_targets)} existing events in place")
     if pending_updates:
         parts.append(f"refresh {len(pending_updates)} existing events")
     print(f"\nAbout to {' and '.join(parts)} in Google Calendar.")
@@ -2415,69 +2588,8 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
         if not e:
             continue
 
-        row          = e["_row"]
-        title        = e["title"]
-        date_str     = e["date"]
-        time_str     = e["time"]
-        cal_name     = e["calendar"]
-        loc          = e["location"]
-        cost         = e["cost"]
-        url          = e["url"]
-        tags         = e.get("tags", "")
-        source       = e.get("source", "")
-        end_time_str = get(row, "End Time", "end_time", "EndTime")
-        duration_str = get(row, "Duration (min)", "duration", "Duration")
-
-        # Farmers markets and trivia are free by default — only carry a cost when
-        # a price is explicitly stated. (The website applies the same default at
-        # read time, incl. for the imported Pedalpalooza bike calendar.)
-        if cal_name in FREE_DEFAULT_CALENDARS and classify_cost(cost) != "paid":
-            cost = "Free"
-
-        cal_id = CALENDARS[cal_name]
-
-        start_t = parse_time(time_str)
-        end_t   = parse_time(end_time_str)
-
-        if start_t:
-            start_dt = build_datetime(date_str, start_t)
-            if end_t and end_t != start_t:
-                end_hm   = int(end_t.split(":")[0]) * 60 + int(end_t.split(":")[1])
-                start_hm = int(start_t.split(":")[0]) * 60 + int(start_t.split(":")[1])
-                if end_hm <= start_hm:
-                    next_day = (datetime.strptime(date_str, "%Y-%m-%d") + timedelta(days=1)).strftime("%Y-%m-%d")
-                    end_dt = build_datetime(next_day, end_t)
-                else:
-                    end_dt = build_datetime(date_str, end_t)
-            elif duration_str and duration_str.isdigit():
-                end_dt = add_duration(date_str, start_t, int(duration_str))
-            else:
-                end_dt = add_duration(date_str, start_t, DEFAULT_DURATION_MINUTES)
-            all_day = False
-        else:
-            start_dt = f"{date_str}T00:00:00"
-            # All-day event. For a multi-day span (e.g. a week-long "Restaurant
-            # Week"), the End Time column may hold an end DATE (YYYY-MM-DD,
-            # inclusive last day); span through it. Otherwise it's a single day.
-            # Google's all-day end.date is exclusive, so add one day either way.
-            last_day = date_str
-            if end_time_str and re.match(r"^\d{4}-\d{2}-\d{2}$", end_time_str.strip()) \
-                    and end_time_str.strip() >= date_str:
-                last_day = end_time_str.strip()
-            next_day = (datetime.strptime(last_day, "%Y-%m-%d") + timedelta(days=1)).strftime("%Y-%m-%d")
-            end_dt   = f"{next_day}T00:00:00"
-            all_day  = True
-
-        resolved_url, url_note = resolve_event_url(url, loc)
-        description = build_description(cost, resolved_url, url_note, tags)
-        event_body = {
-            "summary":     title,
-            "description": description,
-            "location":    loc,
-            "start": {"dateTime": start_dt, "timeZone": TIMEZONE} if not all_day else {"date": date_str},
-            "end":   {"dateTime": end_dt,   "timeZone": TIMEZONE} if not all_day else {"date": next_day},
-            "extendedProperties": build_extended_properties(cost, tags, source),
-        }
+        event_body, cal_name, cal_id, date_str = build_calendar_event_body(e)
+        title = event_body["summary"]
 
         if dry_run:
             print(f"  [DRY RUN] {date_str}  {cal_name:<30}  {title}")
@@ -2491,8 +2603,45 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
                 sendUpdates="none",
             ).execute()
             added.append((title, date_str, cal_name))
-        except HttpError as e:
-            errors.append((title, date_str, str(e)))
+        except HttpError as ex:
+            errors.append((title, date_str, str(ex)))
+
+    # ── Replace existing events in place with 'r' rows ───────────────────────
+    # Same calendar: patch the existing event with the new event's fields (keeps
+    # the event id and anything not in our body, e.g. attendees). Different
+    # calendar: an event can't be patched across calendars, so delete the old
+    # one and create the new one on its calendar.
+    replaced, replace_errors = [], []
+    for idx in sorted(replace_targets):
+        e = review_by_index.get(idx)
+        if not e:
+            continue
+        old_ev, old_cal_id = replace_targets[idx]
+        event_body, cal_name, new_cal_id, date_str = build_calendar_event_body(e)
+        title = event_body["summary"]
+        old_summary = old_ev.get("summary", "")
+        try:
+            if new_cal_id == old_cal_id:
+                service.events().patch(
+                    calendarId=old_cal_id,
+                    eventId=old_ev["id"],
+                    body=event_body,
+                    sendUpdates="none",
+                ).execute()
+            else:
+                service.events().insert(
+                    calendarId=new_cal_id,
+                    body=event_body,
+                    sendUpdates="none",
+                ).execute()
+                service.events().delete(
+                    calendarId=old_cal_id,
+                    eventId=old_ev["id"],
+                    sendUpdates="none",
+                ).execute()
+            replaced.append((title, old_summary, date_str, cal_name))
+        except HttpError as ex:
+            replace_errors.append((title, str(ex)))
 
     # ── Refresh existing events with better data ─────────────────────────────
     updated, update_errors = [], []
@@ -2516,14 +2665,21 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
     print(f"SUMMARY{' (DRY RUN)' if dry_run else ''}")
     print("=" * 65)
     print(f"Added:            {len(added)}")
+    print(f"Replaced:         {len(replaced)}")
     print(f"Updated:          {len(updated)}")
-    print(f"Skipped (n/blank):{len(review_events) - len(include_indices)}")
-    print(f"Errors:           {len(errors) + len(update_errors)}")
+    print(f"Skipped (n/blank):{len(review_events) - len(kept_indices)}")
+    print(f"Errors:           {len(errors) + len(replace_errors) + len(update_errors)}")
 
     if added:
         print("\n-- Added --")
         for title, d, cal in added:
             print(f"  {d}  {cal:<30}  {title}")
+
+    if replaced:
+        print("\n-- Replaced (in place) --")
+        for title, old_summary, d, cal in replaced:
+            print(f"  {d}  {cal:<30}  {title}")
+            print(f"      replaced: {old_summary!r}")
 
     if updated:
         print("\n-- Updated --")
@@ -2531,10 +2687,12 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
             print(f"  {u['cal_name']:<30}  {u['title']}")
             print(f"      url: {u['old_url']!r} -> {u['new_url']!r}")
 
-    if errors or update_errors:
+    if errors or replace_errors or update_errors:
         print("\n-- Errors --")
         for title, d, err in errors:
             print(f"  {d}  {title}: {err}")
+        for title, err in replace_errors:
+            print(f"  (replace) {title}: {err}")
         for title, err in update_errors:
             print(f"  (update) {title}: {err}")
 

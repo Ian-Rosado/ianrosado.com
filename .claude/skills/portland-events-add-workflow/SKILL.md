@@ -409,6 +409,34 @@ titles like "Karaoke" only ever match exactly). This catches series like
 previously had to be hand-dropped every occurrence. Fuzzy hits show
 `blocklist: <matched entry>` in the Note column.
 
+### Blocklist audit queue (skips are NOT auto-blocklisted)
+
+Marking an event `n` at review no longer adds its title straight to the
+Blocklist — Ian often skips something only because he *already added it
+manually*, and a one-off skip shouldn't permanently block that title (a single
+"University of Portland Women's Soccer" skip would otherwise kill every future
+UP soccer game). Instead, at commit `sync_blocklist_review()` routes those
+user-skips (the same set as before: actively marked `n`, not auto-dup, not
+pre-suggested, not a trusted veto) into a **"Blocklist Review"** audit tab:
+
+| Col | Field |
+|---|---|
+| A | `Add? (y/n)` — **blank = pending**, `y` = blocklist it next run, `n` = dismiss (handled manually, stop re-surfacing) |
+| B | Title |
+| C | Last calendar |
+| D | Times dropped (cumulative, from the corrections log — recurring junk shows a high number) |
+| E | Why (auto hint: "recurring — dropped N×" vs "one-off (already on your calendar?)") |
+| F | Source · G | First seen |
+
+**Every commit** both (1) **promotes** rows Ian marked `Add?='y'` to the real
+Blocklist and drops them from the queue, and (2) **queues** the new run's skips —
+blank/pending. A title already dismissed (`n`) is left alone and never
+re-surfaced. Pending rows sort to the top, highest drop-count first. So the loop
+is: Ian audits the tab whenever, marks the true recurring junk `y` (and the
+"I have it manually" ones `n` to stop the nagging), and the next commit acts on
+it. Nothing is blocklisted without his sign-off. Don't "restore" the old
+auto-add behavior.
+
 ### Review-corrections feedback loop (learn from the user's edits)
 
 At commit, the script diffs its own proposed dispositions against the user's

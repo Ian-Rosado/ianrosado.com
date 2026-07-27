@@ -1441,6 +1441,17 @@ def read_dedup_tab():
 BLOCKLIST_TAB = "Blocklist"
 BLOCKLIST_HEADERS = ["Title (normalized)", "Title (original)", "Source", "Date added"]
 
+# Events the user skips at review are NOT auto-blocklisted anymore — a one-off
+# skip ("I already added this manually") shouldn't permanently block the title.
+# Instead they land in this audit queue; the user marks Add?='y' on the ones
+# that really are recurring junk, and the NEXT commit promotes those to the real
+# Blocklist. Add?='n' dismisses a row (handled manually — stop re-queuing it);
+# blank = still pending (keeps getting re-surfaced with a rising "Times dropped").
+BLOCKLIST_REVIEW_TAB = "Blocklist Review"
+BLOCKLIST_REVIEW_HEADERS = [
+    "Add? (y/n)", "Title", "Last calendar", "Times dropped", "Why", "Source", "First seen",
+]
+
 
 def _norm_title(s):
     """Normalize a title for blocklist matching — lowercase, strip punctuation."""
@@ -1784,6 +1795,120 @@ def update_blocklist(skipped_events):
     if new_rows:
         ws.append_rows(new_rows, value_input_option="USER_ENTERED")
         print(f"  Added {len(new_rows)} title(s) to blocklist")
+
+
+def _dropped_count_from_log(norm):
+    """How many times (across all runs) the user has dropped a title that
+    normalizes to `norm`. Reads the review-corrections log; Claude-tagged drops
+    (by:'claude') don't count, and records predating the `by` tag count as the
+    user's. Returns 0 if the log is absent/unreadable."""
+    import os, json
+    if not os.path.exists(REVIEW_CORRECTIONS_LOG):
+        return 0
+    n = 0
+    try:
+        for line in open(REVIEW_CORRECTIONS_LOG, encoding="utf-8"):
+            line = line.strip()
+            if not line:
+                continue
+            rec = json.loads(line)
+            for d in rec.get("dropped", []):
+                if d.get("by") != "claude" and _norm_title(d.get("title", "")) == norm:
+                    n += 1
+    except Exception:
+        pass
+    return n
+
+
+def sync_blocklist_review(user_skipped):
+    """Blocklist audit queue (replaces auto-adding skips to the Blocklist).
+
+    On every commit this:
+      1. PROMOTES any rows the user marked Add?='y' in the Blocklist Review tab
+         to the real Blocklist, then drops them from the queue.
+      2. QUEUES this run's user-skipped events for audit — new titles as blank
+         (pending) rows; a title already pending gets its counts refreshed; a
+         title already dismissed (Add?='n') is left alone and not re-surfaced.
+
+    user_skipped: review_event dicts the user marked 'n' that weren't already
+    flagged as duplicates. Safe to call with an empty list (still promotes).
+    """
+    import gspread
+    from datetime import date
+    client = get_sheets_client()
+    sheet = client.open_by_key(SHEET_ID)
+    try:
+        ws = sheet.worksheet(BLOCKLIST_REVIEW_TAB)
+    except gspread.WorksheetNotFound:
+        ws = sheet.add_worksheet(title=BLOCKLIST_REVIEW_TAB, rows=2000,
+                                 cols=len(BLOCKLIST_REVIEW_HEADERS))
+        ws.update([BLOCKLIST_REVIEW_HEADERS], "A1")
+        ws.batch_format([{"range": "A1:G1", "format": {"textFormat": {"bold": True}}}])
+
+    values = ws.get_all_values()
+    # Existing queue keyed by normalized title. Row: [add, title, cal, count, why, source, first_seen]
+    queue = {}   # norm -> dict(add, title, cal, source, first_seen)
+    for row in values[1:]:
+        if not row or not (len(row) > 1 and row[1].strip()):
+            continue
+        row = row + [""] * (len(BLOCKLIST_REVIEW_HEADERS) - len(row))
+        norm = _norm_title(row[1])
+        queue[norm] = {
+            "add": row[0].strip().lower(),
+            "title": row[1].strip(),
+            "cal": row[2].strip(),
+            "source": row[5].strip(),
+            "first_seen": row[6].strip(),
+        }
+
+    # 1. Promote approved rows to the real Blocklist, then remove them here.
+    approved = [q for q in queue.values() if q["add"] == "y"]
+    if approved:
+        update_blocklist([{"title": q["title"], "source": q["source"]} for q in approved])
+        print(f"  Promoted {len(approved)} approved title(s) from the audit queue to the Blocklist")
+        for q in approved:
+            queue.pop(_norm_title(q["title"]), None)
+
+    # 2. Queue this run's skips (skip titles already dismissed with 'n').
+    today = date.today().isoformat()
+    new_count = 0
+    for e in user_skipped:
+        norm = _norm_title(e["title"])
+        if not norm:
+            continue
+        existing = queue.get(norm)
+        if existing and existing["add"] == "n":
+            continue  # dismissed — user handles this one manually, don't re-nag
+        if existing:
+            existing["title"] = e["title"]
+            existing["cal"] = e.get("calendar", existing["cal"])
+            existing["source"] = e.get("source", existing["source"])
+        else:
+            queue[norm] = {"add": "", "title": e["title"],
+                           "cal": e.get("calendar", ""), "source": e.get("source", ""),
+                           "first_seen": today}
+            new_count += 1
+
+    # 3. Rewrite the tab, sorted so the most-dropped pending rows float to the top.
+    rows_out = []
+    for norm, q in queue.items():
+        count = _dropped_count_from_log(norm)
+        if count >= 3:
+            why = f"recurring — dropped {count}×"
+        elif count <= 1:
+            why = "one-off (already on your calendar?)"
+        else:
+            why = f"dropped {count}×"
+        rows_out.append([q["add"], q["title"], q["cal"], count, why, q["source"], q["first_seen"]])
+    # pending (blank Add?) first, then by descending drop count
+    rows_out.sort(key=lambda r: (r[0] != "", -int(r[3] or 0)))
+
+    ws.clear()
+    ws.update([BLOCKLIST_REVIEW_HEADERS] + rows_out, "A1", value_input_option="USER_ENTERED")
+    ws.batch_format([{"range": "A1:G1", "format": {"textFormat": {"bold": True}}}])
+    pending = sum(1 for r in rows_out if not r[0])
+    print(f"  Blocklist Review queue: {new_count} new, {pending} pending your audit "
+          f"→ mark Add?='y' to blocklist next run (tab: {BLOCKLIST_REVIEW_TAB})")
 
 
 # ─── Trusted recurring events (auto-'y') ──────────────────────────────────────
@@ -2592,9 +2717,14 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
             replace_indices.discard(idx)
             include_indices.add(idx)
 
-    # ── Update blocklist with user-skipped events ────────────────────────────
-    # Only add events the user actively chose to skip — not ones already flagged
-    # as duplicates (those are handled by dedup, not user preference).
+    # ── Blocklist audit queue ────────────────────────────────────────────────
+    # User-skipped events (actively marked 'n', not auto-flagged dups, not
+    # pre-suggested, not trusted vetoes) are no longer auto-blocklisted — a
+    # one-off skip ("already added it manually") shouldn't permanently block the
+    # title. They go to the Blocklist Review audit queue instead; the user marks
+    # which are truly recurring junk, and the next commit promotes those. This
+    # call also promotes anything approved since last run — so run it even when
+    # this batch produced no new skips.
     already_flagged = ai_skip | exact_skip | cross_source_skip
     user_skipped = [
         review_by_index[e["index"]]
@@ -2604,9 +2734,9 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
         and not e.get("suggested_skip")  # wasn't pre-suggested, user chose this
         and not e.get("trusted_note")    # trusted vetoes go to the Trusted tab, not the blocklist
     ]
-    if user_skipped:
-        print(f"\nAdding {len(user_skipped)} user-skipped event(s) to blocklist...")
-        update_blocklist(user_skipped)
+    if not dry_run:
+        print(f"\nBlocklist audit: {len(user_skipped)} new skip(s) this run.")
+        sync_blocklist_review(user_skipped)
 
     # ── Tally approvals + vetoes into the Trusted tab ────────────────────────
     # Every kept event ('y' add or 'r' replace) feeds the recurring-approval

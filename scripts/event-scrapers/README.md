@@ -51,15 +51,24 @@ Output files land in `output/events_YYYY-MM-DD.json` and `output/events_YYYY-MM-
 
 | Scraper | Source | Calendar | Method |
 |---|---|---|---|
+| `travel_portland.py` | Travel Portland | events | web_fetch |
 | `portland_living_cheap.py` | Portland Living on the Cheap | events | web_fetch |
+| `pdx_pipeline.py` | PDX Pipeline | events | web_fetch |
 | `pc_pdx.py` | PC-PDX Show Guide | music | web_fetch |
 | `pdx_parent.py` | PDX Parent | events | web_fetch |
+| `dopdx.py` | Do PDX | events | web_fetch |
 | `pdx_after_dark.py` | PDX After Dark | music | web_fetch |
+| `nearhear.py` | NearHear | music | Playwright (JS-rendered) |
 | `nineteen_hz.py` | 19hz PNW | music | web_fetch |
-| `calagator.py` | Calagator | events | web_fetch |
+| `wweek.py` | Willamette Week | events | web_fetch |
+| `bandsintown.py` | Bandsintown (Portland) | music | web_fetch |
+| `portland5.py` | Portland'5 Centers for the Arts | events (+music for "Music on Main") | web_fetch (list + per-event detail for dates) |
 | `queer_social_club.py` | Queer Social Club | events | web_fetch |
-| `laughs_pdx.py` | Laughs PDX | events | web_fetch |
+| `laughs_pdx.py` | Laughs PDX | comedy | web_fetch |
+| `calagator.py` | Calagator | events | web_fetch |
+| `community_playlist.py` | Community Playlist | events/music | Playwright (list) + web_fetch (per-event detail for venue) |
 | `flyer_escape.py` | Flyer Escape | music | web_fetch |
+| `artichoke.py` | Artichoke Music | music | web_fetch (Eventbrite organizer embedded JSON) |
 | `toc_portland.py` | TOC Portland | music | web_fetch |
 
 ## Sports sources (Portland Sports calendar — home games only)

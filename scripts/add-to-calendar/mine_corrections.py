@@ -79,11 +79,18 @@ def main():
 
     recs = [json.loads(l) for l in LOG.read_text(encoding="utf-8").splitlines() if l.strip()]
 
+    def user_items(rec, bucket):
+        """Only the human reviewer's corrections are patterns worth folding into
+        rules. Items Claude made itself (tagged by:"claude", e.g. an extra dedup
+        pass) are already automated — skip them. Records predating the tagging
+        have no `by` field; treat those as the user's."""
+        return [d for d in rec.get(bucket, []) if d.get("by") != "claude"]
+
     # ── Repeat drops → blocklist / KNOWN_DROP_PATTERNS candidates ────────────
     drops = Counter()
     drop_titles = defaultdict(list)
     for r in recs:
-        for d in r.get("dropped", []):
+        for d in user_items(r, "dropped"):
             k = series_key(d["title"])
             drops[k] += 1
             drop_titles[k].append(d["title"])
@@ -94,7 +101,7 @@ def main():
     recats = Counter()
     recat_examples = {}
     for r in recs:
-        for d in r.get("recategorized", []):
+        for d in user_items(r, "recategorized"):
             k = (norm(d.get("location", ""))[:40] or "(no venue)", d["from"], d["to"])
             recats[k] += 1
             recat_examples[k] = d["title"]
@@ -105,7 +112,7 @@ def main():
     edits = Counter()
     edit_examples = {}
     for r in recs:
-        for d in r.get("field_edits", []):
+        for d in user_items(r, "field_edits"):
             k = (d["field"], series_key(d["title"]))
             edits[k] += 1
             edit_examples[k] = d
@@ -113,7 +120,7 @@ def main():
                  if c >= floor and is_new("edit", "|".join(k))]
 
     # ── Rescued skips → dedup false positives (should stay ~zero) ───────────
-    rescued = [d for r in recs for d in r.get("rescued_from_skip", [])]
+    rescued = [d for r in recs for d in user_items(r, "rescued_from_skip")]
     rescued = [d for d in rescued if is_new("rescue", series_key(d["title"]))]
 
     if args.new:

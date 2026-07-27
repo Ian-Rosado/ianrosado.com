@@ -447,6 +447,28 @@ durable rules: venue→calendar entries in the trivia table above,
 dedup false-positive guards, or `venues.json`. A recategorization that recurs
 for the same venue/keyword is a rule waiting to be written.
 
+**Tag your own Review-tab edits so they don't pollute the profile.** The commit
+diff can't tell whether a change from the proposed disposition came from Ian or
+from a pass *you* made over the already-written Review tab (e.g. an extra dedup
+layer that flips a pre-filled `y` to skip, or a field fix). Those are automation,
+not human mistakes, so they must not enter the user-mistake profile. **Whenever
+you programmatically change a Review-tab cell after `--stage review` has written
+it, also record the change** so `log_review_corrections()` tags it `by:"claude"`:
+
+```python
+from portland_events_add import record_claude_review_edit
+# after you write the Include cell of the row whose # (index) is 137 to "n":
+record_claude_review_edit(137, "include", "n")     # 'include' for the Include col
+record_claude_review_edit(88,  "calendar", "Portland Music")  # or a field name
+```
+
+`field` is `"include"` for the Include column, else the event field
+(`calendar`/`location`/`date`/`time`/`title`/`cost`/`url`). The ledger lives in
+`.review_claude_edits.json` (gitignored) and is auto-cleared each time a fresh
+Review tab is written, so it only ever reflects the current run. Each corrections
+record now carries a `by` split per bucket, and `mine_corrections.py` should be
+read as **user** patterns only — Claude's tagged edits are already automated.
+
 ### Venue → URL mappings live in `venues.json` (NOT this skill)
 
 When an event's source URL is a generic listing page, the script links to the

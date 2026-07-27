@@ -6,12 +6,19 @@ Format: JS-rendered (requires Playwright). Event cards are <a class="ev-card">
     - href / data-slug          → contains YYYY-MM-DD date
     - data-cat                  → "music" | "food" | "arts" | "fund" | ""
     - span.ev-time              → "Today · 5:30 PM" / "Fri Jun 5 · 8 PM"
-    - div.ev-artists            → event title
-    - span.ev-loc               → venue ("· Venue Name, address")
-    - span.hood-tag             → neighborhood
+    - h2                        → event title
+    - div.ev-artists            → artist/lineup subtitle (fallback title)
+    - span.ev-hood              → neighborhood
     - span.ev-free              → "FREE" if free
     - span.genre-tag            → genre
 Calendar: music for data-cat=music, events otherwise
+
+The listing cards NO LONGER carry a venue/address (CP moved it off the card in
+a 2026 redesign) — the venue only lives on each event's own detail page, in an
+OpenStreetMap "directions" anchor whose text is the full "Venue, address"
+string (falling back to the .venue-pill label). Since we already fetch every
+detail page to resolve the real outbound link, we pull the venue from that same
+fetch — see _resolve_detail().
 
 Each event's own communityplaylist.com page usually has a "More info /
 Tickets" link to the real outbound site — sometimes a venue, sometimes a
@@ -45,23 +52,45 @@ JUNK_LINK_DOMAINS = (
 )
 
 
-def _resolve_real_link(detail_url):
-    """Fetch an event's communityplaylist.com page and pull its real outbound
-    link — preferring a "More info / Tickets" label, else the first other
-    qualifying external link. Returns '' if none found."""
+def _extract_location(soup) -> str:
+    """Pull the venue/address from a CP event detail page. The best signal is
+    the OpenStreetMap 'directions' anchor, whose text is the full
+    'Venue, 123 SW Foo St, Portland, OR, 97205' string. Falls back to the
+    .venue-pill label (emoji-prefixed venue name). Returns '' if neither."""
+    for a in soup.find_all("a", href=True):
+        if "openstreetmap.org/directions" in a["href"]:
+            txt = a.get_text(" ", strip=True)
+            if txt and "Portland" in txt:
+                return txt
+    pill = soup.find(class_="venue-pill")
+    if pill:
+        # strip a leading emoji / whitespace ("🏛 Portland Art Museum")
+        return re.sub(r"^[^\w(]+", "", pill.get_text(" ", strip=True)).strip()
+    return ""
+
+
+def _resolve_detail(detail_url):
+    """Fetch an event's communityplaylist.com page and pull (real_link,
+    location). real_link prefers a "More info / Tickets"-labeled outbound link,
+    else the first other qualifying external link. location comes from
+    _extract_location(). Either may be '' if not found."""
     resp = get_page(detail_url)
     if not resp:
-        return ""
+        return "", ""
     soup = BeautifulSoup(resp.text, "lxml")
     candidates = []
     for a in soup.find_all("a", href=True):
         href = a["href"]
         if href.startswith("http") and not any(d in href for d in JUNK_LINK_DOMAINS):
             candidates.append((a.get_text(strip=True), href))
+    real_link = ""
     for text, href in candidates:
         if "more info" in text.lower() or "tickets" in text.lower():
-            return href
-    return candidates[0][1] if candidates else ""
+            real_link = href
+            break
+    if not real_link and candidates:
+        real_link = candidates[0][1]
+    return real_link, _extract_location(soup)
 
 
 def _parse_time(time_text: str) -> str:
@@ -83,9 +112,11 @@ def _parse_card(card) -> dict | None:
         return None
     date_str = date_m.group(1)
 
-    # Title
-    artists_el = card.find(class_="ev-artists")
-    title = artists_el.get_text(strip=True) if artists_el else ""
+    # Title — the redesigned card puts the event title in an <h2>; the old
+    # .ev-artists element is now just the artist/lineup subtitle ("Me"), a
+    # fallback only.
+    title_el = card.find("h2") or card.find(class_="ev-artists")
+    title = title_el.get_text(strip=True) if title_el else ""
     if not title:
         return None
 
@@ -93,24 +124,24 @@ def _parse_card(card) -> dict | None:
     time_el = card.find(class_="ev-time")
     time_str = _parse_time(time_el.get_text(strip=True)) if time_el else ""
 
-    # Location — strip leading "· "
-    loc_el = card.find(class_="ev-loc")
+    # Location is no longer on the card — it's filled in later from the detail
+    # page (see scrape()). Neighborhood still is, and serves as the location
+    # fallback when the detail page has no venue.
     location = ""
-    if loc_el:
-        location = re.sub(r"^[·\s]+", "", loc_el.get_text(strip=True)).strip()
 
-    # Neighborhood (prepend if no location, else keep as tag)
-    hood_el = card.find(class_="hood-tag")
+    hood_el = card.find(class_="ev-hood")
     neighborhood = ""
     if hood_el:
         neighborhood = re.sub(r"^[📍\s]+", "", hood_el.get_text(strip=True)).strip()
+    if not location and neighborhood:
+        location = neighborhood
 
     # Cost
     cost = ""
     if card.find(class_="ev-free"):
         cost = "Free"
     else:
-        meta = card.find(class_="ev-meta")
+        meta = card.find(class_="ev-meta") or card.find(class_="ev-meta-row")
         if meta:
             cost_m = re.search(r"\$\s?[\d.]+", meta.get_text())
             if cost_m:
@@ -200,23 +231,30 @@ def scrape():
             seen.add(key)
             unique.append(e)
 
-    # Swap each event's communityplaylist.com page URL for its real outbound
-    # link, where one exists.
+    # Fetch each event's communityplaylist.com detail page ONCE to pull both
+    # its real outbound link and its venue/address (neither is on the card).
     unique_urls = {e["url"] for e in unique if e["url"]}
-    resolved = {}
+    resolved_link = {}
+    resolved_loc = {}
     with ThreadPoolExecutor(max_workers=10) as executor:
-        future_to_url = {executor.submit(_resolve_real_link, u): u for u in unique_urls}
+        future_to_url = {executor.submit(_resolve_detail, u): u for u in unique_urls}
         for future in as_completed(future_to_url):
             u = future_to_url[future]
             try:
-                real_url = future.result()
+                real_url, loc = future.result()
                 if real_url:
-                    resolved[u] = real_url
+                    resolved_link[u] = real_url
+                if loc:
+                    resolved_loc[u] = loc
             except Exception:
                 pass
     for e in unique:
-        if e["url"] in resolved:
-            e["url"] = resolved[e["url"]]
+        detail_url = e["url"]
+        # detail-page venue wins over the card's neighborhood-only fallback
+        if resolved_loc.get(detail_url):
+            e["location"] = resolved_loc[detail_url]
+        if detail_url in resolved_link:
+            e["url"] = resolved_link[detail_url]
 
     unique.sort(key=lambda e: (e.get("date", ""), e.get("time", "")))
     print(f"  [{SOURCE}] Found {len(unique)} events")

@@ -1051,6 +1051,10 @@ def write_review_tab(events, interactive=True):
     sheet = client.open_by_key(SHEET_ID)
     ws = get_or_clear_tab(sheet, REVIEW_TAB, len(REVIEW_HEADERS))
 
+    # Fresh Review tab → reset Claude's per-run edit ledger so tagging in
+    # log_review_corrections only reflects edits made against THIS tab.
+    clear_claude_edits()
+
     # Prepend a generation timestamp so it's obvious whether the tab is fresh
     # (from the latest scheduled/manual run) or left over from a previous one.
     stamp = datetime.now().strftime("%a %Y-%m-%d %H:%M")
@@ -1244,6 +1248,56 @@ def read_review_tab(ws):
 
 REVIEW_CORRECTIONS_LOG = "review_corrections.jsonl"
 
+# When Claude does its own pass over the *already-written* Review tab (e.g. an
+# extra dedup layer that flips a pre-filled 'y' to skip, or fixes a field),
+# those changes would otherwise show up in the commit-time diff as if the human
+# reviewer made them — polluting the profile of *user* mistakes. So Claude
+# records each edit it makes to this side-file, and log_review_corrections tags
+# every correction "claude" or "user" accordingly. The file is per-run: it's
+# cleared when a fresh Review tab is written.
+CLAUDE_EDITS_LOG = ".review_claude_edits.json"
+
+
+def _load_claude_edits():
+    """Return {index(int): {field: value}} of edits Claude made to the current
+    Review tab, or {} if none/unreadable."""
+    import json, os
+    if not os.path.exists(CLAUDE_EDITS_LOG):
+        return {}
+    try:
+        with open(CLAUDE_EDITS_LOG, encoding="utf-8") as f:
+            raw = json.load(f)
+        return {int(k): v for k, v in raw.items()}
+    except Exception:
+        return {}
+
+
+def clear_claude_edits():
+    """Wipe the Claude-edit ledger — called when a fresh Review tab is written
+    so edits from a previous run never leak into this run's tagging."""
+    import os
+    try:
+        if os.path.exists(CLAUDE_EDITS_LOG):
+            os.remove(CLAUDE_EDITS_LOG)
+    except Exception:
+        pass
+
+
+def record_claude_review_edit(index, field, value):
+    """Call this right after Claude programmatically changes a Review-tab cell,
+    so the change is attributed to Claude (not the human) in the corrections
+    log. `field` is 'include' for the Include column, otherwise the event field
+    name ('calendar', 'location', 'date', 'time', 'title', 'cost', 'url').
+    `value` is the new value Claude wrote. Safe to call repeatedly."""
+    import json
+    edits = _load_claude_edits()
+    edits.setdefault(int(index), {})[field] = str(value)
+    try:
+        with open(CLAUDE_EDITS_LOG, "w", encoding="utf-8") as f:
+            json.dump({str(k): v for k, v in edits.items()}, f, ensure_ascii=False, indent=2)
+    except Exception as ex:
+        print(f"  (claude-edit record skipped: {ex})")
+
 
 def log_review_corrections(review_events, include_indices, overrides):
     """Diff the script's proposed dispositions against the user's final Review-tab
@@ -1257,6 +1311,16 @@ def log_review_corrections(review_events, include_indices, overrides):
     import json
     from datetime import datetime
     try:
+        claude_edits = _load_claude_edits()
+
+        def _tag(idx, field, final_value):
+            """'claude' if Claude's ledger shows it set this field to this value,
+            else 'user'."""
+            ce = claude_edits.get(idx, {})
+            if field in ce and str(ce[field]) == str(final_value):
+                return "claude"
+            return "user"
+
         by_idx = {e["index"]: e for e in review_events}
         recats, rescued, dropped, edits = [], [], [], []
         for idx, e in by_idx.items():
@@ -1264,38 +1328,55 @@ def log_review_corrections(review_events, include_indices, overrides):
             final_keep = idx in include_indices
             ov = overrides.get(idx, {})
             if proposed_keep and not final_keep:
-                # user excluded something the script proposed to add — a dup or
+                # excluded something the script proposed to add — a dup or
                 # otherwise-unwanted event the dedup/blocklist missed.
-                dropped.append({"title": e["title"], "calendar": e["calendar"], "date": e["date"]})
+                dropped.append({"title": e["title"], "calendar": e["calendar"], "date": e["date"],
+                                "by": _tag(idx, "include", "n")})
             elif not proposed_keep and final_keep:
-                # user kept something the script proposed to skip — a false-positive skip.
-                rescued.append({"title": e["title"], "calendar": e["calendar"], "date": e["date"]})
+                # kept something the script proposed to skip — a false-positive skip.
+                rescued.append({"title": e["title"], "calendar": e["calendar"], "date": e["date"],
+                                "by": _tag(idx, "include", "y")})
             if final_keep and ov:
                 new_cal = ov.get("calendar")
                 if new_cal and new_cal != e["calendar"]:
                     recats.append({"title": e["title"], "from": e["calendar"], "to": new_cal,
-                                   "location": e.get("location", ""), "date": e["date"]})
+                                   "location": e.get("location", ""), "date": e["date"],
+                                   "by": _tag(idx, "calendar", new_cal)})
                 for f in ("date", "time", "title", "location", "cost", "url"):
                     nv = ov.get(f, "")
                     if nv and str(nv) != str(e.get(f, "")):
                         edits.append({"title": e["title"], "field": f,
-                                      "from": str(e.get(f, "")), "to": str(nv)})
+                                      "from": str(e.get(f, "")), "to": str(nv),
+                                      "by": _tag(idx, f, nv)})
         if not (recats or rescued or dropped or edits):
-            print("\nReview corrections: none — your edits matched the proposed dispositions.")
+            print("\nReview corrections: none — the final dispositions matched the proposed ones.")
             return
+
+        def _split(items):
+            u = sum(1 for x in items if x.get("by") == "user")
+            return {"user": u, "claude": len(items) - u}
+
         record = {
             "timestamp": datetime.now().isoformat(timespec="seconds"),
             "counts": {"recategorized": len(recats), "rescued_from_skip": len(rescued),
                        "dropped_as_dup_or_unwanted": len(dropped), "field_edits": len(edits)},
+            "by": {"recategorized": _split(recats), "rescued_from_skip": _split(rescued),
+                   "dropped_as_dup_or_unwanted": _split(dropped), "field_edits": _split(edits)},
             "recategorized": recats, "rescued_from_skip": rescued,
             "dropped": dropped, "field_edits": edits,
         }
         with open(REVIEW_CORRECTIONS_LOG, "a", encoding="utf-8") as f:
             f.write(json.dumps(record, ensure_ascii=False) + "\n")
         c = record["counts"]
+        # Only the user-tagged corrections should be read as human patterns to
+        # fold back into the rules — Claude's own edits are already automated.
+        def _u(items):
+            return sum(1 for x in items if x.get("by") == "user")
         print(f"\nReview corrections logged to {REVIEW_CORRECTIONS_LOG}: "
               f"{c['recategorized']} recategorized, {c['rescued_from_skip']} rescued from skip, "
-              f"{c['dropped_as_dup_or_unwanted']} dropped, {c['field_edits']} field edits.")
+              f"{c['dropped_as_dup_or_unwanted']} dropped, {c['field_edits']} field edits "
+              f"(of these, user: {_u(recats)}/{_u(rescued)}/{_u(dropped)}/{_u(edits)}, "
+              f"rest by Claude).")
     except Exception as ex:
         print(f"  (review-corrections logging skipped: {ex})")
 
@@ -1585,11 +1666,16 @@ def find_existing_event_to_replace(title, date_str, location, time_str, cal_id, 
     return None
 
 
-def compute_event_refresh(existing_event, new_url, new_cost, new_tags_str, source):
+def compute_event_refresh(existing_event, new_url, new_cost, new_tags_str, source, new_location=""):
     """Compare an existing calendar event's stored facets against freshly
-    scraped data and return (needs_update, new_description, new_extended_properties)
+    scraped data and return
+    (needs_update, new_description, new_extended_properties, new_location)
     — only ever filling in NEW non-empty data, never blanking out a field the
-    new scrape didn't have a value for."""
+    new scrape didn't have a value for. new_location is only returned (non-None)
+    when the existing event has NO location and the new scrape supplies one —
+    e.g. re-running a scraper after fixing its venue extraction backfills the
+    address onto events added while it was broken; it never overwrites a venue
+    the event already has (scraped location strings vary too much to churn on)."""
     existing_desc = existing_event.get("description", "")
     existing_url = parse_url_from_description(existing_desc)
     existing_cost = parse_cost_from_description(existing_desc)
@@ -1606,12 +1692,17 @@ def compute_event_refresh(existing_event, new_url, new_cost, new_tags_str, sourc
     cost_changed = bool(final_cost) and final_cost != existing_cost
     tags_changed = set(final_tags) != set(existing_tags)
 
-    if not (url_changed or cost_changed or tags_changed):
-        return False, None, None
+    # Backfill location only when the existing event lacks one entirely.
+    location_to_set = None
+    if (new_location or "").strip() and not (existing_event.get("location") or "").strip():
+        location_to_set = new_location.strip()
+
+    if not (url_changed or cost_changed or tags_changed or location_to_set):
+        return False, None, None, None
 
     new_description = build_description(final_cost, final_url, "", ",".join(final_tags))
     new_extended_properties = build_extended_properties(final_cost, ",".join(final_tags), source)
-    return True, new_description, new_extended_properties
+    return True, new_description, new_extended_properties, location_to_set
 
 
 def load_blocklist():
@@ -2322,9 +2413,10 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
         # read-only calendar — skip the incoming row, but never try to patch them.
         if match.get("_dedup_only"):
             continue
-        resolved_url, _ = resolve_event_url(url, get(row, "Location", "location", "Venue", "venue"))
-        needs_update, new_desc, new_ext_props = compute_event_refresh(
-            match, resolved_url, cost, tags, source
+        row_location = get(row, "Location", "location", "Venue", "venue")
+        resolved_url, _ = resolve_event_url(url, row_location)
+        needs_update, new_desc, new_ext_props, new_location = compute_event_refresh(
+            match, resolved_url, cost, tags, source, row_location
         )
         if needs_update:
             pending_updates.append({
@@ -2334,6 +2426,7 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
                 "title": match.get("summary", title),
                 "description": new_desc,
                 "extendedProperties": new_ext_props,
+                "location": new_location,  # None unless backfilling a missing venue
                 "old_url": parse_url_from_description(match.get("description", "")),
                 "new_url": parse_url_from_description(new_desc),
             })
@@ -2647,13 +2740,16 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
     updated, update_errors = [], []
     for u in pending_updates:
         try:
+            patch_body = {
+                "description": u["description"],
+                "extendedProperties": u["extendedProperties"],
+            }
+            if u.get("location"):
+                patch_body["location"] = u["location"]
             service.events().patch(
                 calendarId=u["cal_id"],
                 eventId=u["event_id"],
-                body={
-                    "description": u["description"],
-                    "extendedProperties": u["extendedProperties"],
-                },
+                body=patch_body,
                 sendUpdates="none",
             ).execute()
             updated.append(u)
@@ -2686,6 +2782,8 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
         for u in updated:
             print(f"  {u['cal_name']:<30}  {u['title']}")
             print(f"      url: {u['old_url']!r} -> {u['new_url']!r}")
+            if u.get("location"):
+                print(f"      location (backfilled): {u['location']!r}")
 
     if errors or replace_errors or update_errors:
         print("\n-- Errors --")

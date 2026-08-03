@@ -920,5 +920,23 @@
     "day": "TU",
     "time": "18:00",
     "calendar": "Trivia Nights - Further Out"
+  },
+  {
+    "venue": "Overlook Taproom",
+    "company": "Double Mountain",
+    "address": "1700 N Killingsworth St, Portland, OR 97217",
+    "company_url": "https://doublemountainbrewery.com",
+    "time": "19:00",
+    "calendar": "Trivia Nights - N/NE",
+    "day": "MO"
+  },
+  {
+    "venue": "Woodstock Taproom",
+    "company": "Double Mountain",
+    "address": "4336 SE Woodstock Blvd, Portland, OR 97206",
+    "company_url": "https://doublemountainbrewery.com",
+    "time": "19:00",
+    "calendar": "Trivia Nights - SE",
+    "day": "TU"
   }
 ]

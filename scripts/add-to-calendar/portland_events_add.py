@@ -86,6 +86,81 @@ def is_redundant_trivia(title):
     return "trivia" in title_l and any(c in title_l for c in KNOWN_TRIVIA_COMPANIES)
 
 
+# ── Trivia routing ───────────────────────────────────────────────────────────
+# Trivia that trivia_generate.py doesn't already cover still comes in from the
+# general scrapers. Rather than dropping it or leaving it on Portland Events, we
+# route it to the neighborhood's Trivia Nights calendar; dedup then drops any
+# that duplicate a recurring event (venue already on the schedule), while trivia
+# at an as-yet-unscheduled venue lands on the trivia calendar as a real event.
+_TRIVIA_TITLE_RE = re.compile(r"\btrivia\b|\bpub quiz\b|\bquizzo\b", re.I)
+
+_TRIVIA_SE = "Trivia Nights - SE"
+_TRIVIA_NNE = "Trivia Nights - N/NE"
+_TRIVIA_NWSW = "Trivia Nights - NW/SW"
+_TRIVIA_FURTHER = "Trivia Nights - Further Out"
+
+# Neighborhood / suburb keyword → trivia calendar. Portland quadrants collapse to
+# the four calendars (SE; N+NE → N/NE; NW+SW+S+Downtown → NW/SW; suburbs → Further).
+_TRIVIA_HOODS = {
+    "woodstock": _TRIVIA_SE, "sellwood": _TRIVIA_SE, "montavilla": _TRIVIA_SE,
+    "hawthorne": _TRIVIA_SE, "belmont": _TRIVIA_SE, "foster": _TRIVIA_SE,
+    "powell": _TRIVIA_SE, "brooklyn": _TRIVIA_SE, "buckman": _TRIVIA_SE,
+    "richmond": _TRIVIA_SE, "clinton": _TRIVIA_SE, "lents": _TRIVIA_SE,
+    "creston": _TRIVIA_SE, "mt tabor": _TRIVIA_SE, "mount tabor": _TRIVIA_SE,
+    "overlook": _TRIVIA_NNE, "kenton": _TRIVIA_NNE, "st johns": _TRIVIA_NNE,
+    "st. johns": _TRIVIA_NNE, "arbor lodge": _TRIVIA_NNE, "humboldt": _TRIVIA_NNE,
+    "alberta": _TRIVIA_NNE, "concordia": _TRIVIA_NNE, "hollywood": _TRIVIA_NNE,
+    "cully": _TRIVIA_NNE, "boise": _TRIVIA_NNE, "mississippi": _TRIVIA_NNE,
+    "williams": _TRIVIA_NNE, "vernon": _TRIVIA_NNE, "woodlawn": _TRIVIA_NNE,
+    "piedmont": _TRIVIA_NNE, "fremont": _TRIVIA_NNE, "irvington": _TRIVIA_NNE,
+    "sabin": _TRIVIA_NNE,
+    "downtown": _TRIVIA_NWSW, "pearl": _TRIVIA_NWSW, "nob hill": _TRIVIA_NWSW,
+    "slabtown": _TRIVIA_NWSW, "goose hollow": _TRIVIA_NWSW, "hillsdale": _TRIVIA_NWSW,
+    "multnomah village": _TRIVIA_NWSW, "burlingame": _TRIVIA_NWSW,
+    "johns landing": _TRIVIA_NWSW,
+    "beaverton": _TRIVIA_FURTHER, "hillsboro": _TRIVIA_FURTHER, "tigard": _TRIVIA_FURTHER,
+    "gresham": _TRIVIA_FURTHER, "troutdale": _TRIVIA_FURTHER, "oregon city": _TRIVIA_FURTHER,
+    "milwaukie": _TRIVIA_FURTHER, "tualatin": _TRIVIA_FURTHER, "lake oswego": _TRIVIA_FURTHER,
+    "west linn": _TRIVIA_FURTHER, "wilsonville": _TRIVIA_FURTHER, "mcminnville": _TRIVIA_FURTHER,
+    "vancouver": _TRIVIA_FURTHER, "canby": _TRIVIA_FURTHER, "sherwood": _TRIVIA_FURTHER,
+    "forest grove": _TRIVIA_FURTHER, "aloha": _TRIVIA_FURTHER, "happy valley": _TRIVIA_FURTHER,
+    "clackamas": _TRIVIA_FURTHER, "sandy": _TRIVIA_FURTHER,
+}
+
+
+def is_trivia_title(title):
+    return bool(_TRIVIA_TITLE_RE.search(title or ""))
+
+
+def route_trivia(title, location):
+    """Return the Trivia Nights calendar for a scraped trivia event, or '' when
+    the neighborhood can't be determined (leave it blank for manual review).
+    Checks an explicit quadrant in the text ("…in NE Portland…"), then the venue
+    address's directional token ("1700 N Killingsworth"), then a neighborhood or
+    suburb keyword, then any non-Portland city."""
+    tl = f"{title} {location}".lower()
+    m = re.search(r"\b(ne|nw|se|sw|n|s)\s+portland\b", tl)
+    if not m:
+        m = re.search(r"\b(ne|nw|se|sw)\b(?=\s+[a-z0-9])", tl) or re.search(r"\b(n|s)\b(?=\s+[a-z0-9])", tl)
+    if m:
+        q = m.group(1)
+        if q == "se":              return _TRIVIA_SE
+        if q in ("ne", "n"):       return _TRIVIA_NNE
+        if q in ("nw", "sw", "s"): return _TRIVIA_NWSW
+    for hood, cal in _TRIVIA_HOODS.items():
+        if hood in tl:
+            return cal
+    if "portland" not in tl and re.search(r",\s*or\b|\boregon\b|\bwashington\b", tl):
+        return _TRIVIA_FURTHER
+    return ""
+
+
+# Portland's Ace Hotel (1022 SW Stark) closed in 2021, so every "Ace Hotel"
+# event a scraper surfaces is in another city — drop them before Categorize.
+def is_non_portland_ace(title, location):
+    return "ace hotel" in f"{title} {location}".lower()
+
+
 # Imported, read-only calendar of Shift / Pedalpalooza bike rides. This script
 # never writes it, but its events are folded into the Portland Events dedup set
 # so bike rides already listed here don't get re-added as new Events events.
@@ -2270,6 +2345,14 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
     if before != len(rows):
         print(f"  Dropped {before - len(rows)} unwanted recurring listing(s) (see KNOWN_DROP_PATTERNS)")
 
+    # Drop "Ace Hotel" events — Portland's Ace closed in 2021, so they're all
+    # in other cities.
+    before = len(rows)
+    rows = [r for r in rows if not is_non_portland_ace(
+        get(r, "Title", "title", "summary"), get(r, "Location", "location", "Venue", "venue"))]
+    if before != len(rows):
+        print(f"  Dropped {before - len(rows)} non-Portland Ace Hotel event(s)")
+
     # Drop bike rides — covered by the imported Pedalpalooza calendar.
     before = len(rows)
     rows = [r for r in rows if not is_bike_ride(
@@ -2320,7 +2403,7 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
     # determined. Non-empty = rule-based and safe to skip in the AI-assisted
     # Categorize pass; blank = a generic source's guess that needs judgment.
     comedy_fixed = karaoke_fixed = dance_fixed = venue_comedy_fixed = venue_nonmusic_fixed = 0
-    source_trusted = 0
+    source_trusted = trivia_routed = 0
     for row in rows:
         title_l = get(row, "Title", "title", "summary").lower()
         location_l = get(row, "Location", "location", "Venue", "venue").lower()
@@ -2353,6 +2436,20 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
                 row["_assigned_by"] = "keyword: dance party"
                 dance_fixed += 1
 
+        # Trivia → the neighborhood's Trivia Nights calendar (dedup then drops
+        # any that duplicate a recurring trivia_generate.py event; trivia at an
+        # unscheduled venue lands as a real event). Known-company trivia was
+        # already dropped upstream. A trivia title whose neighborhood can't be
+        # resolved stays put and blank so it surfaces for manual review.
+        current = row.get("Calendar", "")
+        if not row["_assigned_by"] and current in ("Portland Events", "Portland Live Music") \
+                and is_trivia_title(title_l):
+            tcal = route_trivia(title_l, location_l)
+            if tcal:
+                row["Calendar"] = tcal
+                row["_assigned_by"] = "trivia: neighborhood"
+                trivia_routed += 1
+
         # Venue overrides apply after title-keyword detection, since a known
         # venue's identity is a stronger signal than a generic title match.
         current = row.get("Calendar", "")
@@ -2372,6 +2469,8 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
         print(f"  Auto-detected {comedy_fixed} comedy events -> Portland Comedy")
     if karaoke_fixed:
         print(f"  Auto-detected {karaoke_fixed} karaoke events -> Portland Karaoke")
+    if trivia_routed:
+        print(f"  Routed {trivia_routed} trivia event(s) -> Trivia Nights calendars")
     if dance_fixed:
         print(f"  Auto-detected {dance_fixed} dance-party events -> Portland Events")
     if venue_comedy_fixed:

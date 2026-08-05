@@ -189,7 +189,7 @@ Notes:
 
 ---
 
-## Step 4 — Render to a 1080×1080 PNG
+## Step 4 — Render to a 1080×1080 PNG (main grid)
 
 Use Playwright (already installed for the scrapers) to screenshot the `.post` div:
 
@@ -217,6 +217,64 @@ print("wrote", OUT)
 
 `device_scale_factor=2` yields a crisp 2160×2160 (Instagram downscales nicely);
 use `1` for an exact 1080×1080. Open the PNG to eyeball it before posting.
+
+---
+
+## Step 4b — Event detail cards (required for every post)
+
+**Always build event cards — do not wait to be asked.** Every post (both EOTW and
+PYW) ships with a set of individual event detail cards for the carousel. Do this
+immediately after Step 4, before writing the caption.
+
+Create `instagram/event_cards_<dates>.html` alongside the main grid HTML. One card
+per `.post` block, rendered by screenshotting each `.post` into `event_cards_<dates>/card_NN.png`.
+
+**Card layout** — adapt based on post type:
+
+*Events of the Week* — one card per **day** (7 cards), each showing the Day + Night
+event pair stacked vertically. Use `.events-pair` with two `.event-tile` blocks.
+Canvas and accent match the post theme. Title: "Events of the **Week**".
+
+*Plan Your Weekend* — one card per **event** (one per row in the main grid). Each
+card has a single full-height `.event-tile` — no `.events-pair` wrapper. Bigger
+font sizes than the EOTW cards (`.event-name` ~52px, `.description` ~28px) since
+the tile has the full card height to itself. Canvas and accent match the post theme.
+Title: "Plan Your **Weekend**".
+
+Both card types share the same header/footer structure as the EOTW template. Copy
+the CSS from the most recent `event_cards_*.html` and adjust theme colors.
+
+**Day badge:**
+- Single day → `<div class="day-header"><span class="day-name">Saturday</span><span class="day-num">1</span></div>`
+- Multi-day / all-weekend → `<div class="day-header"><span class="day-name">Thu – Sun</span></div>` (no `.day-num`)
+
+**Descriptions** — write 2–4 sentences per event in the account voice (friendly,
+local, in-the-know). Avoid repeating the tile-meta facts verbatim; add flavor,
+context, or "why go." Keep them to what fits at the font size — eyeball after render.
+
+**Reuse descriptions across posts:** If an event already appeared in a card earlier
+the same week (e.g. an event is in both the EOTW cards and the PYW cards), copy the
+description **verbatim** from the earlier card — do not rewrite it. Check the
+matching `event_cards_*.html` file for the exact text before writing anything new.
+
+**Render script** — write to scratchpad as `render_cards_<dates>.py`:
+```python
+from playwright.sync_api import sync_playwright
+import os
+html = r'C:\Users\nai19\Documents\GitHub\ianrosado.com\instagram\event_cards_<dates>.html'
+out  = r'C:\Users\nai19\Documents\GitHub\ianrosado.com\instagram\event_cards_<dates>'
+os.makedirs(out, exist_ok=True)
+with sync_playwright() as p:
+    browser = p.chromium.launch()
+    page = browser.new_page(viewport={'width': 1200, 'height': 1200})
+    page.goto('file:///' + html.replace('\\', '/'))
+    page.wait_for_load_state('networkidle')
+    page.wait_for_timeout(800)
+    for i, el in enumerate(page.query_selector_all('.post')):
+        el.screenshot(path=os.path.join(out, f'card_{i+1:02d}.png'))
+    browser.close()
+print('wrote', len(os.listdir(out)), 'cards to', out)
+```
 
 ---
 
@@ -269,7 +327,10 @@ Rules for the whole list:
 
 ## Output files
 
-- HTML:  `instagram/plan_your_weekend_<dates>.html` / `portland_events_week_<dates>.html`
-- PNG:   same name, `.png`
+- Main grid HTML:  `instagram/plan_your_weekend_<dates>.html` / `portland_events_week_<dates>.html`
+- Main grid PNG:   same name, `.png`
+- Event cards HTML: `instagram/event_cards_<dates>.html`
+- Event card PNGs:  `instagram/event_cards_<dates>/card_01.png` … `card_NN.png`
 
-Keep both — the HTML is the editable source if the user wants tweaks.
+Keep the HTML files — they are the editable source for tweaks. PNGs are gitignored
+(recent convention); only the HTML files are committed.

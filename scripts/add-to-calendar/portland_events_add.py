@@ -2942,12 +2942,32 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
         event_body, cal_name, new_cal_id, date_str = build_calendar_event_body(e)
         title = event_body["summary"]
         old_summary = old_ev.get("summary", "")
+        # A venue+time-overlap replace targets the SAME slot, so when the
+        # replacement has no clock time (all-day body) but the event we're
+        # replacing was timed, inherit the existing start/end time rather than
+        # flipping the slot to all-day (and losing the real time).
+        if old_ev.get("start", {}).get("dateTime") and "date" in event_body["start"]:
+            event_body["start"] = dict(old_ev["start"])
+            event_body["end"] = dict(old_ev.get("end") or old_ev["start"])
         try:
             if new_cal_id == old_cal_id:
+                # patch() merges start/end field-by-field, so switching an event
+                # between all-day (date) and timed (dateTime) would leave the
+                # stale key set and the API rejects it ("Invalid start time").
+                # Null out the unused key so patch clears it. (Only for patch —
+                # an insert with null keys would error.)
+                patch_body = dict(event_body)
+                for _k in ("start", "end"):
+                    _t = dict(patch_body.get(_k, {}))
+                    if "date" in _t and "dateTime" not in _t:
+                        _t["dateTime"], _t["timeZone"] = None, None
+                    elif "dateTime" in _t and "date" not in _t:
+                        _t["date"] = None
+                    patch_body[_k] = _t
                 service.events().patch(
                     calendarId=old_cal_id,
                     eventId=old_ev["id"],
-                    body=event_body,
+                    body=patch_body,
                     sendUpdates="none",
                 ).execute()
             else:

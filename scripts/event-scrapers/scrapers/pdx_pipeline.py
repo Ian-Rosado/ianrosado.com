@@ -32,28 +32,42 @@ BASE = "https://www.pdxpipeline.com"
 JUNK_LINK_DOMAINS = (
     "pdxpipeline.com", "facebook.com/sharer", "twitter.com/intent",
     "pinterest.com/pin", "eepurl.com", "wordpress.org", "gravatar.com",
+    "alpenglowagency.com",   # site-builder credit link, in every event's footer
 )
 FAKE_COMMENT_URL_RE = re.compile(r"^https?://[A-Z][a-zA-Z%]*$")
 
 
 def _resolve_real_link(detail_url):
-    """Fetch a pdxpipeline.com event page and return its most-repeated
-    external link, or '' if none found."""
+    """Fetch a pdxpipeline.com event page and return the most-repeated external
+    link found INSIDE the event's content block(s) (div.fl-rich-text), or '' if
+    none. Scoping to the content block is essential: sidebar / featured / promo
+    widgets link a sponsored event (e.g. the Bella Organic sunflower festival)
+    on EVERY event page, so a page-wide "most repeated link" scan picks that up
+    for dozens of unrelated events. If the content has no external link, return
+    '' and keep the pdxpipeline page URL rather than grabbing a wrong one."""
     resp = get_page(detail_url)
     if not resp:
         return ""
     soup = BeautifulSoup(resp.text, "lxml")
     counts = Counter()
-    for a in soup.find_all("a", href=True):
-        href = a["href"]
-        if not href.startswith("http"):
-            continue
-        if any(d in href for d in JUNK_LINK_DOMAINS):
-            continue
-        if FAKE_COMMENT_URL_RE.match(href) or " " in href or "%20" in href:
-            continue
-        counts[href] += 1
-    return counts.most_common(1)[0][0] if counts else ""
+    representative = {}   # normalized key -> an actual href to return
+    for block in soup.select("div.fl-rich-text"):
+        for a in block.find_all("a", href=True):
+            href = a["href"]
+            if not href.startswith("http"):
+                continue
+            if any(d in href for d in JUNK_LINK_DOMAINS):
+                continue
+            if FAKE_COMMENT_URL_RE.match(href) or " " in href or "%20" in href:
+                continue
+            # Fold trailing-slash / query variants together so the real link
+            # (often linked twice — image + text) still wins over one-off junk.
+            key = href.split("?")[0].rstrip("/")
+            counts[key] += 1
+            representative.setdefault(key, href)
+    if not counts:
+        return ""
+    return representative[counts.most_common(1)[0][0]]
 
 # Pages to scrape: /week/ + current and next 2 months
 def _get_urls():

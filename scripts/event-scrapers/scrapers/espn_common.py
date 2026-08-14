@@ -29,7 +29,13 @@ except ImportError:  # pragma: no cover
     requests = None
 
 PACIFIC = dateutil_tz.gettz("America/Los_Angeles")
-UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+# ESPN's site.api anti-bot returns 403 to a User-Agent that claims a specific
+# modern browser (e.g. "…Chrome/124…") without the matching TLS fingerprint, AND
+# to obvious bot UAs containing "scraper". A bare "Mozilla/5.0" (no specific
+# browser/version claim) is served normally — verified 200 vs 403 for both the
+# full fake-Chrome UA and a "…-scraper/1.0" UA. Keep this minimal; do NOT expand
+# it to a full Chrome/Safari string or add "scraper"/"bot" words.
+UA = "Mozilla/5.0"
 # ?fixture=true returns UPCOMING fixtures. Without it, soccer endpoints return
 # only past results (basketball returns the full season either way), so always
 # pass it for consistent upcoming-game coverage across leagues.

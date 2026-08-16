@@ -105,9 +105,24 @@ def _fmt_time(dt_iso):
     return dt.strftime("%I:%M %p").lstrip("0")
 
 
+# Reference links some sources staple onto every event — never the event's own
+# page. Shift bike rides (imported from shift2bikes.org) list an air-quality and
+# a smoke-forecast link BEFORE the real event link, so a naive first-URL pick
+# grabbed iqair.com instead of the ride's own shift2bikes page.
+_BOILERPLATE_URL_HOST = re.compile(r"\b(?:iqair\.com|firesmoke\.ca)\b", re.I)
+
+
 def _desc_first_url(desc):
-    m = re.search(r"https?://\S+", desc or "")
-    return re.sub(r"[.,)>'\"]+$", "", m.group(0)) if m else ""
+    urls = [re.sub(r"[.,)>'\"]+$", "", m.group(0))
+            for m in re.finditer(r"https?://\S+", desc or "")]
+    # Drop boilerplate reference links, prefer the event's own shift2bikes.org
+    # page when present (Shift imports list it last), else the first real link,
+    # else fall back to whatever we found.
+    real = [u for u in urls if not _BOILERPLATE_URL_HOST.search(u)]
+    for u in real:
+        if re.search(r"shift2bikes\.org", u, re.I):
+            return u
+    return real[0] if real else (urls[0] if urls else "")
 
 
 def _desc_cost(desc):

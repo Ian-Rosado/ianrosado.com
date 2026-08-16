@@ -101,6 +101,13 @@ function classifyTags(tags: string[]): { genres: string[]; age: string; neighbor
   return { genres, age, neighborhood };
 }
 
+// Reference links some sources staple onto every event — never the event's own
+// page, so they must not win the "source URL" slot. Shift bike rides (imported
+// from shift2bikes.org onto the Pedalpalooza calendar) list an air-quality and a
+// smoke-forecast link BEFORE the real event link, so a naive first-URL pick sent
+// every ride to iqair.com instead of its own shift2bikes event page.
+const BOILERPLATE_URL_HOST = /\b(?:iqair\.com|firesmoke\.ca)\b/i;
+
 // Parse cost + source URL + tags out of the description field.
 // Format written by the add-to-calendar script: "cost\nurl\nTags: a, b, c".
 // Split on real newlines (and <br>) BEFORE collapsing whitespace, so the line
@@ -111,7 +118,7 @@ function parseDescription(desc: string): { cost: string; url: string; tags: stri
     .map(l => stripHtml(l))
     .filter(Boolean);
   let cost = '';
-  let url = '';
+  const urls: string[] = [];
   let tags: string[] = [];
   for (const line of lines) {
     // Tags line: "Tags: a, b, c" — the full facet list, parsed at build time
@@ -122,13 +129,18 @@ function parseDescription(desc: string): { cost: string; url: string; tags: stri
     }
     // Extract any URL from the line (handles "text https://... more text")
     const urlMatch = line.match(/https?:\/\/\S+/);
-    if (urlMatch && !url) {
-      url = urlMatch[0].replace(/[.,)>'"]+$/, ''); // strip trailing punctuation
+    if (urlMatch) {
+      urls.push(urlMatch[0].replace(/[.,)>'"]+$/, '')); // strip trailing punctuation
     } else if (!cost) {
       const c = normalizeCost(line);
       if (c) cost = c;
     }
   }
+  // Pick the source URL: drop boilerplate reference links, prefer the event's
+  // own shift2bikes.org page when present (Shift imports list it last), else the
+  // first real link, else fall back to whatever we found.
+  const realUrls = urls.filter(u => !BOILERPLATE_URL_HOST.test(u));
+  const url = realUrls.find(u => /shift2bikes\.org/i.test(u)) || realUrls[0] || urls[0] || '';
   return { cost, url, tags };
 }
 

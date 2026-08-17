@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<!--
+  EVENT DETAIL CARDS — Plan Your Weekend Aug 7–9 (Green theme)
+
+  Render script:
+    from playwright.sync_api import sync_playwright
+    import os
+    html = r'C:\Users\nai19\Documents\GitHub\ianrosado.com\instagram\event_cards_aug7_9.html'
+    out  = r'C:\Users\nai19\Documents\GitHub\ianrosado.com\instagram\event_cards_aug7_9'
+    os.makedirs(out, exist_ok=True)
+    with sync_playwright() as p:
+        browser = p.chromium.launch()
+        page = browser.new_page(viewport={'width': 1200, 'height': 1200})
+        page.goto('file:///' + html.replace('\\', '/'))
+        page.wait_for_load_state('networkidle')
+        page.wait_for_timeout(800)
+        for i, el in enumerate(page.query_selector_all('.post')):
+            el.screenshot(path=os.path.join(out, f'card_{i+1:02d}.png'))
+        browser.close()
+-->
+<title>Portland Events – Event Detail Cards Aug 7–9</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;900&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #111;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    padding: 24px;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .post {
+    width: 1080px;
+    height: 1080px;
+    background: #0d2b1a;          /* Green canvas */
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .card-header {
+    padding: 32px 48px 16px;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .week-label {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+    margin-bottom: 4px;
+  }
+  .title { font-family: 'DM Serif Display', serif; font-size: 46px; color: #fff; line-height: 1.05; }
+  .title span { color: #5cdc80; }
+  .logo { position: absolute; top: 32px; right: 48px; width: 68px; height: 68px; }
+
+  .divider {
+    height: 3px;
+    margin: 0 48px;
+    background: linear-gradient(90deg, #5cdc80, transparent);
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  .card-body {
+    flex: 1;
+    padding: 24px 40px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    min-height: 0;
+  }
+
+  .day-header {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+  .day-name {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.38);
+  }
+  .day-num {
+    font-size: 52px;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1;
+  }
+
+  .event-tile {
+    border-radius: 18px;
+    padding: 28px 32px 24px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+  }
+  .event-tile.teal   { --accent: #3ecfb0; background: #003d35; }
+  .event-tile.blue   { --accent: #5ca8ff; background: #0a2050; }
+  .event-tile.coral  { --accent: #ff7a5c; background: #5c1a10; }
+  .event-tile.purple { --accent: #b39dff; background: #2d1a5e; }
+  .event-tile.amber  { --accent: #f0a500; background: #7a3d00; }
+  .event-tile.pink   { --accent: #f07ad8; background: #4a1040; }
+
+  .category {
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+  .event-name {
+    font-family: 'DM Serif Display', serif;
+    font-size: 68px;
+    color: #fff;
+    line-height: 1.07;
+    margin-bottom: 22px;
+  }
+  .description {
+    font-size: 44px;
+    font-weight: 400;
+    color: rgba(255,255,255,0.68);
+    line-height: 1.5;
+    flex: 1;
+  }
+  .tile-meta {
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    font-size: 20px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.5);
+  }
+
+  .card-footer {
+    padding: 12px 48px 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  .footer-site, .footer-handle { font-size: 19px; color: rgba(255,255,255,0.38); }
+</style>
+</head>
+<body>
+
+<!-- ─── Card 1 · All Weekend · Elephant Garlic Festival ──────────────── -->
+<div class="post">
+  <div class="card-header">
+    <div class="week-label">This weekend in Portland · AUG 7–9</div>
+    <div class="title">Plan Your <span>Weekend</span></div>
+    <svg class="logo" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="5" width="30" height="26" rx="4" fill="#F28C28"/><rect x="1" y="5" width="30" height="9" rx="4" fill="#d4720e"/><rect x="1" y="10" width="30" height="4" fill="#d4720e"/><rect x="9" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="19.5" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.6"/></svg>
+  </div>
+  <div class="divider"></div>
+  <div class="card-body">
+    <div class="day-header">
+      <span class="day-name">All Weekend</span>
+    </div>
+    <div class="event-tile amber">
+      <div class="category">🧄 Food Festival · Free</div>
+      <div class="event-name">Elephant Garlic Festival</div>
+      <div class="description">The North Plains Elephant Garlic Festival is one of Oregon's most beloved small-town summer traditions — a full weekend of garlic-forward food vendors, cooking demos, live music, carnival rides, and community fun just west of Portland. Elephant garlic is bigger, milder, and sweeter than regular garlic. Worth the short trip!</div>
+      <div class="tile-meta">Jessie Mays Community Hall &amp; Park, North Plains · Fri–Sun Aug 7–9 · Free</div>
+    </div>
+  </div>
+  <div class="card-footer">
+    <span class="footer-site">pdx-events.com</span>
+    <span class="footer-handle">@portland_events_calendar</span>
+  </div>
+</div>
+
+<!-- ─── Card 2 · Fri–Sun · Grand Prix of Portland ────────────────────── -->
+<div class="post">
+  <div class="card-header">
+    <div class="week-label">This weekend in Portland · AUG 7–9</div>
+    <div class="title">Plan Your <span>Weekend</span></div>
+    <svg class="logo" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="5" width="30" height="26" rx="4" fill="#F28C28"/><rect x="1" y="5" width="30" height="9" rx="4" fill="#d4720e"/><rect x="1" y="10" width="30" height="4" fill="#d4720e"/><rect x="9" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="19.5" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.6"/></svg>
+  </div>
+  <div class="divider"></div>
+  <div class="card-body">
+    <div class="day-header">
+      <span class="day-name">Fri–Sun</span><span class="day-num">7–9</span>
+    </div>
+    <div class="event-tile blue">
+      <div class="category">🏎 Racing · From $25</div>
+      <div class="event-name">Grand Prix of Portland</div>
+      <div class="description">Professional motorsports racing returns to Portland International Raceway for a full weekend — practice sessions, qualifying, and race day action. General admission tickets start at $25; single-day and full-weekend passes available. PIR is one of the most scenic road racing venues in the country.</div>
+      <div class="tile-meta">Portland International Raceway · Fri–Sun Aug 7–9 · From $25</div>
+    </div>
+  </div>
+  <div class="card-footer">
+    <span class="footer-site">pdx-events.com</span>
+    <span class="footer-handle">@portland_events_calendar</span>
+  </div>
+</div>
+
+<!-- ─── Card 3 · Fri & Sat · Ghosts of Summer ────────────────────────── -->
+<div class="post">
+  <div class="card-header">
+    <div class="week-label">This weekend in Portland · AUG 7–9</div>
+    <div class="title">Plan Your <span>Weekend</span></div>
+    <svg class="logo" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="5" width="30" height="26" rx="4" fill="#F28C28"/><rect x="1" y="5" width="30" height="9" rx="4" fill="#d4720e"/><rect x="1" y="10" width="30" height="4" fill="#d4720e"/><rect x="9" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="19.5" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.6"/></svg>
+  </div>
+  <div class="divider"></div>
+  <div class="card-body">
+    <div class="day-header">
+      <span class="day-name">Fri &amp; Sat</span><span class="day-num">7–8</span>
+    </div>
+    <div class="event-tile purple">
+      <div class="category">🎵 Halloween in August · From $13</div>
+      <div class="event-name">Ghosts of Summer</div>
+      <div class="description">Two nights of Halloween at the Redd East Event Space, one of Portland's best outdoor-capable venues. Single-night tickets from $13; two-day passes available.</div>
+      <div class="tile-meta">Redd East Event Space · Fri–Sat Aug 7–8 · From $13</div>
+    </div>
+  </div>
+  <div class="card-footer">
+    <span class="footer-site">pdx-events.com</span>
+    <span class="footer-handle">@portland_events_calendar</span>
+  </div>
+</div>
+
+<!-- ─── Card 4 · Fri & Sat · Oregon City Porchfest ───────────────────── -->
+<div class="post">
+  <div class="card-header">
+    <div class="week-label">This weekend in Portland · AUG 7–9</div>
+    <div class="title">Plan Your <span>Weekend</span></div>
+    <svg class="logo" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="5" width="30" height="26" rx="4" fill="#F28C28"/><rect x="1" y="5" width="30" height="9" rx="4" fill="#d4720e"/><rect x="1" y="10" width="30" height="4" fill="#d4720e"/><rect x="9" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="19.5" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.6"/></svg>
+  </div>
+  <div class="divider"></div>
+  <div class="card-body">
+    <div class="day-header">
+      <span class="day-name">Fri &amp; Sat</span><span class="day-num">7–8</span>
+    </div>
+    <div class="event-tile coral">
+      <div class="category">🎵 Live Music · Free</div>
+      <div class="event-name">Oregon City Porchfest</div>
+      <div class="description">Over 85 musicians and performers take over porches, driveways, and historic venues across Oregon City's McLoughlin Neighborhood — one of the oldest planned communities in the Pacific Northwest. Grab a map, pick a route, and discover something wonderful around every corner. Totally free, all ages, and a genuinely charming way to spend a summer afternoon.</div>
+      <div class="tile-meta">Historic McLoughlin Neighborhood, Oregon City · Fri–Sat Aug 7–8 · Free</div>
+    </div>
+  </div>
+  <div class="card-footer">
+    <span class="footer-site">pdx-events.com</span>
+    <span class="footer-handle">@portland_events_calendar</span>
+  </div>
+</div>
+
+<!-- ─── Card 5 · Sat Aug 8 · WNBR Portland ───────────────────────────── -->
+<div class="post">
+  <div class="card-header">
+    <div class="week-label">This weekend in Portland · AUG 7–9</div>
+    <div class="title">Plan Your <span>Weekend</span></div>
+    <svg class="logo" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="5" width="30" height="26" rx="4" fill="#F28C28"/><rect x="1" y="5" width="30" height="9" rx="4" fill="#d4720e"/><rect x="1" y="10" width="30" height="4" fill="#d4720e"/><rect x="9" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="19.5" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.6"/></svg>
+  </div>
+  <div class="divider"></div>
+  <div class="card-body">
+    <div class="day-header">
+      <span class="day-name">Saturday</span><span class="day-num">8</span>
+    </div>
+    <div class="event-tile teal">
+      <div class="category">🚲 Protest Ride · Free</div>
+      <div class="event-name">WNBR Portland</div>
+      <div class="description">Annual clothing-optional bicycle protest advocates for cyclist safety, car-free streets, and environmental awareness. This ride is a separate event from the @pdxwnbr World Naked Bike Ride — different organizers, different route, same spirit of cycling freedom. Meet up, suit (or not suit) up, and ride. Free to join.</div>
+      <div class="tile-meta">Portland · Sat Aug 8 · 5 PM · Free</div>
+    </div>
+  </div>
+  <div class="card-footer">
+    <span class="footer-site">pdx-events.com</span>
+    <span class="footer-handle">@portland_events_calendar</span>
+  </div>
+</div>
+
+<!-- ─── Card 6 · Sat Aug 8 · Flow Hangout in the Park ────────────────── -->
+<div class="post">
+  <div class="card-header">
+    <div class="week-label">This weekend in Portland · AUG 7–9</div>
+    <div class="title">Plan Your <span>Weekend</span></div>
+    <svg class="logo" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="5" width="30" height="26" rx="4" fill="#F28C28"/><rect x="1" y="5" width="30" height="9" rx="4" fill="#d4720e"/><rect x="1" y="10" width="30" height="4" fill="#d4720e"/><rect x="9" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="19.5" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.6"/></svg>
+  </div>
+  <div class="divider"></div>
+  <div class="card-body">
+    <div class="day-header">
+      <span class="day-name">Saturday</span><span class="day-num">8</span>
+    </div>
+    <div class="event-tile coral">
+      <div class="category">🌀 Flow Arts · Free</div>
+      <div class="event-name">Flow Hangout in the Park</div>
+      <div class="description">Portland Flowmies are taking over Tom McCall Waterfront Park for an evening of flow arts, music, and community. The night opens with a Glowstar Tutorial, then four live DJ sets from 6 to 9 PM, a snack potluck, and ice breakers. All styles and levels of flow welcome — bring your props, your snacks, and your best fit (there'll be drone footage). Sober event, all ages, totally free.</div>
+      <div class="tile-meta">Tom McCall Waterfront Park · Sat Aug 8 · 6–9 PM · Free</div>
+    </div>
+  </div>
+  <div class="card-footer">
+    <span class="footer-site">pdx-events.com</span>
+    <span class="footer-handle">@portland_events_calendar</span>
+  </div>
+</div>
+
+<!-- ─── Card 7 · Sat Aug 8 · CatVideoFest 2026 ───────────────────────── -->
+<div class="post">
+  <div class="card-header">
+    <div class="week-label">This weekend in Portland · AUG 7–9</div>
+    <div class="title">Plan Your <span>Weekend</span></div>
+    <svg class="logo" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="5" width="30" height="26" rx="4" fill="#F28C28"/><rect x="1" y="5" width="30" height="9" rx="4" fill="#d4720e"/><rect x="1" y="10" width="30" height="4" fill="#d4720e"/><rect x="9" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="19.5" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.6"/></svg>
+  </div>
+  <div class="divider"></div>
+  <div class="card-body">
+    <div class="day-header">
+      <span class="day-name">Saturday</span><span class="day-num">8</span>
+    </div>
+    <div class="event-tile pink">
+      <div class="category">🐱 Film Festival</div>
+      <div class="event-name">CatVideoFest 2026</div>
+      <div class="description">The world's most beloved cat video film festival returns to Portland, screening the best cat content from creators around the globe. CatVideoFest has screened in over 700 cities worldwide — it's silly, it's heartwarming, and it's genuinely one of the most joyful evenings you'll spend in a movie theater all year. Tickets through PAM CUT's Tomorrow Theater on SE Division.</div>
+      <div class="tile-meta">Tomorrow Theater (PAM CUT) · 3530 SE Division · Sat Aug 8 · 7 PM · $15</div>
+    </div>
+  </div>
+  <div class="card-footer">
+    <span class="footer-site">pdx-events.com</span>
+    <span class="footer-handle">@portland_events_calendar</span>
+  </div>
+</div>
+
+<!-- ─── Card 7 · Sun Aug 9 · Washington Park Summer Fest ─────────────── -->
+<div class="post">
+  <div class="card-header">
+    <div class="week-label">This weekend in Portland · AUG 7–9</div>
+    <div class="title">Plan Your <span>Weekend</span></div>
+    <svg class="logo" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="5" width="30" height="26" rx="4" fill="#F28C28"/><rect x="1" y="5" width="30" height="9" rx="4" fill="#d4720e"/><rect x="1" y="10" width="30" height="4" fill="#d4720e"/><rect x="9" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="19.5" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.6"/></svg>
+  </div>
+  <div class="divider"></div>
+  <div class="card-body">
+    <div class="day-header">
+      <span class="day-name">Sunday</span><span class="day-num">9</span>
+    </div>
+    <div class="event-tile amber">
+      <div class="category">🌙 Free Concert · Free</div>
+      <div class="event-name">Wash. Park Summer Fest</div>
+      <div class="description">The Washington Park Summer Festival closes out the season with an evening of original soul music featuring Portland legend Ural Thomas and the Pain at the Rose Garden Amphitheater. Ural Thomas, in his 80s and still performing, is a Portland treasure — a founding figure of the city's soul scene who has earned national recognition. Free outdoor concert under summer skies.</div>
+      <div class="tile-meta">Washington Park – Rose Garden Amphitheater · Sun Aug 9 · 6 PM · Free</div>
+    </div>
+  </div>
+  <div class="card-footer">
+    <span class="footer-site">pdx-events.com</span>
+    <span class="footer-handle">@portland_events_calendar</span>
+  </div>
+</div>
+
+</body>
+</html>

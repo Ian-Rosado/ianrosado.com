@@ -2,7 +2,26 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Portland Events – Events of the Week Aug 3–9</title>
+<!--
+  EVENTS OF THE WEEK — Aug 10–16, 2026 (Teal theme #2)
+
+  Render script:
+    from playwright.sync_api import sync_playwright
+    import os
+    html = r'C:\Users\nai19\Documents\GitHub\ianrosado.com\instagram\portland_events_week_aug10_16.html'
+    out  = html.replace('.html', '.png')
+    with sync_playwright() as p:
+        browser = p.chromium.launch()
+        page = browser.new_page(viewport={'width': 1200, 'height': 1200})
+        page.goto('file:///' + html.replace('\\', '/'))
+        page.wait_for_load_state('networkidle')
+        page.wait_for_timeout(800)
+        el = page.query_selector('.post')
+        el.screenshot(path=out)
+        browser.close()
+    print('wrote', out)
+-->
+<title>Portland Events – Events of the Week Aug 10–16</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;900&family=DM+Serif+Display&display=swap" rel="stylesheet">
 <style>
@@ -18,7 +37,7 @@
   .post {
     width: 1080px;
     height: 1080px;
-    background: #20260a;          /* <<THEME>> Lime canvas */
+    background: #062a2a;          /* <<THEME>> Teal canvas */
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
@@ -33,7 +52,7 @@
     font-weight: 700;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: #c4dd5e;              /* <<THEME>> Lime accent */
+    color: #3ecfb0;              /* <<THEME>> Teal accent */
     margin-bottom: 4px;
   }
   .title {
@@ -42,7 +61,7 @@
     color: #fff;
     line-height: 1.05;
   }
-  .title span { color: #c4dd5e; }  /* <<THEME>> Lime accent */
+  .title span { color: #3ecfb0; }  /* <<THEME>> Teal accent */
   .logo {
     position: absolute;
     top: 36px;
@@ -53,7 +72,7 @@
   .divider {
     height: 3px;
     margin: 0 48px;
-    background: linear-gradient(90deg, #c4dd5e, #5cdc80, #3ecfb0, transparent);  /* <<THEME>> Lime gradient */
+    background: linear-gradient(90deg, #3ecfb0, #5ca8ff, #8a9bff, transparent);  /* <<THEME>> Teal gradient */
     border-radius: 2px;
     flex-shrink: 0;
   }
@@ -132,6 +151,19 @@
     color: #fff;
     line-height: 1.2;
   }
+  /* dual-event Sunday tile */
+  .tile.dual {
+    justify-content: space-around;
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+  .tile.dual .tile-name { font-size: 22px; margin-bottom: 2px; }
+  .tile.dual .tile-meta { font-size: 15px; }
+  .tile.dual .dual-divider {
+    height: 1px;
+    background: rgba(255,255,255,0.15);
+    margin: 0 -4px;
+  }
   .green  { background: #0a3520; }
   .teal   { background: #003d35; }
   .blue   { background: #0a2050; }
@@ -147,7 +179,7 @@
     flex-shrink: 0;
   }
   .footer-cta { font-size: 22px; color: rgba(255,255,255,0.5); line-height: 1.5; }
-  .footer-cta strong { color: #c4dd5e; display: block; font-size: 26px; }  /* <<THEME>> Lime accent */
+  .footer-cta strong { color: #3ecfb0; display: block; font-size: 26px; }  /* <<THEME>> Teal accent */
   .footer-handle { font-size: 20px; color: rgba(255,255,255,0.35); }
   .footer-tags { font-size: 20px; color: rgba(255,255,255,0.25); text-align: right; line-height: 1.7; }
 </style>
@@ -155,7 +187,7 @@
 <body>
 <div class="post">
   <div class="header">
-    <div class="week-label">This week in Portland · AUG 3–9</div>
+    <div class="week-label">This week in Portland · AUG 10–16</div>
     <div class="title">Events of the <span>Week</span></div>
     <svg class="logo" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
       <rect x="1" y="5" width="30" height="26" rx="4" fill="#F28C28"/>
@@ -180,94 +212,101 @@
       <div class="col-label night">🌙 Night</div>
     </div>
 
-    <!-- Monday Aug 3 -->
+    <!-- Monday Aug 10 -->
     <div class="row">
-      <div class="day"><span class="day-name">Mon</span><span class="day-num">3</span></div>
-      <div class="tile teal">
-        <div class="tile-name">Mt Tabor Monday</div>
-        <div class="tile-meta">Mt. Tabor Park · 6:30 PM · Free</div>
+      <div class="day"><span class="day-name">Mon</span><span class="day-num">10</span></div>
+      <div class="tile green">
+        <div class="tile-name">Case of the Bone Bandit</div>
+        <div class="tile-meta">Bethany Village Plaza · 10 AM · Free</div>
       </div>
       <div class="tile purple">
-        <div class="tile-name">Moth StorySLAM</div>
-        <div class="tile-meta">Old Church Concert Hall · 8 PM</div>
+        <div class="tile-name">New Stuff Comedy</div>
+        <div class="tile-meta">Al's Den · 7:30 PM</div>
       </div>
     </div>
 
-    <!-- Tuesday Aug 4 -->
+    <!-- Tuesday Aug 11 -->
     <div class="row">
-      <div class="day"><span class="day-name">Tue</span><span class="day-num">4</span></div>
-      <div class="tile blue">
-        <div class="tile-name">Pre-Inflation Tuesday</div>
-        <div class="tile-meta">Sugar Hill · SE Belmont</div>
-      </div>
-      <div class="tile coral">
-        <div class="tile-name">Tuesday Splashdown</div>
-        <div class="tile-meta">Audrey McCall Beach · 5:30 PM · Free</div>
-      </div>
-    </div>
-
-    <!-- Wednesday Aug 5 -->
-    <div class="row">
-      <div class="day"><span class="day-name">Wed</span><span class="day-num">5</span></div>
+      <div class="day"><span class="day-name">Tue</span><span class="day-num">11</span></div>
       <div class="tile amber">
-        <div class="tile-name">OPSFest: Midsommer</div>
-        <div class="tile-meta">Gateway Discovery Park · 11:30 AM · Free</div>
+        <div class="tile-name">PDX Burger Week</div>
+        <div class="tile-meta">Citywide · Aug 10–16 · From $10</div>
+      </div>
+      <div class="tile blue">
+        <div class="tile-name">Puzzled Pint</div>
+        <div class="tile-meta">Solve for location · Tue evening</div>
+      </div>
+    </div>
+
+    <!-- Wednesday Aug 12 -->
+    <div class="row">
+      <div class="day"><span class="day-name">Wed</span><span class="day-num">12</span></div>
+      <div class="tile coral">
+        <div class="tile-name">Morning Music: Mr. Ben</div>
+        <div class="tile-meta">The Heist Food Carts · 10 AM · Free</div>
       </div>
       <div class="tile pink">
-        <div class="tile-name">Society Hotel Rooftop DJ</div>
-        <div class="tile-meta">Society Hotel · 6 PM · Free</div>
+        <div class="tile-name">OMSI Star Party</div>
+        <div class="tile-meta">Rooster Rock · 8 PM</div>
       </div>
     </div>
 
-    <!-- Thursday Aug 6 -->
+    <!-- Thursday Aug 13 -->
     <div class="row">
-      <div class="day"><span class="day-name">Thu</span><span class="day-num">6</span></div>
+      <div class="day"><span class="day-name">Thu</span><span class="day-num">13</span></div>
+      <div class="tile blue">
+        <div class="tile-name">Topaz Farm Storytime</div>
+        <div class="tile-meta">Sauvie Island · 10:30 AM · Free</div>
+      </div>
+      <div class="tile amber">
+        <div class="tile-name">Movie in the Park</div>
+        <div class="tile-meta">Wilshire Park · HtTYD · 7:30 PM · Free</div>
+      </div>
+    </div>
+
+    <!-- Friday Aug 14 -->
+    <div class="row">
+      <div class="day"><span class="day-name">Fri</span><span class="day-num">14</span></div>
       <div class="tile purple">
-        <div class="tile-name">Pick It Up, Portland!</div>
-        <div class="tile-meta">Citywide · 10 AM · Free</div>
+        <div class="tile-name">Rockstar Energy Open</div>
+        <div class="tile-meta">Tom McCall Waterfront · Free</div>
+      </div>
+      <div class="tile green">
+        <div class="tile-name">Ninja Turtle Ride</div>
+        <div class="tile-meta">MixTape Vintage · 5:30 PM · Free</div>
+      </div>
+    </div>
+
+    <!-- Saturday Aug 15 -->
+    <div class="row">
+      <div class="day"><span class="day-name">Sat</span><span class="day-num">15</span></div>
+      <div class="tile pink">
+        <div class="tile-name">Adult Soapbox Derby</div>
+        <div class="tile-meta">Mt. Tabor Park · All Day · Free</div>
+      </div>
+      <div class="tile coral">
+        <div class="tile-name">Rave of Dragons</div>
+        <div class="tile-meta">Nova PDX · 8 PM</div>
+      </div>
+    </div>
+
+    <!-- Sunday Aug 16 -->
+    <div class="row">
+      <div class="day"><span class="day-name">Sun</span><span class="day-num">16</span></div>
+      <div class="tile dual amber">
+        <div>
+          <div class="tile-name">Portland Criterium</div>
+          <div class="tile-meta">North Park Blocks · Free</div>
+        </div>
+        <div class="dual-divider"></div>
+        <div>
+          <div class="tile-name">Party on, Portland!</div>
+          <div class="tile-meta">Holladay Park · 11 AM · Free</div>
+        </div>
       </div>
       <div class="tile blue">
-        <div class="tile-name">First Thursday</div>
-        <div class="tile-meta">Pearl District · All Evening · Free</div>
-      </div>
-    </div>
-
-    <!-- Friday Aug 7 -->
-    <div class="row">
-      <div class="day"><span class="day-name">Fri</span><span class="day-num">7</span></div>
-      <div class="tile coral">
-        <div class="tile-name">Ghosts of Summer</div>
-        <div class="tile-meta">Redd East Event Space · From $13</div>
-      </div>
-      <div class="tile amber">
-        <div class="tile-name">R&amp;B Afterdark Block Party</div>
-        <div class="tile-meta">SE Washington &amp; 7th · 7 PM · Free</div>
-      </div>
-    </div>
-
-    <!-- Saturday Aug 8 -->
-    <div class="row">
-      <div class="day"><span class="day-name">Sat</span><span class="day-num">8</span></div>
-      <div class="tile green">
-        <div class="tile-name">Lloyd Center Funeral</div>
-        <div class="tile-meta">Holladay Park · 1 PM · Free</div>
-      </div>
-      <div class="tile teal">
-        <div class="tile-name">World Naked Bike Ride</div>
-        <div class="tile-meta">Portland · 5 PM · Free</div>
-      </div>
-    </div>
-
-    <!-- Sunday Aug 9 -->
-    <div class="row">
-      <div class="day"><span class="day-name">Sun</span><span class="day-num">9</span></div>
-      <div class="tile pink">
-        <div class="tile-name">Elephant Garlic Festival</div>
-        <div class="tile-meta">North Plains · All Day · Free</div>
-      </div>
-      <div class="tile green">
-        <div class="tile-name">Wash. Park Summer Fest</div>
-        <div class="tile-meta">Washington Park · 6 PM · Free</div>
+        <div class="tile-name">ZooBomB Summer Series</div>
+        <div class="tile-meta">SW 13th &amp; Burnside · 8 PM · Free</div>
       </div>
     </div>
 

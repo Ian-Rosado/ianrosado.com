@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<!--
+  EVENT DETAIL CARDS — Events of the Week Aug 17–23 (Indigo theme #4)
+
+  Render script:
+    from playwright.sync_api import sync_playwright
+    import os
+    html = r'C:\Users\nai19\Documents\GitHub\ianrosado.com\instagram\event_cards_aug17_23.html'
+    out  = r'C:\Users\nai19\Documents\GitHub\ianrosado.com\instagram\event_cards_aug17_23'
+    os.makedirs(out, exist_ok=True)
+    with sync_playwright() as p:
+        browser = p.chromium.launch()
+        page = browser.new_page(viewport={'width': 1200, 'height': 1200})
+        page.goto('file:///' + html.replace('\\', '/'))
+        page.wait_for_load_state('networkidle')
+        page.wait_for_timeout(800)
+        for i, el in enumerate(page.query_selector_all('.post')):
+            el.screenshot(path=os.path.join(out, f'card_{i+1:02d}.png'))
+        browser.close()
+-->
+<title>Portland Events – Event Detail Cards Aug 17–23</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;900&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #111;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    padding: 24px;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .post {
+    width: 1080px;
+    height: 1080px;
+    background: #15163a;    /* Indigo theme */
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .card-header {
+    padding: 32px 48px 16px;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .week-label {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+    margin-bottom: 4px;
+  }
+  .title { font-family: 'DM Serif Display', serif; font-size: 46px; color: #fff; line-height: 1.05; }
+  .title span { color: #8a9bff; }    /* Indigo accent */
+  .logo { position: absolute; top: 32px; right: 48px; width: 68px; height: 68px; }
+
+  .divider {
+    height: 3px;
+    margin: 0 48px;
+    background: linear-gradient(90deg, #8a9bff, transparent);
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  .card-body {
+    flex: 1;
+    padding: 24px 40px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    min-height: 0;
+  }
+
+  .day-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+  .day-name {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.38);
+  }
+  .day-num {
+    font-size: 52px;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1;
+  }
+
+  .events-pair {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    flex: 1;
+    min-height: 0;
+  }
+
+  .event-tile {
+    border-radius: 18px;
+    padding: 22px 28px 20px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+  .event-tile.green  { --accent: #5cdc80;  background: #0a3520; }
+  .event-tile.teal   { --accent: #3ecfb0;  background: #003d35; }
+  .event-tile.blue   { --accent: #5ca8ff;  background: #0a2050; }
+  .event-tile.amber  { --accent: #f0a500;  background: #7a3d00; }
+  .event-tile.coral  { --accent: #ff7a5c;  background: #5c1a10; }
+  .event-tile.purple { --accent: #b39dff;  background: #2d1a5e; }
+  .event-tile.pink   { --accent: #f07ad8;  background: #4a1040; }
+
+  .category {
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .event-name {
+    font-family: 'DM Serif Display', serif;
+    font-size: 42px;
+    color: #fff;
+    line-height: 1.07;
+    margin-bottom: 10px;
+  }
+  .description {
+    font-size: 27px;
+    font-weight: 400;
+    color: rgba(255,255,255,0.68);
+    line-height: 1.5;
+    flex: 1;
+  }
+  .tile-meta {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    font-size: 19px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.5);
+  }
+
+  .card-footer {
+    padding: 12px 48px 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  .footer-site, .footer-handle { font-size: 19px; color: rgba(255,255,255,0.38); }
+</style>
+</head>
+<body>
+
+<!-- ─── Card 1 · Monday Aug 17 ────────────────────────────────────── -->
+<div class="post">
+  <div class="card-header">
+    <div class="week-label">This week in Portland · AUG 17–23</div>
+    <div class="title">Events of the <span>Week</span></div>
+    <svg class="logo" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="5" width="30" height="26" rx="4" fill="#F28C28"/><rect x="1" y="5" width="30" height="9" rx="4" fill="#d4720e"/><rect x="1" y="10" width="30" height="4" fill="#d4720e"/><rect x="9" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="19.5" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.6"/></svg>
+  </div>
+  <div class="divider"></div>
+  <div class="card-body">
+    <div class="day-header">
+      <span class="day-name">Monday</span><span class="day-num">17</span>
+    </div>
+    <div class="events-pair">
+      <div class="event-tile green">
+        <div class="category">☀ Free Community Music · Sellwood Park</div>
+        <div class="event-name">Summer Drum Circle</div>
+        <div class="description">A free community drum circle under the trees at The Shack at Sellwood Park. Bring your own percussion, a blanket, and your best rhythm — or just come to listen and soak up the summer vibes. All ages welcome.</div>
+        <div class="tile-meta">The Shack at Sellwood Park · Mon Aug 17 · 11 AM · Free</div>
+      </div>
+      <div class="event-tile amber">
+        <div class="category">🌙 Free Community Swim · Portland Parks &amp; Rec</div>
+        <div class="event-name">Open Play Swim</div>
+        <div class="description">Portland Parks &amp; Rec opens Creston Pool for free open-play swim on Monday evenings. Cool off in the water without spending a dime — Use our public resources. It helps them get funding going forward too!</div>
+        <div class="tile-meta">Creston Pool · SE 44th &amp; Powell · Mon Aug 17 · 6:30 PM · Free</div>
+      </div>
+    </div>
+  </div>
+  <div class="card-footer">
+    <span class="footer-site">pdx-events.com</span>
+    <span class="footer-handle">@portland_events_calendar</span>
+  </div>
+</div>
+
+<!-- ─── Card 2 · Tuesday Aug 18 ────────────────────────────────────── -->
+<div class="post">
+  <div class="card-header">
+    <div class="week-label">This week in Portland · AUG 17–23</div>
+    <div class="title">Events of the <span>Week</span></div>
+    <svg class="logo" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="5" width="30" height="26" rx="4" fill="#F28C28"/><rect x="1" y="5" width="30" height="9" rx="4" fill="#d4720e"/><rect x="1" y="10" width="30" height="4" fill="#d4720e"/><rect x="9" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="19.5" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.6"/></svg>
+  </div>
+  <div class="divider"></div>
+  <div class="card-body">
+    <div class="day-header">
+      <span class="day-name">Tuesday</span><span class="day-num">18</span>
+    </div>
+    <div class="events-pair">
+      <div class="event-tile coral">
+        <div class="category">☀ Budget Cinema · SE Portland</div>
+        <div class="event-name">Thrifty Tuesday</div>
+        <div class="description">The beloved Portland movie house drops admission to $7 every Tuesday. Catch indie hits and Hollywood classics in a neighborhood theater with a bar and great programming. Most theaters do discounted tickets on Tuesday, check out the one closest to you!</div>
+        <div class="tile-meta">Laurelhurst Theater · Tue Aug 18 · $7 films all day</div>
+      </div>
+      <div class="event-tile purple">
+        <div class="category">🌙 Film Festival · OMSI</div>
+        <div class="event-name">PFCAT Film Festival</div>
+        <div class="description">Portland's Festival of Cinema, Animation &amp; Technology kicks off at OMSI with screenings, short films, and programming exploring the intersection of art, technology, and moving images. A local indie film event worth catching.</div>
+        <div class="tile-meta">OMSI · Tue Aug 18 · 5:30 PM · tickets at pdxfestofcinema.com</div>
+      </div>
+    </div>
+  </div>
+  <div class="card-footer">
+    <span class="footer-site">pdx-events.com</span>
+    <span class="footer-handle">@portland_events_calendar</span>
+  </div>
+</div>
+
+<!-- ─── Card 3 · Wednesday Aug 19 ────────────────────────────────────── -->
+<div class="post">
+  <div class="card-header">
+    <div class="week-label">This week in Portland · AUG 17–23</div>
+    <div class="title">Events of the <span>Week</span></div>
+    <svg class="logo" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="5" width="30" height="26" rx="4" fill="#F28C28"/><rect x="1" y="5" width="30" height="9" rx="4" fill="#d4720e"/><rect x="1" y="10" width="30" height="4" fill="#d4720e"/><rect x="9" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="19.5" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.6"/></svg>
+  </div>
+  <div class="divider"></div>
+  <div class="card-body">
+    <div class="day-header">
+      <span class="day-name">Wednesday</span><span class="day-num">19</span>
+    </div>
+    <div class="events-pair">
+      <div class="event-tile teal">
+        <div class="category">☀ Free Artisan Market · Downtown</div>
+        <div class="event-name">Clay Commons Ceramic Market</div>
+        <div class="description">Clay Commons brings local ceramicists to Director Park in the heart of downtown. Browse handmade cups, bowls, vases, and sculpture from the region's best potters. Free to attend — and a great chance to find your new favorite mug.</div>
+        <div class="tile-meta">Director Park · 815 SW Park Ave · Wed Aug 19 · 11 AM · Free</div>
+      </div>
+      <div class="event-tile pink">
+        <div class="category">🌙 Community Hang · Lloyd District</div>
+        <div class="event-name">Duckworth Wednesdays</div>
+        <div class="description">The Lloyd District's regular Wednesday evening hang — Live music, incredible sunsets, and great vibes. Bring some snacks or bevies and make it an evening.</div>
+        <div class="tile-meta">Lloyd District · Wed Aug 19 · 5:30 PM</div>
+      </div>
+    </div>
+  </div>
+  <div class="card-footer">
+    <span class="footer-site">pdx-events.com</span>
+    <span class="footer-handle">@portland_events_calendar</span>
+  </div>
+</div>
+
+<!-- ─── Card 4 · Thursday Aug 20 ────────────────────────────────────── -->
+<div class="post">
+  <div class="card-header">
+    <div class="week-label">This week in Portland · AUG 17–23</div>
+    <div class="title">Events of the <span>Week</span></div>
+    <svg class="logo" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="5" width="30" height="26" rx="4" fill="#F28C28"/><rect x="1" y="5" width="30" height="9" rx="4" fill="#d4720e"/><rect x="1" y="10" width="30" height="4" fill="#d4720e"/><rect x="9" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="19.5" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.6"/></svg>
+  </div>
+  <div class="divider"></div>
+  <div class="card-body">
+    <div class="day-header">
+      <span class="day-name">Thursday</span><span class="day-num">20</span>
+    </div>
+    <div class="events-pair">
+      <div class="event-tile green">
+        <div class="category">☀ Farm Day · Sauvie Island</div>
+        <div class="event-name">Sunflower U-Pick</div>
+        <div class="description">Bella Organic's annual Sunflower Festival is in full swing on Sauvie Island — u-cut sunflowers by the armful, cow train rides, a full farm store, and wine and cider tasting. An easy 20-minute drive from Portland for a proper summer farm day.</div>
+        <div class="tile-meta">Bella Organic · Sauvie Island · Thu Aug 20 · All Day</div>
+      </div>
+      <div class="event-tile coral">
+        <div class="category">🌙 Free Outdoor Concert · Grant Park</div>
+        <div class="event-name">Concert in the Park: Ants! Ants! Ants!</div>
+        <div class="description">Portland Parks &amp; Rec brings another free summer concert to Grant Park, featuring Ants Ants Ants. Pack a blanket and some snacks and settle in as the evening cools down — Kids' music inspired by the melodies of the 1970s, from The Beatles to Schoolhouse Rock.</div>
+        <div class="tile-meta">Grant Park · NE 33rd Ave · Thu Aug 20 · 6:30 PM · Free</div>
+      </div>
+    </div>
+  </div>
+  <div class="card-footer">
+    <span class="footer-site">pdx-events.com</span>
+    <span class="footer-handle">@portland_events_calendar</span>
+  </div>
+</div>
+
+<!-- ─── Card 5 · Friday Aug 21 ────────────────────────────────────── -->
+<div class="post">
+  <div class="card-header">
+    <div class="week-label">This week in Portland · AUG 17–23</div>
+    <div class="title">Events of the <span>Week</span></div>
+    <svg class="logo" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="5" width="30" height="26" rx="4" fill="#F28C28"/><rect x="1" y="5" width="30" height="9" rx="4" fill="#d4720e"/><rect x="1" y="10" width="30" height="4" fill="#d4720e"/><rect x="9" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="19.5" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.6"/></svg>
+  </div>
+  <div class="divider"></div>
+  <div class="card-body">
+    <div class="day-header">
+      <span class="day-name">Friday</span><span class="day-num">21</span>
+    </div>
+    <div class="events-pair">
+      <div class="event-tile amber">
+        <div class="category">☀ Bike Culture · South Waterfront</div>
+        <div class="event-name">MADE Bike Show</div>
+        <div class="description">Portland's premier handbuilt bicycle showcase returns to Zidell Yards along the South Waterfront. Framebuilders and small manufacturers from across the country display one-of-a-kind road, mountain, and cargo bikes. Runs Fri–Sun. A must for bike nerds.</div>
+        <div class="tile-meta">Zidell Yards · 3121 S Moody Ave · Aug 21–23 · 9 AM–5 PM</div>
+      </div>
+      <div class="event-tile teal">
+        <div class="category">🌙 Free Underground Roller Disco</div>
+        <div class="event-name">Secret Roller Disco</div>
+        <div class="description">Portland's beloved weekly roller disco rotates to a new secret location each time — follow @secretrollerdisco for the Friday reveal. Free to skate, BYOS or rent a pair. Pure Portland weird in the very best way.</div>
+        <div class="tile-meta">Secret location · Fri Aug 21 · 7 PM · Free</div>
+      </div>
+    </div>
+  </div>
+  <div class="card-footer">
+    <span class="footer-site">pdx-events.com</span>
+    <span class="footer-handle">@portland_events_calendar</span>
+  </div>
+</div>
+
+<!-- ─── Card 6 · Saturday Aug 22 ────────────────────────────────────── -->
+<div class="post">
+  <div class="card-header">
+    <div class="week-label">This week in Portland · AUG 17–23</div>
+    <div class="title">Events of the <span>Week</span></div>
+    <svg class="logo" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="5" width="30" height="26" rx="4" fill="#F28C28"/><rect x="1" y="5" width="30" height="9" rx="4" fill="#d4720e"/><rect x="1" y="10" width="30" height="4" fill="#d4720e"/><rect x="9" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="19.5" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.6"/></svg>
+  </div>
+  <div class="divider"></div>
+  <div class="card-body">
+    <div class="day-header">
+      <span class="day-name">Saturday</span><span class="day-num">22</span>
+    </div>
+    <div class="events-pair">
+      <div class="event-tile purple">
+        <div class="category">☀ Free Waterfront Spectacle · N Portland</div>
+        <div class="event-name">Smile Boat Parade</div>
+        <div class="description">Decorated boats parade through North Portland Harbor celebrating community and summer on the water. Grab a spot along the shore at 1611 NE Marine Drive and wave from the bank as the flotilla rolls through. Free and family-friendly.</div>
+        <div class="tile-meta">North Portland Harbor · 1611 NE Marine Dr · Sat Aug 22 · 11 AM · Free</div>
+      </div>
+      <div class="event-tile green">
+        <div class="category">🌙 Free Outdoor Movie · Parks &amp; Rec</div>
+        <div class="event-name">Movie in the Park: Cool Runnings</div>
+        <div class="description">Portland Parks &amp; Rec's Summer Free for All screens Cool Runnings in Sewallcrest Park. The beloved underdog classic about Jamaica's Olympic bobsled team holds up completely. Bring a blanket, your neighbors, and maybe a winter hat for irony.</div>
+        <div class="tile-meta">Sewallcrest Park · Sat Aug 22 · 7:30 PM · Free</div>
+      </div>
+    </div>
+  </div>
+  <div class="card-footer">
+    <span class="footer-site">pdx-events.com</span>
+    <span class="footer-handle">@portland_events_calendar</span>
+  </div>
+</div>
+
+<!-- ─── Card 7 · Sunday Aug 23 ────────────────────────────────────── -->
+<div class="post">
+  <div class="card-header">
+    <div class="week-label">This week in Portland · AUG 17–23</div>
+    <div class="title">Events of the <span>Week</span></div>
+    <svg class="logo" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="5" width="30" height="26" rx="4" fill="#F28C28"/><rect x="1" y="5" width="30" height="9" rx="4" fill="#d4720e"/><rect x="1" y="10" width="30" height="4" fill="#d4720e"/><rect x="9" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="19.5" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.6"/></svg>
+  </div>
+  <div class="divider"></div>
+  <div class="card-body">
+    <div class="day-header">
+      <span class="day-name">Sunday</span><span class="day-num">23</span>
+    </div>
+    <div class="events-pair">
+      <div class="event-tile pink">
+        <div class="category">☀ Free Street Fair · SE Portland</div>
+        <div class="event-name">Hawthorne Street Fair</div>
+        <div class="description">Hawthorne Boulevard transforms into a pedestrian festival of local vendors, food carts, live music, and neighborhood energy. One of Portland's most beloved summer street fairs — free, walkable, and the perfect way to close out the week.</div>
+        <div class="tile-meta">Hawthorne Ave · Portland · Sun Aug 23 · 11 AM · Free</div>
+      </div>
+      <div class="event-tile amber">
+        <div class="category">🌙 Participatory Art Event</div>
+        <div class="event-name">Paint Fight!</div>
+        <div class="description">Speed painting competition at The High Water Mark in Portland. Watch as talented artists create beautiful or quirky pieces in a short time.</div>
+        <div class="tile-meta">The High Water Mark · Portland · Sun Aug 23 · 7 PM</div>
+      </div>
+    </div>
+  </div>
+  <div class="card-footer">
+    <span class="footer-site">pdx-events.com</span>
+    <span class="footer-handle">@portland_events_calendar</span>
+  </div>
+</div>
+
+</body>
+</html>

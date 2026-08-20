@@ -1079,7 +1079,9 @@ def build_calendar_event_body(e):
 
 
 def resolve_calendar(calendar_str):
-    key = calendar_str.strip().lower()
+    # Normalize apostrophes (straight + curly) so "Portland Farmer's Markets"
+    # resolves the same as "Portland Farmers Markets".
+    key = calendar_str.strip().lower().replace("’", "'").replace("'", "")
     canonical = CALENDAR_ALIASES.get(key)
     if not canonical:
         for alias, name in CALENDAR_ALIASES.items():
@@ -2400,6 +2402,16 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
         "dance night", "80s dance", "80's dance", "90s dance", "90's dance",
         "2000s dance", "y2k dance", "00s dance", "00's dance", "decades dance",
     ]
+    # Markets get swept into Live Music by CP / PDX After Dark (which tag
+    # everything "music"). Produce/farmers markets belong on Portland Farmers
+    # Markets; craft/maker/vendor markets belong on Portland Events. Matched
+    # against an apostrophe-normalized title so "Maker's Market" hits.
+    FARMERS_MARKET_KEYWORDS = ["farmers market"]
+    CRAFT_MARKET_KEYWORDS = [
+        "makers market", "craft market", "art market", "vendor market",
+        "flea market", "night market", "holiday market", "vintage market",
+        "pop-up market", "pop up market",
+    ]
     # Venues that are predominantly one thing regardless of how a scraper
     # categorized the listing. Add to these as more come up.
     KNOWN_COMEDY_VENUES = ["helium comedy club"]
@@ -2409,9 +2421,10 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
     # determined. Non-empty = rule-based and safe to skip in the AI-assisted
     # Categorize pass; blank = a generic source's guess that needs judgment.
     comedy_fixed = karaoke_fixed = dance_fixed = venue_comedy_fixed = venue_nonmusic_fixed = 0
-    source_trusted = trivia_routed = 0
+    source_trusted = trivia_routed = market_fixed = 0
     for row in rows:
         title_l = get(row, "Title", "title", "summary").lower()
+        title_market = title_l.replace("’", "").replace("'", "")  # "maker's" -> "makers"
         location_l = get(row, "Location", "location", "Venue", "venue").lower()
         source = get(row, "Source", "source")
         row["_assigned_by"] = ""
@@ -2441,6 +2454,14 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
                 row["Calendar"] = "Portland Events"
                 row["_assigned_by"] = "keyword: dance party"
                 dance_fixed += 1
+            elif any(kw in title_market for kw in FARMERS_MARKET_KEYWORDS):
+                row["Calendar"] = "Portland Farmers Markets"
+                row["_assigned_by"] = "keyword: farmers market"
+                market_fixed += 1
+            elif current == "Portland Live Music" and any(kw in title_market for kw in CRAFT_MARKET_KEYWORDS):
+                row["Calendar"] = "Portland Events"
+                row["_assigned_by"] = "keyword: market"
+                market_fixed += 1
 
         # Trivia → the neighborhood's Trivia Nights calendar (dedup then drops
         # any that duplicate a recurring trivia_generate.py event; trivia at an
@@ -2477,6 +2498,8 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
         print(f"  Auto-detected {karaoke_fixed} karaoke events -> Portland Karaoke")
     if trivia_routed:
         print(f"  Routed {trivia_routed} trivia event(s) -> Trivia Nights calendars")
+    if market_fixed:
+        print(f"  Routed {market_fixed} market event(s) -> Farmers Markets / Events")
     if dance_fixed:
         print(f"  Auto-detected {dance_fixed} dance-party events -> Portland Events")
     if venue_comedy_fixed:

@@ -157,8 +157,13 @@ def route_trivia(title, location):
 
 # Portland's Ace Hotel (1022 SW Stark) closed in 2021, so every "Ace Hotel"
 # event a scraper surfaces is in another city — drop them before Categorize.
-def is_non_portland_ace(title, location):
-    return "ace hotel" in f"{title} {location}".lower()
+# Community Playlist surfaces them with an acehotel.com URL and neither the
+# title nor the location naming the hotel ("Let's Bingo Again", blank venue), so
+# also drop by URL.
+def is_non_portland_ace(title, location, url=""):
+    if "ace hotel" in f"{title} {location}".lower():
+        return True
+    return "acehotel.com" in (url or "").lower()
 
 
 # Imported, read-only calendar of Shift / Pedalpalooza bike rides. This script
@@ -2349,7 +2354,8 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
     # in other cities.
     before = len(rows)
     rows = [r for r in rows if not is_non_portland_ace(
-        get(r, "Title", "title", "summary"), get(r, "Location", "location", "Venue", "venue"))]
+        get(r, "Title", "title", "summary"), get(r, "Location", "location", "Venue", "venue"),
+        get(r, "URL", "url", "link", "Link"))]
     if before != len(rows):
         print(f"  Dropped {before - len(rows)} non-Portland Ace Hotel event(s)")
 

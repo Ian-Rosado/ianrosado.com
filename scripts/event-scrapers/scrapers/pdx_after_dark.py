@@ -98,12 +98,23 @@ def _fetch_event_detail(href):
         return None
     soup = BeautifulSoup(resp.text, "lxml")
 
+    # <title> is "<title…> | Venue | Portland | PDX After Dark". The last two
+    # segments are always "Portland | PDX After Dark", so the venue is the one
+    # before them and the title is everything before the venue. Most events have
+    # 4 segments (Title | Venue | Portland | …), but series like the Old Church
+    # "FREE Lunchtime Concerts" add a performer segment (Title | Performer |
+    # Venue | Portland | …) — taking parts[1] as the venue there dropped the
+    # real venue and put the performer in the location.
     title_tag = soup.title.get_text() if soup.title else ""
-    parts = [p.strip() for p in title_tag.split(" | ")]
-    title = parts[0] if parts else ""
+    parts = [p.strip() for p in title_tag.split(" | ") if p.strip()]
+    if len(parts) >= 4 and parts[-1] == "PDX After Dark" and parts[-2] == "Portland":
+        title = ": ".join(parts[:-3])
+        location = parts[-3]
+    else:
+        title = parts[0] if parts else ""
+        location = parts[1] if len(parts) > 1 else ""
     if not title:
         return None
-    location = parts[1] if len(parts) > 1 else ""
 
     event_link = ""
     for a in soup.find_all("a", href=True):

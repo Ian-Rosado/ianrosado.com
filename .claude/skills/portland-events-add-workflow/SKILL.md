@@ -47,6 +47,49 @@ with steps 1 and 2 (and can spot-check 3). See `portland-events-context` for sha
 
 ---
 
+## Environment preflight — three failures that abort the run
+
+None of these are logic bugs; all three kill a run on a machine that has sat idle,
+and two of them fire before anything is written.
+
+**1. Dead OAuth token — `invalid_grant`, and `google_auth.py` will NOT self-heal.**
+`get_credentials()` (`scripts/google_auth.py:52-54`) only falls through to the
+browser consent flow when there is **no** refresh_token. A *present-but-revoked*
+token hits `creds.refresh()` and raises, so every script dies the same way and no
+retry helps. Recovery: move `token.json` aside, then **the user** runs the browser
+flow once with the token absent. Re-auth is a Google sign-in — a user action, not
+something to automate around. *(Worth fixing: make `get_credentials()` treat a
+refresh failure the same as a missing token.)*
+
+**2. Missing `tzdata` in the venv — `ZoneInfoNotFoundError` on Windows.**
+`fetch_existing_events` calls `ZoneInfo("America/Los_Angeles")` and Windows ships
+no system zoneinfo DB, so the `.venv` needs `pip install tzdata`. The crash lands
+in the "fetch existing events" step — **before any write**.
+
+**3. A transient network crash — check *where* it landed before re-running.**
+`update_trusted()` and `sync_blocklist_review()` run **before** the calendar add
+loop (~line 2931). So:
+
+| Traceback is in | What happened | Safe to re-run `--stage commit`? |
+|---|---|---|
+| `update_trusted` / `sync_blocklist_review` (~line 2878) | Zero calendar writes | **Yes** — no double-add risk |
+| The add loop (after ~line 2931) | Partial writes | **No** — verify what landed first |
+
+Establish this from the code's write-ordering, not by guessing.
+
+**Confirming a commit actually landed — do not trust a tail of stdout.** The
+commit's verbose `venues.json` URL-resolution logging floods the output, so the
+final "added N" summary scrolls off. Confirm authoritatively by querying the
+calendar for events whose `created` timestamp falls in the last N minutes, per
+calendar. *(Real run: 303 confirmed = 301 'y' + 2 unmatched 'r' fallbacks.)*
+
+**Principle:** the real failure surface of a human-in-the-loop pipeline is its
+environment, not its logic. After a mid-run crash the question that matters is
+"did the side effects fire?" — answer it from the write-ordering in the code and
+from the system of record, never from truncated stdout.
+
+---
+
 ## Sheet access (used by every step)
 
 **Do not use the Drive MCP** — the sheet is too large (100K+ chars). Use Python

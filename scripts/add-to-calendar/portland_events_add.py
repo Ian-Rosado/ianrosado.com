@@ -994,6 +994,11 @@ def build_description(cost, url, note="", tags=""):
 
 def build_title(title_raw, cal_name, tags):
     title = re.sub(r'\s*-\s*$', '', title_raw.strip()).strip()
+    # The Portland Pickles scraper emits their theme-night promo as a bare
+    # "Twilight Night"; prefix the team so it's identifiable on the calendar
+    # (was hand-corrected every occurrence — see review_corrections).
+    if cal_name == "Portland Sports" and title.lower() == "twilight night":
+        return "Pickles - Twilight Night"
     if cal_name == "Portland Live Music":
         genre = extract_genre(tags)
         if genre:
@@ -2416,12 +2421,21 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
     # categorized the listing. Add to these as more come up.
     KNOWN_COMEDY_VENUES = ["helium comedy club"]
     KNOWN_NON_MUSIC_VENUES = ["funhouse lounge"]
+    # Local college athletics get swept into Events/Live Music by generic
+    # sources; they belong on Portland Sports. Require a college indicator AND a
+    # sport word so "College Night" dance parties don't match. Grows over time.
+    COLLEGE_SPORTS_INDICATORS = ["university", "athletics"]
+    COLLEGE_SPORTS_KEYWORDS = [
+        "soccer", "basketball", "volleyball", "football", "baseball",
+        "softball", "lacrosse", "cross country", "track & field",
+        "track and field", "tennis", "rowing",
+    ]
 
     # Each row also gets a "_assigned_by" marker recording HOW its calendar was
     # determined. Non-empty = rule-based and safe to skip in the AI-assisted
     # Categorize pass; blank = a generic source's guess that needs judgment.
     comedy_fixed = karaoke_fixed = dance_fixed = venue_comedy_fixed = venue_nonmusic_fixed = 0
-    source_trusted = trivia_routed = market_fixed = 0
+    source_trusted = trivia_routed = market_fixed = college_sports_fixed = 0
     for row in rows:
         title_l = get(row, "Title", "title", "summary").lower()
         title_market = title_l.replace("’", "").replace("'", "")  # "maker's" -> "makers"
@@ -2462,6 +2476,11 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
                 row["Calendar"] = "Portland Events"
                 row["_assigned_by"] = "keyword: market"
                 market_fixed += 1
+            elif any(ind in title_l for ind in COLLEGE_SPORTS_INDICATORS) \
+                    and any(sk in title_l for sk in COLLEGE_SPORTS_KEYWORDS):
+                row["Calendar"] = "Portland Sports"
+                row["_assigned_by"] = "keyword: college sports"
+                college_sports_fixed += 1
 
         # Trivia → the neighborhood's Trivia Nights calendar (dedup then drops
         # any that duplicate a recurring trivia_generate.py event; trivia at an
@@ -2500,6 +2519,8 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
         print(f"  Routed {trivia_routed} trivia event(s) -> Trivia Nights calendars")
     if market_fixed:
         print(f"  Routed {market_fixed} market event(s) -> Farmers Markets / Events")
+    if college_sports_fixed:
+        print(f"  Routed {college_sports_fixed} college-athletics event(s) -> Portland Sports")
     if dance_fixed:
         print(f"  Auto-detected {dance_fixed} dance-party events -> Portland Events")
     if venue_comedy_fixed:

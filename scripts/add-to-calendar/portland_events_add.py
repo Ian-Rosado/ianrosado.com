@@ -1241,6 +1241,20 @@ def write_review_tab(events, interactive=True):
     for a, b in _coalesce(lookup_rows):
         formats.append({"range": f"L{a}:L{b}", "format": lookup_fmt})
 
+    # Ensure the grid is tall enough for the highlight ranges before formatting.
+    # ws.update (values) auto-expands the grid to fit the data, but batch_format's
+    # repeatCell does NOT — on a large batch (rows past the tab's previous grid
+    # size) it fails with "exceeds grid limits", which crashed the scheduled run
+    # on a 2600+ row week. get_or_clear_tab only clears values, never resizes, so
+    # do it here. (row_count can be stale after the value write, so resize when it
+    # looks short rather than trusting it.)
+    needed_rows = len(data) + 2  # header + instructions + data rows
+    try:
+        if ws.row_count < needed_rows:
+            ws.resize(rows=needed_rows, cols=len(REVIEW_HEADERS))
+    except Exception:
+        ws.resize(rows=needed_rows, cols=len(REVIEW_HEADERS))
+
     CHUNK = 80  # requests per batch_format call — stay well under API limits
     for start in range(0, len(formats), CHUNK):
         ws.batch_format(formats[start:start + CHUNK])

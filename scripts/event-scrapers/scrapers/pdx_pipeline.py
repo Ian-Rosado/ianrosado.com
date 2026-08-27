@@ -160,14 +160,28 @@ def _parse_li(li, date_str: str) -> dict | None:
     if not title or len(title) < 3:
         return None
 
-    # Parse time from rest: "8AM-11PM" or "7:30PM" etc.
+    # Parse time from rest: "8AM-11PM", "5:30-8:30PM", "7-9PM", "7:30PM".
+    # Ranges here often put AM/PM only on the END ("5:30-8:30PM"). The start
+    # then has no meridiem and must INHERIT it from the end — otherwise a regex
+    # that requires AM/PM on the first time skips "5:30" and grabs "8:30PM" as
+    # the start (an off-by-a-couple-hours bug that made events start at their
+    # real end time).
     time_str = ""
     end_time_str = ""
-    time_match = re.search(r"(\d{1,2}(?::\d{2})?\s*(?:AM|PM))\s*[-–]?\s*(\d{1,2}(?::\d{2})?\s*(?:AM|PM))?", rest, re.I)
-    if time_match:
-        time_str = parse_time_12h(time_match.group(1))
-        if time_match.group(2):
-            end_time_str = parse_time_12h(time_match.group(2))
+    rng = re.search(r"(\d{1,2}(?::\d{2})?)\s*(am|pm)?\s*[-–]\s*(\d{1,2}(?::\d{2})?)\s*(am|pm)", rest, re.I)
+    if rng:
+        start_num, start_ap, end_num, end_ap = rng.groups()
+        start_ap = start_ap or end_ap                      # inherit meridiem
+        time_str = parse_time_12h(f"{start_num} {start_ap}")
+        end_time_str = parse_time_12h(f"{end_num} {end_ap}")
+        # Guard the noon-crossing case ("11-1PM" = 11 AM–1 PM): if inheriting the
+        # end's PM pushed the start to/after the end, the start was really AM.
+        if not (rng.group(2)) and time_str and end_time_str and time_str >= end_time_str:
+            time_str = parse_time_12h(f"{start_num} am")
+    else:
+        single = re.search(r"(\d{1,2}(?::\d{2})?\s*(?:am|pm))", rest, re.I)
+        if single:
+            time_str = parse_time_12h(single.group(1))
 
     # Parse cost
     cost = ""

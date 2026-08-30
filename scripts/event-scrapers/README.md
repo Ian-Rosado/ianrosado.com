@@ -70,6 +70,28 @@ Output files land in `output/events_YYYY-MM-DD.json` and `output/events_YYYY-MM-
 | `flyer_escape.py` | Flyer Escape | music | web_fetch |
 | `artichoke.py` | Artichoke Music | music | web_fetch (Eventbrite organizer embedded JSON) |
 | `toc_portland.py` | TOC Portland | music | web_fetch |
+| `partiful.py` | Partiful | events | web_fetch (per-event `__NEXT_DATA__`), fed by a manual inbox — see below |
+
+### Partiful (manual inbox)
+
+Partiful has **no Portland discover feed on the web** — its curated region feed
+only exists for NYC / LA / SF / Austin / Chicago / Miami (verified: the
+`/_next/data/<buildId>/explore/pdx.json` endpoint 404s), and the app's "local"
+feed is a native-only geo feature. But every individual event page
+(`partiful.com/e/<id>`) is fully public and scrapes cleanly. So `partiful.py`
+gets its events from three sources, all normalized by one parser:
+
+1. **Inbox** (primary) — `partiful_inbox.txt`, one event URL/id per line. When you
+   spot a Portland event in the Partiful app, drop its link here (same habit as
+   the Instagram-ingest flow). Past events are skipped automatically.
+2. **Search seed** (best-effort) — a `site:partiful.com` DuckDuckGo query,
+   filtered to Portland-metro addresses. Scriptable search engines often block or
+   don't index Partiful, so treat this as a bonus; when it's blocked it silently
+   contributes nothing. To top up the inbox reliably, ask Claude to run the
+   `site:partiful.com Portland` search (Google, via its tools) and append hits.
+3. **Region reader** (dormant) — reads the `pdx` region endpoint. 404s today;
+   **auto-activates** with no code change if Partiful ever launches a Portland
+   region.
 
 ## Sports sources (Portland Sports calendar — home games only)
 
@@ -112,4 +134,6 @@ Notes:
 
 1. Create `scrapers/my_source.py` with a `scrape()` function that returns a list of event dicts
 2. Use `make_event()` from `scrapers/base.py` for consistent schema
-3. Import and add to `SCRAPERS` dict in `run_all.py`
+3. That's it — `run_all.py` auto-discovers any module in `scrapers/` that defines a
+   top-level `scrape()`. (To temporarily disable one, add its module name to
+   `DISABLED_SCRAPERS` in `run_all.py`.)

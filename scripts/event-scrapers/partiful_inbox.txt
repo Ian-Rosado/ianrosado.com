@@ -1,0 +1,14 @@
+# Partiful inbox — Portland events to pull into the calendar.
+#
+# Partiful has no Portland discover feed on the web (see scrapers/partiful.py),
+# so discovery is manual, like the Instagram-ingest flow: when you spot a
+# Portland event in the Partiful app, share/copy its link and drop it here,
+# one per line. `run_all.py` fetches each and adds it (source "Partiful").
+#
+# Accepts any of:
+#   https://partiful.com/e/FFN60MJg28p23rNQYemD
+#   partiful.com/e/FFN60MJg28p23rNQYemD
+#   FFN60MJg28p23rNQYemD            (bare event id)
+#
+# Lines starting with # are ignored. Past events are skipped automatically, so
+# it's fine to leave old links here — but trimming them keeps runs fast.

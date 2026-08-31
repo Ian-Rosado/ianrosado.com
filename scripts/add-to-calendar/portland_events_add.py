@@ -372,6 +372,29 @@ CATEGORIZE_INSTRUCTIONS = (
 )
 
 
+def _rows_after_header(all_values):
+    """Data rows of a tab, tolerating a missing instructions banner.
+
+    Every tab is normally written as: row 0 = headers, row 1 = an italic
+    instructions banner, row 2+ = data. But a tab regenerated or hand-edited
+    without the banner (seen on Review tabs) starts its data at row 1. The old
+    fixed ``all_values[2:]`` slice silently dropped that first data row whenever
+    the banner was absent — e.g. a keeper marked 'y' at index 0 never reached the
+    calendar write.
+
+    The banner's first cell is always long instruction prose; a data row's first
+    cell is a short token (a numeric ``#`` index, or a y/n/r flag). So detect the
+    banner by content and slice past it, otherwise start right after the header.
+    Every reader below still guards each row by content, so this only decides
+    whether row 1 is offered to them at all.
+    """
+    if len(all_values) <= 1:
+        return []
+    first = (all_values[1][0].strip() if all_values[1] else "")
+    banner = len(first) > 20 and not first.isdigit()
+    return all_values[2:] if banner else all_values[1:]
+
+
 def step1_categorize(rows, interactive=True):
     client = get_sheets_client()
     sheet = client.open_by_key(SHEET_ID)
@@ -441,7 +464,7 @@ def step1_categorize(rows, interactive=True):
     # Read back assigned calendars
     all_values = ws.get_all_values()
     results = [get(r, "Calendar", "calendar") for r in rows]
-    for sheet_row in all_values[2:]:  # skip header + instructions rows
+    for sheet_row in _rows_after_header(all_values):
         if len(sheet_row) < 7:
             continue
         try:
@@ -700,7 +723,7 @@ def step2_deduplicate(rows, existing_by_cal, cross_source_skip=None, cross_sourc
     # Read back skip flags (column A is the original row index)
     all_values = ws.get_all_values()
     skip_indices = set()
-    for sheet_row in all_values[2:]:  # skip header + instructions
+    for sheet_row in _rows_after_header(all_values):
         if len(sheet_row) < 7:
             continue
         skip_flag = sheet_row[6].strip().lower()
@@ -1371,7 +1394,7 @@ def read_review_tab(ws):
             return ""
         return row[i].strip() if len(row) > i else ""
 
-    for sheet_row in all_values[2:]:  # skip header + instructions
+    for sheet_row in _rows_after_header(all_values):
         if not sheet_row:
             continue
         include_flag = cell(sheet_row, "include").lower()
@@ -1556,7 +1579,7 @@ def read_categorize_tab():
     ws = client.open_by_key(SHEET_ID).worksheet(CATEGORIZE_TAB)
     all_values = ws.get_all_values()
     assignments = {}
-    for row in all_values[2:]:  # skip header + instructions
+    for row in _rows_after_header(all_values):
         if not row or not row[0].isdigit():
             continue
         idx = int(row[0])
@@ -1589,7 +1612,7 @@ def read_dedup_tab():
     all_values = ws.get_all_values()
     skip_indices = set()
     review_flags = {}
-    for row in all_values[2:]:  # skip header + instructions
+    for row in _rows_after_header(all_values):
         if not row or not row[0].isdigit():
             continue
         flag = row[6].strip().lower() if len(row) > 6 else ""

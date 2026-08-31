@@ -176,6 +176,11 @@ PEDALPALOOZA_CALENDAR_ID = _CAL_CFG["pedalpalooza"]["id"]
 # patterns surfaced by the review-corrections log (see log_review_corrections).
 KNOWN_DROP_PATTERNS = [
     "portland spirit",   # recurring sightseeing / dinner-cruise listings
+    "blanchet house",    # recurring free-meal service, not an event (dropped 14x)
+    "where to watch in portland",  # "Where to Watch" watch-party listicles
+                                   # (preseason football, Fire/Thorns watch parties);
+                                   # the actual games come from the sports scrapers
+    "university of portland women's soccer",  # college games Ian doesn't track
 ]
 
 # Single-purpose sources whose calendar is definitionally correct — a sports
@@ -1981,7 +1986,10 @@ def update_blocklist(skipped_events):
             existing.add(norm)
 
     if new_rows:
-        ws.append_rows(new_rows, value_input_option="USER_ENTERED")
+        # RAW, not USER_ENTERED: a date-like normalized title ("september 2026")
+        # is otherwise coerced to a date value in column A, so load_blocklist
+        # reads back a formatted date and the entry silently never matches again.
+        ws.append_rows(new_rows, value_input_option="RAW")
         print(f"  Added {len(new_rows)} title(s) to blocklist")
 
 

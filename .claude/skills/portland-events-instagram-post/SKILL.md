@@ -37,11 +37,16 @@ See `portland-events-context` for voice/hashtag guidance and account details.
 
 ---
 
-## Step 1 — Look up the pasted events (one command)
+## Step 1 — Look up the events (one command)
 
-Ian's table has one row per chosen event, usually as a Google Calendar **edit
-URL** (`…/r/eventedit/<BLOB>`), sometimes a bare event ID. Fetch everything in
-ONE batch call — do not write per-event lookup code:
+**Ian curates via a pasted table — the `★ IG?` flags are just a shortlist to
+draw from, not the final set.** The primary input is always the table of events
+Ian chooses; the flag lookup is a convenience for surfacing candidates he starred
+earlier.
+
+**Pasted table (primary)** — Ian gives one row per chosen event, usually as a
+Google Calendar **edit URL** (`…/r/eventedit/<BLOB>`), sometimes a bare event ID.
+Fetch everything in ONE batch call — do not write per-event lookup code:
 
 ```
 cd scripts/add-to-calendar
@@ -61,6 +66,18 @@ url, ig_handle, calendar`. It also:
 - exits 2 with a list of not-found inputs — tell Ian which ones to re-paste.
 
 Use the JSON as-is for Step 2; there is nothing else to look up.
+
+**Surfacing starred candidates (optional helper)** — events Ian flagged in the
+add-to-calendar Review (`★ IG?` column) are on the calendar in purple with a
+queryable tag. To list them as a shortlist when picking what to feed in:
+
+```
+python get_events.py --ig                                   # picks in the next 2 weeks
+python get_events.py --ig --from 2026-09-01 --to 2026-09-07 # a specific week
+```
+
+Same JSON shape. This is a menu to help Ian choose — he still confirms the final
+table and can add un-flagged events or drop flagged ones.
 
 ---
 

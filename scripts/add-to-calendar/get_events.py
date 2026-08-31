@@ -10,6 +10,13 @@ Usage:
     python get_events.py <url-or-id> [<url-or-id> ...]
     python get_events.py --file picks.txt        # one URL/ID per line
     python get_events.py --json out.json <...>   # also write to a file
+    python get_events.py --ig                    # all IG-flagged picks, today..+14
+    python get_events.py --ig --from 2026-09-01 --to 2026-09-07   # narrow window
+
+IG-pick mode (--ig) ignores any inputs and returns every event flagged as an
+Instagram pick during the add-to-calendar Review step (the '★ IG?' column →
+extendedProperties.shared.ig=candidate), shaped identically to the normal
+lookup so the instagram-post skill can consume it directly.
 
 Accepts, in any mix:
   - Google Calendar edit URLs:  https://calendar.google.com/calendar/u/0/r/eventedit/<BLOB>
@@ -163,6 +170,35 @@ def shape(ev, cal_id, original_input):
     }
 
 
+def fetch_flagged(svc, date_from, date_to, value="candidate"):
+    """Pull every event flagged as an Instagram pick (extendedProperties.shared.ig
+    == value) across all calendars within [date_from, date_to], shaped like the
+    normal lookup output and sorted by date/time. Feeds the instagram-post skill
+    directly — no pasted table of event IDs needed."""
+    from googleapiclient.errors import HttpError
+    start_iso = datetime.fromisoformat(f"{date_from}T00:00:00").replace(tzinfo=TZ).isoformat()
+    end_iso   = datetime.fromisoformat(f"{date_to}T23:59:59").replace(tzinfo=TZ).isoformat()
+    results = []
+    for cid in CALENDARS.values():
+        page_token = None
+        while True:
+            try:
+                resp = svc.events().list(
+                    calendarId=cid, timeMin=start_iso, timeMax=end_iso,
+                    singleEvents=True, orderBy="startTime", maxResults=250,
+                    pageToken=page_token, sharedExtendedProperty=f"ig={value}",
+                ).execute()
+            except HttpError:
+                break
+            for ev in resp.get("items", []):
+                results.append(shape(ev, cid, ev.get("id", "")))
+            page_token = resp.get("nextPageToken")
+            if not page_token:
+                break
+    results.sort(key=lambda r: (r.get("date", ""), r.get("time", "")))
+    return results
+
+
 def fetch_one(svc, token):
     from googleapiclient.errors import HttpError
     eid, cal_id = parse_input(token)
@@ -184,7 +220,27 @@ def main():
     ap.add_argument("inputs", nargs="*", help="Event edit URLs, eventedit blobs, or bare event IDs")
     ap.add_argument("--file", help="Read inputs from a file, one per line")
     ap.add_argument("--json", dest="json_out", help="Also write the result to this file")
+    ap.add_argument("--ig", action="store_true",
+                    help="Ignore inputs; pull all events flagged as IG picks in the date window")
+    ap.add_argument("--from", dest="date_from", help="IG window start YYYY-MM-DD (default: today)")
+    ap.add_argument("--to", dest="date_to", help="IG window end YYYY-MM-DD (default: today + 14 days)")
     args = ap.parse_args()
+
+    # ── IG-pick mode: pull flagged events instead of resolving pasted inputs ──
+    if args.ig:
+        from datetime import timedelta
+        today = datetime.now(TZ).date()
+        date_from = args.date_from or today.isoformat()
+        date_to   = args.date_to or (today + timedelta(days=14)).isoformat()
+        svc = google_auth.get_calendar_service()
+        results = fetch_flagged(svc, date_from, date_to)
+        out = json.dumps(results, indent=2, ensure_ascii=False)
+        print(out)
+        if args.json_out:
+            Path(args.json_out).write_text(out, encoding="utf-8")
+            print(f"\n(wrote {args.json_out})", file=sys.stderr)
+        print(f"\n{len(results)} IG-flagged event(s) in {date_from} … {date_to}", file=sys.stderr)
+        return
 
     inputs = list(args.inputs)
     if args.file:

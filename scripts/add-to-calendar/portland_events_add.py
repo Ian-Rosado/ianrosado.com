@@ -1080,6 +1080,12 @@ def build_calendar_event_body(e):
         "end":   {"dateTime": end_dt,   "timeZone": TIMEZONE} if not all_day else {"date": next_day},
         "extendedProperties": build_extended_properties(cost, tags, source),
     }
+    # Instagram pick: color it (personal-calendar view only) and stamp a shared
+    # property so get_events.py --ig can pull it back later. Kept out of the
+    # description so it never reaches the public website.
+    if e.get("_ig"):
+        event_body["colorId"] = IG_COLOR_ID
+        event_body["extendedProperties"]["shared"]["ig"] = IG_FLAG_VALUE
     return event_body, cal_name, cal_id, date_str
 
 
@@ -1102,14 +1108,26 @@ def resolve_calendar(calendar_str):
 
 REVIEW_TAB = "Review"
 REVIEW_HEADERS = [
-    "→ Include? (y/n/r)", "#", "Date", "Time", "Calendar",
+    "→ Include? (y/n/r)", "★ IG?", "#", "Date", "Time", "Calendar",
     "Title", "Location", "Cost", "Tags", "Source", "URL", "Calendar Link",
     "Note",
 ]
+
+# Instagram-pick flagging. A non-empty '★ IG?' cell in the Review tab marks an
+# event as a candidate for a Portland Events IG post (Events of the Week / Plan
+# Your Weekend). Flagged events are written with a distinct calendar color and a
+# shared extendedProperty so they can be pulled back later (get_events.py --ig).
+# The color is per-user/visual only — the website reads description+tags, not
+# colorId, and ignores the extra shared key, so nothing leaks to the public site.
+IG_COLOR_ID = "3"          # Grape (purple) in Google Calendar's event palette
+IG_FLAG_VALUE = "candidate"  # extendedProperties.shared.ig value
+
 REVIEW_INSTRUCTIONS = (
     "Keepers are pre-filled 'y' (will be added) — flip to 'n' to skip. "
     "You can also EDIT any of Date, Time, Calendar, Title, Location, Cost, Tags, URL — "
     "your edits are written to the calendar. "
+    "Put anything (e.g. ★) in the 'IG?' column to flag an event as an Instagram pick — "
+    "it's added in purple and tagged so it can be pulled up for a post later. "
     "Suggested duplicates are pre-filled 'n'. "
     "Rows pre-filled '?' overlap an existing event at the same venue+time — "
     "see 'Note' and change to 'y' to add a new event, 'r' to REPLACE the existing "
@@ -1175,6 +1193,7 @@ def write_review_tab(events, interactive=True):
 
         data.append([
             include_suggestion,
+            "",  # ★ IG? — you flag Instagram picks here during review
             e["index"],
             e["date"],
             e["time"],
@@ -1219,27 +1238,27 @@ def write_review_tab(events, interactive=True):
         return runs
 
     formats = [
-        {"range": "A1:M1", "format": {"textFormat": {"bold": True}}},
-        {"range": "A2:M2", "format": {
+        {"range": "A1:N1", "format": {"textFormat": {"bold": True}}},
+        {"range": "A2:N2", "format": {
             "textFormat": {"italic": True},
             "backgroundColor": {"red": 1.0, "green": 0.95, "blue": 0.8},
         }},
     ]
     dup_fmt = {"backgroundColor": {"red": 1.0, "green": 0.95, "blue": 0.6}}
     for a, b in _coalesce(dup_rows):
-        formats.append({"range": f"A{a}:M{b}", "format": dup_fmt})
+        formats.append({"range": f"A{a}:N{b}", "format": dup_fmt})
     # Venue+time '?' rows — orange so they stand out from yellow auto-skips
     review_fmt = {"backgroundColor": {"red": 1.0, "green": 0.8, "blue": 0.6}}
     for a, b in _coalesce(review_rows):
-        formats.append({"range": f"A{a}:M{b}", "format": review_fmt})
+        formats.append({"range": f"A{a}:N{b}", "format": review_fmt})
     # Trusted recurring pre-filled 'y' rows — green
     trusted_fmt = {"backgroundColor": {"red": 0.85, "green": 0.95, "blue": 0.85}}
     for a, b in _coalesce(trusted_rows):
-        formats.append({"range": f"A{a}:M{b}", "format": trusted_fmt})
-    # Highlight just the Calendar Link cell (column L) for lookup-needed rows
+        formats.append({"range": f"A{a}:N{b}", "format": trusted_fmt})
+    # Highlight just the Calendar Link cell (now column M) for lookup-needed rows
     lookup_fmt = {"backgroundColor": {"red": 1.0, "green": 0.85, "blue": 0.85}}
     for a, b in _coalesce(lookup_rows):
-        formats.append({"range": f"L{a}:L{b}", "format": lookup_fmt})
+        formats.append({"range": f"M{a}:M{b}", "format": lookup_fmt})
 
     # Ensure the grid is tall enough for the highlight ranges before formatting.
     # ws.update (values) auto-expands the grid to fit the data, but batch_format's
@@ -1287,37 +1306,79 @@ def read_review_tab(ws):
     Any edits you make in the sheet to Date, Time, Calendar, Title, Location,
     Cost, Tags, or URL are read back and applied before the calendar write.
 
-    Column layout (0-indexed):
-      0 Include | 1 # | 2 Date | 3 Time | 4 Calendar | 5 Title
-      6 Location | 7 Cost | 8 Tags | 9 Source | 10 URL | 11 Calendar Link
+    Columns are resolved by HEADER NAME, not fixed position, so this stays
+    correct across layout changes — e.g. the '★ IG?' column was inserted after
+    Include, shifting every later column by one. A tab written before that change
+    (no IG column) still reads correctly: the missing header just yields no flags.
 
     The Include column accepts 'y' (add as a new event), 'r' / 'replace'
     (update the existing calendar event this row overlaps in place), or
     'n'/blank (skip). 'r' is only meaningful on a '?' venue+time/title overlap
-    row, but is honored wherever it's typed.
+    row, but is honored wherever it's typed. A non-empty '★ IG?' cell flags the
+    event as an Instagram pick.
 
     Returns:
         include_indices: set of original indices marked 'y'
         replace_indices: set of original indices marked 'r' (replace-in-place)
         overrides: dict {idx: {field: value}} of the current cell values, for
                    every 'y' AND 'r' row (field edits apply to both)
+        ig_flags: set of original indices flagged as Instagram picks
     """
     all_values = ws.get_all_values()
     include_indices = set()
     replace_indices = set()
     overrides = {}
+    ig_flags = set()
 
-    def cell(row, i):
+    # ── Resolve column indices from the header row ───────────────────────────
+    header = [h.strip().lower() for h in (all_values[0] if all_values else [])]
+
+    def find_exact(*names):
+        for n in names:
+            if n in header:
+                return header.index(n)
+        return None
+
+    def find_contains(needle):
+        for i, h in enumerate(header):
+            if needle in h:
+                return i
+        return None
+
+    col = {
+        "include":  find_contains("include"),
+        "ig":       find_contains("ig?"),
+        "num":      find_exact("#"),
+        "date":     find_exact("date"),
+        "time":     find_exact("time"),
+        "calendar": find_exact("calendar"),   # exact — avoids "calendar link"
+        "title":    find_exact("title"),
+        "location": find_exact("location"),
+        "cost":     find_exact("cost"),
+        "tags":     find_exact("tags"),
+        "url":      find_exact("url"),
+    }
+    # Fallback to the legacy fixed layout (no IG column) if the header row can't
+    # be read — the pipeline always writes headers, so this only guards oddities.
+    if col["include"] is None or col["num"] is None:
+        col = {"include": 0, "ig": None, "num": 1, "date": 2, "time": 3,
+               "calendar": 4, "title": 5, "location": 6, "cost": 7, "tags": 8,
+               "url": 10}
+
+    def cell(row, key):
+        i = col.get(key)
+        if i is None:
+            return ""
         return row[i].strip() if len(row) > i else ""
 
     for sheet_row in all_values[2:]:  # skip header + instructions
         if not sheet_row:
             continue
-        include_flag = cell(sheet_row, 0).lower()
+        include_flag = cell(sheet_row, "include").lower()
         if include_flag not in ("y", "r", "replace"):
             continue
         try:
-            idx = int(sheet_row[1])
+            idx = int(cell(sheet_row, "num"))
         except (ValueError, IndexError):
             continue
         if include_flag == "y":
@@ -1325,24 +1386,27 @@ def read_review_tab(ws):
         else:
             replace_indices.add(idx)
 
+        if cell(sheet_row, "ig"):
+            ig_flags.add(idx)
+
         ov = {
-            "date":     cell(sheet_row, 2),
-            "time":     cell(sheet_row, 3),
-            "title":    cell(sheet_row, 5),
-            "location": cell(sheet_row, 6),
-            "cost":     cell(sheet_row, 7),
-            "tags":     cell(sheet_row, 8),
-            "url":      cell(sheet_row, 10),
+            "date":     cell(sheet_row, "date"),
+            "time":     cell(sheet_row, "time"),
+            "title":    cell(sheet_row, "title"),
+            "location": cell(sheet_row, "location"),
+            "cost":     cell(sheet_row, "cost"),
+            "tags":     cell(sheet_row, "tags"),
+            "url":      cell(sheet_row, "url"),
         }
         # Calendar must be a valid calendar name
-        cal_raw = cell(sheet_row, 4)
+        cal_raw = cell(sheet_row, "calendar")
         canonical = CALENDAR_ALIASES.get(cal_raw.lower(), cal_raw)
         if canonical in CALENDARS:
             ov["calendar"] = canonical
 
         overrides[idx] = ov
 
-    return include_indices, replace_indices, overrides
+    return include_indices, replace_indices, overrides, ig_flags
 
 
 # ─── Review-corrections feedback log ─────────────────────────────────────────
@@ -2822,7 +2886,7 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
         review_ws = open_existing_tab(REVIEW_TAB)
     else:
         review_ws = write_review_tab(review_events)
-    include_indices, replace_indices, overrides = read_review_tab(review_ws)
+    include_indices, replace_indices, overrides, ig_flags = read_review_tab(review_ws)
 
     # A 'replace' is a kept event too (it lands on the calendar, just in place of
     # an existing one) — treat it as an approval everywhere disposition matters.
@@ -2838,6 +2902,16 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
     # can be edited in the sheet and the edit flows to the calendar write.
     EDITABLE_FIELDS = ["date", "time", "calendar", "title", "location", "cost", "tags", "url"]
     review_by_index = {e["index"]: e for e in review_events}
+
+    # Mark Instagram-flagged events so build_calendar_event_body colors them and
+    # stamps the queryable shared property (see IG_COLOR_ID / IG_FLAG_VALUE).
+    for idx in ig_flags:
+        e = review_by_index.get(idx)
+        if e:
+            e["_ig"] = True
+    if ig_flags:
+        print(f"  {len(ig_flags)} event(s) flagged as Instagram picks (added in purple)")
+
     edited_count = 0
     for idx, ov in overrides.items():
         e = review_by_index.get(idx)

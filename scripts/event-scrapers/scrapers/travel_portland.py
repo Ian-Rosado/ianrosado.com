@@ -31,18 +31,35 @@ from .base import get_page, make_event, parse_cost, CALENDAR_EVENTS
 SOURCE = "Travel Portland"
 BASE = "https://www.travelportland.com"
 
+# Label used when Travel Portland's card venue is a bogus default (an event that
+# actually spans several venues / a whole district — see _resolve_detail).
+MULTI_VENUE_LOCATION = "Multiple locations"
 
-def _resolve_real_link(detail_url):
-    """Fetch an event's travelportland.com page and pull its "Website"
-    anchor (the real outbound link). Returns '' if not found."""
+
+def _resolve_detail(detail_url, card_venue):
+    """Fetch an event's travelportland.com page ONCE and return
+    (real_link, venue_ok):
+
+    - real_link: the "Website" anchor's href (the real outbound link), '' if
+      none.
+    - venue_ok: False when the listing card's venue does NOT appear anywhere on
+      the event's own detail page. Travel Portland fills a bogus default venue
+      ("Mississippi Studios") on the listing card for multi-venue / district-wide
+      events (Montavilla Jazz Festival, First Friday PDX, Central Eastside
+      Passport, …), and that default never appears on the detail page, while a
+      real card venue always does. A blank/absent card venue, or a failed fetch,
+      is treated as ok (nothing to validate / don't drop on error)."""
     resp = get_page(detail_url)
     if not resp:
-        return ""
+        return "", True
     soup = BeautifulSoup(resp.text, "lxml")
+    real_link = ""
     for a in soup.find_all("a", href=True):
         if a.get_text(strip=True) == "Website":
-            return a["href"]
-    return ""
+            real_link = a["href"]
+            break
+    venue_ok = (not card_venue) or (card_venue.lower() in resp.text.lower())
+    return real_link, venue_ok
 
 PLAYWRIGHT_ARGS = ["--disable-blink-features=AutomationControlled", "--no-sandbox"]
 PLAYWRIGHT_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
@@ -210,20 +227,31 @@ def scrape():
     ]
     all_events.sort(key=lambda e: e["date"])
 
-    # Swap each event's travelportland.com page URL for its "Website" link.
-    unique_urls = {e["url"] for e in all_events if e["url"]}
+    # Fetch each event's detail page ONCE to (a) swap the travelportland.com
+    # page URL for its real "Website" link and (b) validate the card venue —
+    # replacing Travel Portland's bogus default venue with "Multiple locations"
+    # when it isn't corroborated by the event's own detail page (see
+    # _resolve_detail).
+    url_to_venue = {e["url"]: e.get("location", "") for e in all_events if e["url"]}
     resolved = {}
+    venue_bad = set()
     with ThreadPoolExecutor(max_workers=10) as executor:
-        future_to_url = {executor.submit(_resolve_real_link, u): u for u in unique_urls}
+        future_to_url = {
+            executor.submit(_resolve_detail, u, url_to_venue[u]): u for u in url_to_venue
+        }
         for future in as_completed(future_to_url):
             u = future_to_url[future]
             try:
-                real_url = future.result()
+                real_url, venue_ok = future.result()
                 if real_url:
                     resolved[u] = real_url
+                if not venue_ok:
+                    venue_bad.add(u)
             except Exception:
                 pass
     for e in all_events:
+        if e["url"] in venue_bad:      # bogus default venue → it's a multi-venue event
+            e["location"] = MULTI_VENUE_LOCATION
         if e["url"] in resolved:
             e["url"] = resolved[e["url"]]
 

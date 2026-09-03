@@ -52,16 +52,42 @@ JUNK_LINK_DOMAINS = (
 )
 
 
+def _clean_location(s: str) -> str:
+    """Drop obvious junk values (a bare state code, too-short fragments) so we
+    fall through to the next signal instead of storing 'OR' as a venue."""
+    s = (s or "").strip()
+    if len(s) < 5:
+        return ""
+    if re.fullmatch(r"(or|wa|ca|calif\.?)", s, re.I):
+        return ""
+    return s
+
+
 def _extract_location(soup) -> str:
-    """Pull the venue/address from a CP event detail page. The best signal is
-    the OpenStreetMap 'directions' anchor, whose text is the full
-    'Venue, 123 SW Foo St, Portland, OR, 97205' string. Falls back to the
-    .venue-pill label (emoji-prefixed venue name). Returns '' if neither."""
+    """Pull the venue/address from a CP event detail page. CP renders the venue
+    behind an OpenStreetMap link in one of two formats (a 2026 change added the
+    second, which the old '/directions'-text-only reader missed entirely):
+
+      1. .../openstreetmap.org/directions?... — venue is the anchor's visible
+         text ("Venue, 123 SW Foo St, Portland, OR, 97205").
+      2. .../openstreetmap.org/search?query=<Venue, address> — anchor text is
+         EMPTY and the venue lives URL-encoded in the ?query= parameter.
+
+    Handles both, per anchor: prefer the visible text, else decode the query
+    param. Non-Portland metro venues (Hood River, Beaverton, Vancouver) are now
+    kept — the old 'Portland in text' guard wrongly dropped them. Falls back to
+    the .venue-pill label. Returns '' if nothing usable is found."""
+    from urllib.parse import urlparse, parse_qs, unquote
     for a in soup.find_all("a", href=True):
-        if "openstreetmap.org/directions" in a["href"]:
-            txt = a.get_text(" ", strip=True)
-            if txt and "Portland" in txt:
-                return txt
+        if "openstreetmap.org" not in a["href"]:
+            continue
+        loc = _clean_location(a.get_text(" ", strip=True))
+        if loc:
+            return loc
+        query = parse_qs(urlparse(a["href"]).query).get("query", [""])[0]
+        loc = _clean_location(unquote(query))
+        if loc:
+            return loc
     pill = soup.find(class_="venue-pill")
     if pill:
         # strip a leading emoji / whitespace ("🏛 Portland Art Museum")

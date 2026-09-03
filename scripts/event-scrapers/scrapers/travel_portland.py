@@ -31,6 +31,10 @@ from .base import get_page, make_event, parse_cost, CALENDAR_EVENTS
 SOURCE = "Travel Portland"
 BASE = "https://www.travelportland.com"
 
+# Label used when Travel Portland's card venue is a bogus default (an event that
+# actually spans several venues / a whole district — see _resolve_detail).
+MULTI_VENUE_LOCATION = "Multiple locations"
+
 
 def _resolve_detail(detail_url, card_venue):
     """Fetch an event's travelportland.com page ONCE and return
@@ -225,8 +229,9 @@ def scrape():
 
     # Fetch each event's detail page ONCE to (a) swap the travelportland.com
     # page URL for its real "Website" link and (b) validate the card venue —
-    # dropping Travel Portland's bogus default venue when it isn't corroborated
-    # by the event's own detail page (see _resolve_detail).
+    # replacing Travel Portland's bogus default venue with "Multiple locations"
+    # when it isn't corroborated by the event's own detail page (see
+    # _resolve_detail).
     url_to_venue = {e["url"]: e.get("location", "") for e in all_events if e["url"]}
     resolved = {}
     venue_bad = set()
@@ -245,8 +250,8 @@ def scrape():
             except Exception:
                 pass
     for e in all_events:
-        if e["url"] in venue_bad:      # bogus default venue — better blank than wrong
-            e["location"] = ""
+        if e["url"] in venue_bad:      # bogus default venue → it's a multi-venue event
+            e["location"] = MULTI_VENUE_LOCATION
         if e["url"] in resolved:
             e["url"] = resolved[e["url"]]
 

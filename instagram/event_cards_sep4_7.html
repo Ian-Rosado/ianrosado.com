@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<!--
+  EVENT CARDS — Plan Your Weekend Sep 4–7, 2026 (Amber theme #8)
+  9 cards, one per event.
+
+  Render script:
+    python render_event_cards_sep4_7.py
+-->
+<title>Event Cards – Plan Your Weekend Sep 4–7</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;900&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #111;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 12px;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .post {
+    width: 1080px;
+    height: 1080px;
+    background: #2a1c06;          /* <<THEME>> Amber canvas */
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+  }
+  /* Top bar */
+  .top-bar {
+    padding: 36px 52px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-shrink: 0;
+  }
+  .event-date {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #f0a500;              /* <<THEME>> Amber accent */
+  }
+  .event-type {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+    text-align: right;
+  }
+  /* Main tile block */
+  .tile {
+    margin: 24px 52px 0;
+    border-radius: 20px;
+    padding: 40px 52px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .tile-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+  }
+  .tile-tag {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 18px;
+    line-height: 1;
+  }
+  .event-name {
+    font-family: 'DM Serif Display', serif;
+    font-size: 72px;
+    color: #fff;
+    line-height: 1.05;
+    margin-bottom: 28px;
+  }
+  .event-name.long {
+    font-size: 52px;
+  }
+  .description {
+    font-size: 30px;
+    font-weight: 400;
+    color: rgba(255,255,255,0.72);
+    line-height: 1.45;
+    flex: 1;
+  }
+  /* Bottom meta row inside the tile */
+  .tile-meta {
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid rgba(255,255,255,0.15);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-shrink: 0;
+  }
+  .meta-venue {
+    font-size: 26px;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.3;
+  }
+  .meta-details {
+    font-size: 26px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.6);
+    text-align: right;
+    line-height: 1.3;
+  }
+  /* Footer */
+  .footer {
+    padding: 16px 52px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  .footer-handle { font-size: 22px; color: rgba(255,255,255,0.25); }
+  .footer-site { font-size: 22px; color: rgba(255,255,255,0.35); font-weight: 600; }
+  /* Tile color themes */
+  .green  { background: #0a3520; } .green  .tile-tag { color: #5cdc80; }
+  .teal   { background: #003d35; } .teal   .tile-tag { color: #3ecfb0; }
+  .blue   { background: #0a2050; } .blue   .tile-tag { color: #5ca8ff; }
+  .coral  { background: #5c1a10; } .coral  .tile-tag { color: #ff7a5c; }
+  .purple { background: #2d1a5e; } .purple .tile-tag { color: #b39dff; }
+  .pink   { background: #4a1040; } .pink   .tile-tag { color: #f07ad8; }
+</style>
+</head>
+<body>
+
+<!-- Card 1: Fri Sep 4 — Montavilla Jazz Festival -->
+<div class="post">
+  <div class="top-bar">
+    <div class="event-date">Fri · Sep 4</div>
+    <div class="event-type">Plan Your Weekend</div>
+  </div>
+  <div class="tile teal">
+    <div class="tile-body">
+      <div class="tile-tag">🎷 Free Jazz Festival</div>
+      <div class="event-name">Montavilla Jazz Festival</div>
+      <div class="description">Portland's beloved neighborhood jazz festival fills Montavilla's streets and venues with live jazz performances all day. Multiple stages, local artists, and a great neighborhood vibe — free and open to all.</div>
+    </div>
+    <div class="tile-meta">
+      <div class="meta-venue">Montavilla</div>
+      <div class="meta-details">All Day · Free</div>
+    </div>
+  </div>
+  <div class="footer">
+    <div class="footer-handle">@portland_events_calendar</div>
+    <div class="footer-site">pdx-events.com</div>
+  </div>
+</div>
+
+<!-- Card 2: Sat Sep 5 — Halloween Swamp Meet -->
+<div class="post">
+  <div class="top-bar">
+    <div class="event-date">Sat · Sep 5</div>
+    <div class="event-type">Plan Your Weekend</div>
+  </div>
+  <div class="tile pink">
+    <div class="tile-body">
+      <div class="tile-tag">🎃 Free Spooky Market</div>
+      <div class="event-name">Halloween Swamp Meet</div>
+      <div class="description">A free Halloween market at Oaks Amusement Park featuring vendors with gothic, vintage, horror, and all things creepy-cool. A great early-season dose of Halloween for all ages.</div>
+    </div>
+    <div class="tile-meta">
+      <div class="meta-venue">Oaks Amusement Park</div>
+      <div class="meta-details">12 PM · Free</div>
+    </div>
+  </div>
+  <div class="footer">
+    <div class="footer-handle">@portland_events_calendar</div>
+    <div class="footer-site">pdx-events.com</div>
+  </div>
+</div>
+
+<!-- Card 3: Sat Sep 5 — Earth, Wind & Fire -->
+<div class="post">
+  <div class="top-bar">
+    <div class="event-date">Sat · Sep 5</div>
+    <div class="event-type">Plan Your Weekend</div>
+  </div>
+  <div class="tile green">
+    <div class="tile-body">
+      <div class="tile-tag">🎤 Outdoor Concert</div>
+      <div class="event-name">Earth, Wind &amp; Fire</div>
+      <div class="description">Legendary funk and R&B icons bring their electrifying live show to the outdoor stage at McMenamins Edgefield. Tickets required — Take advantage of this break in the rain!</div>
+    </div>
+    <div class="tile-meta">
+      <div class="meta-venue">McMenamins Edgefield</div>
+      <div class="meta-details">6:30 PM · Ticketed</div>
+    </div>
+  </div>
+  <div class="footer">
+    <div class="footer-handle">@portland_events_calendar</div>
+    <div class="footer-site">pdx-events.com</div>
+  </div>
+</div>
+
+<!-- Card 4: Sat Sep 5 — Craig Robinson -->
+<div class="post">
+  <div class="top-bar">
+    <div class="event-date">Sat · Sep 5</div>
+    <div class="event-type">Plan Your Weekend</div>
+  </div>
+  <div class="tile coral">
+    <div class="tile-body">
+      <div class="tile-tag">🎭 Stand-Up Comedy</div>
+      <div class="event-name">Craig Robinson</div>
+      <div class="description">Stand-up special from the beloved comedian and musician best known from The Office and plenty more. A late-night show at Helium Comedy Club — grab tickets before they sell out.</div>
+    </div>
+    <div class="tile-meta">
+      <div class="meta-venue">Helium Comedy Club</div>
+      <div class="meta-details">9:30 PM · $50</div>
+    </div>
+  </div>
+  <div class="footer">
+    <div class="footer-handle">@portland_events_calendar</div>
+    <div class="footer-site">pdx-events.com</div>
+  </div>
+</div>
+
+<!-- Card 5: Sun Sep 6 — East Portland Tabletop Arcade -->
+<div class="post">
+  <div class="top-bar">
+    <div class="event-date">Sun · Sep 6</div>
+    <div class="event-type">Plan Your Weekend</div>
+  </div>
+  <div class="tile purple">
+    <div class="tile-body">
+      <div class="tile-tag">🎲 Free Tabletop Games</div>
+      <div class="event-name long">East Portland Tabletop Arcade</div>
+      <div class="description">Drop in for free tabletop gaming at Midland Library — board games, card games, and more in a welcoming, all-ages environment. No registration needed, just show up and play.</div>
+    </div>
+    <div class="tile-meta">
+      <div class="meta-venue">Midland Library · SE 122nd</div>
+      <div class="meta-details">1–5 PM · Free</div>
+    </div>
+  </div>
+  <div class="footer">
+    <div class="footer-handle">@portland_events_calendar</div>
+    <div class="footer-site">pdx-events.com</div>
+  </div>
+</div>
+
+<!-- Card 6: Sun Sep 6 — Wildwood: Follow the Crows -->
+<div class="post">
+  <div class="top-bar">
+    <div class="event-date">Sun · Sep 6</div>
+    <div class="event-type">Plan Your Weekend</div>
+  </div>
+  <div class="tile blue">
+    <div class="tile-body">
+      <div class="tile-tag">🚲 Free Bike Ride</div>
+      <div class="event-name">Wildwood: Follow the Crows</div>
+      <div class="description">A free community art bike ride exploring Portland's public crow installations. Part 1 departs OMSI Plaza at 1 PM; Part 2 follows at 2:30 PM. All skill levels welcome — just bring your bike and curiosity.</div>
+    </div>
+    <div class="tile-meta">
+      <div class="meta-venue">OMSI Main Plaza</div>
+      <div class="meta-details">1 PM · Free</div>
+    </div>
+  </div>
+  <div class="footer">
+    <div class="footer-handle">@portland_events_calendar</div>
+    <div class="footer-site">pdx-events.com</div>
+  </div>
+</div>
+
+<!-- Card 7: Sun Sep 6 — Zeds Dead -->
+<div class="post">
+  <div class="top-bar">
+    <div class="event-date">Sun · Sep 6</div>
+    <div class="event-type">Plan Your Weekend</div>
+  </div>
+  <div class="tile coral">
+    <div class="tile-body">
+      <div class="tile-tag">🎧 Bridge City Block Party</div>
+      <div class="event-name">Zeds Dead</div>
+      <div class="description">Toronto-based bass music duo Zeds Dead headlines the Bridge City Block Party on the waterfront. A huge outdoor show to close out the long weekend — get your tickets now.</div>
+    </div>
+    <div class="tile-meta">
+      <div class="meta-venue">Waterfront Park</div>
+      <div class="meta-details">4 PM · Ticketed</div>
+    </div>
+  </div>
+  <div class="footer">
+    <div class="footer-handle">@portland_events_calendar</div>
+    <div class="footer-site">pdx-events.com</div>
+  </div>
+</div>
+
+<!-- Card 8: Mon Sep 7 — Art in the Pearl -->
+<div class="post">
+  <div class="top-bar">
+    <div class="event-date">Mon · Sep 7</div>
+    <div class="event-type">Plan Your Weekend</div>
+  </div>
+  <div class="tile purple">
+    <div class="tile-body">
+      <div class="tile-tag">🖼️ Free Art Festival</div>
+      <div class="event-name">Art in the Pearl</div>
+      <div class="description">One of Portland's most beloved annual art festivals returns to the North Park Blocks for Labor Day. Dozens of fine artists, live music, food, and a great vibe in the Pearl District. Free to attend all day.</div>
+    </div>
+    <div class="tile-meta">
+      <div class="meta-venue">North Park Blocks</div>
+      <div class="meta-details">10 AM–4 PM · Free</div>
+    </div>
+  </div>
+  <div class="footer">
+    <div class="footer-handle">@portland_events_calendar</div>
+    <div class="footer-site">pdx-events.com</div>
+  </div>
+</div>
+
+<!-- Card 9: Mon Sep 7 — Sunflower U-Pick -->
+<div class="post">
+  <div class="top-bar">
+    <div class="event-date">Mon · Sep 7</div>
+    <div class="event-type">Plan Your Weekend</div>
+  </div>
+  <div class="tile green">
+    <div class="tile-body">
+      <div class="tile-tag">🌻 Farm Day</div>
+      <div class="event-name">Sunflower U-Pick</div>
+      <div class="description">Pick your own sunflowers at Bella Organic Farm on Sauvie Island — a classic end-of-summer outing with sweeping field views and the island's laid-back charm. A perfect Labor Day day trip.</div>
+    </div>
+    <div class="tile-meta">
+      <div class="meta-venue">Bella Organic · Sauvie Island</div>
+      <div class="meta-details">All Day · $11.20</div>
+    </div>
+  </div>
+  <div class="footer">
+    <div class="footer-handle">@portland_events_calendar</div>
+    <div class="footer-site">pdx-events.com</div>
+  </div>
+</div>
+
+</body>
+</html>

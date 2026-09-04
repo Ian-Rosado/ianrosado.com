@@ -1,0 +1,31 @@
+# .vercelignore — files excluded from Vercel deployments (reduces Deployment Storage).
+#
+# NOTE: this repo builds TWO Vercel projects via scripts/vercel-build.js:
+#   - ianrosado.com  → astro build            (uses src/, public/)
+#   - pdx-events.com → build:pdx-events        (uses src-pdx-events/, public-pdx-events/, src-shared/)
+# So do NOT exclude src/, public/, src-pdx-events/, public-pdx-events/, src-shared/,
+# scripts/vercel-build.js, or any astro config — either build needs them.
+
+# Instagram post-generation artifacts — not part of either site
+/instagram
+
+# Local tooling, agent config, CI — not needed to build or serve the sites
+/.claude
+/.github
+/scripts/add-to-calendar
+/scripts/event-scrapers
+/scripts/logs
+/scripts/__pycache__
+
+# Non-web source originals that get dropped into public/ during editing but are
+# never served (HEIC/MOV live next to their .jpg/.mp4 web versions). Guard so they
+# can never bloat a deployment even if one is accidentally committed.
+*.HEIC
+*.heic
+*.MOV
+*.mov
+
+# Repo docs & scratch notes
+/CLAUDE.md
+/README.md
+/google_calendar_settings_how_to.txt

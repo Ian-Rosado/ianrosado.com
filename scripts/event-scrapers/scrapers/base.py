@@ -113,6 +113,14 @@ def multiday_end_date(start_dt, end_dt):
     """
     if not start_dt or not end_dt:
         return ""
+    # A source may hand us one tz-aware and one naive datetime (e.g. only the
+    # start element carries a timezone) — subtracting those raises TypeError and
+    # would quietly kill the whole scraper. We only need the local span and
+    # calendar dates, so normalize both to naive first.
+    if start_dt.tzinfo is not None:
+        start_dt = start_dt.replace(tzinfo=None)
+    if end_dt.tzinfo is not None:
+        end_dt = end_dt.replace(tzinfo=None)
     if (end_dt - start_dt) <= timedelta(hours=24):
         return ""
     last = end_dt

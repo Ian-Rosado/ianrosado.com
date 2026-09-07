@@ -13,10 +13,13 @@ description: >
 
 Two post types, each with its own reusable template in `instagram/templates/`:
 
-| Post | Days | Title | Layout | Template to copy |
-|---|---|---|---|---|
-| Events of the Week | Mon–Sun | "Events of the **Week**" | "Day"/"Night" as column headers; 7 rows of day badge + a Day tile + a Night tile (each tile = name + meta, 30px title) | `instagram/templates/events_of_the_week.template.html` |
-| Plan Your Weekend | Fri–Sun | "Plan Your **Weekend**" | one row per event, sorted by start time; full-width tile with big title left + details right | `instagram/templates/plan_your_weekend.template.html` |
+| Post | Days | # Events | Posted | Title | Layout | Template to copy |
+|---|---|---|---|---|---|---|
+| Events of the Week | Mon–Sun | 14 (one Day + one Night per day) | **Sundays** | "Events of the **Week**" | "Day"/"Night" as column headers; 7 rows of day badge + a Day tile + a Night tile (each tile = name + meta, 30px title) | `instagram/templates/events_of_the_week.template.html` |
+| Plan Your Weekend | Fri–Sun | 6–8 top events | **Thursdays** | "Plan Your **Weekend**" | one row per event, sorted by start time; full-width tile with big title left + details right | `instagram/templates/plan_your_weekend.template.html` |
+
+**Ian specifies which post type** at the start. Events of the Week is the full
+week (14 picks); Plan Your Weekend is just the 6–8 best Fri–Sun events.
 
 **Always start from the matching `*.template.html`** — never from a previous dated
 post. The templates ship in the green theme with placeholder content and `<<THEME>>`
@@ -27,22 +30,52 @@ See `portland-events-context` for voice/hashtag guidance and account details.
 
 ## The flow
 
-**Ian curates, you build.** The flow is:
-1. **Ian pastes a table of chosen events**, each with its Google Calendar **event ID**
-   (he has already picked the day/night events — you are not curating).
-2. **You look up each event's full details** from the calendar by ID (title, date,
-   time, location, cost, description).
-3. **You substitute them into the HTML template** and render the PNG.
-4. **You iterate with Ian** on wording, colors, and layout until it's right.
+Ian drives; the exact sequence is:
+
+1. **Ian specifies the post type** — "events of the week" or "plan your weekend"
+   (see the table above for what each means).
+
+2. **Curation (optional — only when Ian asks you to propose events).** Sometimes
+   Ian asks you to *find and propose* events for the post. When he does:
+   - Look through events in the date window (EOTW = the Mon–Sun week; PYW =
+     Fri–Sun). Use `get_events.py --ig --from … --to …` for the starred shortlist
+     and the calendar for the full field of options.
+   - **Pick using what you've learned from previous posts** — the picks-log memory
+     and past posts capture Ian's taste (variety across categories, free events,
+     day/night balance, what he tends to cut). Apply those patterns.
+   - **Weight events Ian flagged `★ IG? = Y`** during the add-to-calendar Review —
+     those are his own shortlist and should be favored.
+   - **Propose the list to Ian** (day/night for EOTW, or the 6–8 for PYW). **Do
+     NOT build any images or look up IG accounts yet.**
+   - Ian then makes adjustments or sends back his own final list.
+
+   If Ian just hands you the final list up front, skip this step.
+
+3. **Once the list is final, build everything (no rendering yet):**
+   - Look up each event's full details from the calendar (Step 1 below).
+   - Build the **hero image HTML** and the **event cards HTML** (Steps 2–4/4b).
+     EOTW cards = **two events per card, one card per day** (Day + Night pair).
+     PYW cards = **one card per event**.
+   - Write the **caption** and find the **IG accounts to tag** (Step 5).
+
+4. **Ian reviews the HTML** and makes adjustments directly in the files. He may
+   ask you to **spell-check his changes** — check only what he edited and report
+   any issues; don't silently rewrite his wording.
+
+5. **You correct any issues, then render the images** (hero + cards) and **deliver
+   the caption + the IG account tag list.**
+
+Rendering and the IG-account lookup happen at the **end** — after Ian's HTML
+review — even though you prepare the caption/tag list earlier.
 
 ---
 
 ## Step 1 — Look up the events (one command)
 
-**Ian curates via a pasted table — the `★ IG?` flags are just a shortlist to
-draw from, not the final set.** The primary input is always the table of events
-Ian chooses; the flag lookup is a convenience for surfacing candidates he starred
-earlier.
+This step runs once the list is **final** — whether Ian pasted it directly or you
+proposed it and he confirmed (see "The flow" above). The `★ IG?` flags are a
+shortlist to draw from during curation, not the final set; the final table Ian
+confirms is always the source of truth for what to look up here.
 
 **Pasted table (primary)** — Ian gives one row per chosen event, usually as a
 Google Calendar **edit URL** (`…/r/eventedit/<BLOB>`), sometimes a bare event ID.

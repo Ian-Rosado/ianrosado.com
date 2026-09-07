@@ -52,6 +52,10 @@ INBOX_TAB = "Inbox"
 HEADERS = [
     "include", "Title", "Date", "Time", "End Time", "Duration (min)",
     "Location", "Cost", "Calendar", "Tags", "Source", "URL", "Added",
+    # Instagram-pick flag. Scraper rows leave it blank (picks are flagged in the
+    # Review tab); the Instagram-ingest flow (instagram_events.py) sets it so an
+    # IG Inbox '★ IG?' flag rides through to the Review tab and the calendar.
+    "★ IG?",
 ]
 
 CALENDAR_LABELS = {
@@ -140,6 +144,7 @@ def event_to_row(event):
         event.get("source", ""),
         event.get("url", ""),
         added,
+        "",  # ★ IG? — blank for scraped events (picks are flagged in Review)
     ]
 
 

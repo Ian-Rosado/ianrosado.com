@@ -1221,7 +1221,9 @@ def write_review_tab(events, interactive=True):
 
         data.append([
             include_suggestion,
-            "",  # ★ IG? — you flag Instagram picks here during review
+            # Pre-filled '★' when the Inbox flagged this as an Instagram pick
+            # (IG-ingest flow); otherwise blank to flag by hand during review.
+            "★" if e.get("_ig_flag") else "",
             e["index"],
             e["date"],
             e["time"],
@@ -2840,6 +2842,10 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
         tags         = get(row, "Tags", "tags", "Genre", "genre")
         source       = get(row, "Source", "source")
         url          = get(row, "URL", "url", "link", "Link")
+        # Instagram-pick flag carried from the Inbox (set by the IG-ingest flow
+        # from the IG Inbox '★ IG?' column). Pre-fills the Review tab's '★ IG?'
+        # so the pick lands on the calendar in purple without re-flagging.
+        ig_flag      = bool(get(row, "★ IG?", "IG?", "ig", "IG").strip())
 
         cal_result = resolve_calendar(calendar_str)
         if not cal_result:
@@ -2877,6 +2883,8 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
             "tags":           tags,
             "source":         source,
             "url":            url,
+            # Instagram-pick flag from the Inbox → pre-fills the Review '★ IG?'.
+            "_ig_flag":       ig_flag,
             # ai_skip already includes intra-batch cross-source dupes (via the
             # Dedup tab, or set(cross_source_skip) under --no-ai).
             "suggested_skip": suggested_skip,

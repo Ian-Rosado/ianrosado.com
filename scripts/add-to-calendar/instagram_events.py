@@ -68,17 +68,24 @@ WORK_DIR = Path("ig_work")  # gitignored; holds fetched flyers + manifest.json
 IG_COOKIES_FILE = Path(__file__).resolve().parent / "ig_cookies.txt"
 
 # IG Inbox tab columns (1-indexed):
-#   A URL | B Status | C Note
+#   A Link | B ★ IG? | C Status | D Note
+# ★ IG?: any non-empty value flags every event from this post as an Instagram
+#   pick — it rides through to the Review tab's own '★ IG?' column and lands on
+#   the calendar in purple, exactly like a pick flagged during the scraper
+#   review (see _to_inbox_row / portland_events_add.py's IG handling).
 # Status: blank/"pending" = to do, "done" = added, "skip" = ignored, "error".
-IG_HEADERS = ["Instagram URL", "Status", "Note"]
+IG_HEADERS = ["Link", "★ IG?", "Status", "Note"]
 
 # Inbox tab columns (must match scripts/event-scrapers/sheets_writer.py):
 #   A include | B Title | C Date | D Time | E End Time | F Duration (min)
 #   G Location | H Cost | I Calendar | J Tags | K Source | L URL | M Added
+#   N ★ IG?  (Instagram-pick flag; blank for scraper rows, set for IG picks)
 INBOX_HEADERS = [
     "include", "Title", "Date", "Time", "End Time", "Duration (min)",
-    "Location", "Cost", "Calendar", "Tags", "Source", "URL", "Added",
+    "Location", "Cost", "Calendar", "Tags", "Source", "URL", "Added", "★ IG?",
 ]
+# The '★ IG?' value written into the Inbox for a flagged pick.
+IG_PICK_MARK = "★"
 
 # The Inbox "Calendar" column must hold the full calendar NAME (e.g.
 # "Portland Live Music") — that's what portland_events_add.py's categorize step
@@ -122,7 +129,7 @@ def get_ig_tab(sheet, create=False):
             sys.exit(1)
         ws = sheet.add_worksheet(title=IG_TAB, rows=500, cols=len(IG_HEADERS))
         ws.update([IG_HEADERS], "A1")
-        ws.format("A1:C1", {"textFormat": {"bold": True}})
+        ws.format("A1:D1", {"textFormat": {"bold": True}})
         return ws
 
 
@@ -133,7 +140,13 @@ def _norm_status(v):
 
 
 def read_ig_rows(ws):
-    """Return list of dicts: {row, url, status, note} for every data row."""
+    """Return list of dicts: {row, url, ig, status, note} for every data row.
+
+    Layout (Ian added the '★ IG?' column at B, shifting Status/Note right):
+      A Link | B ★ IG? | C Status | D Note
+    'ig' is True when the '★ IG?' cell is non-empty — those posts' events are
+    written as Instagram picks.
+    """
     vals = ws.get_all_values()
     out = []
     for i, r in enumerate(vals[1:], start=2):  # row 1 = headers
@@ -143,8 +156,9 @@ def read_ig_rows(ws):
         out.append({
             "row": i,
             "url": url,
-            "status": _norm_status(r[1] if len(r) > 1 else ""),
-            "note": (r[2] if len(r) > 2 else "").strip(),
+            "ig": bool((r[1] if len(r) > 1 else "").strip()),
+            "status": _norm_status(r[2] if len(r) > 2 else ""),
+            "note": (r[3] if len(r) > 3 else "").strip(),
         })
     return out
 
@@ -310,6 +324,7 @@ def cmd_fetch(args):
                           cookies_from_browser=args.cookies_from_browser,
                           cookies_file=cookies_file)
         info["ig_row"] = r["row"]
+        info["ig"] = r.get("ig", False)   # ★ IG? flag from the IG Inbox
         manifest.append(info)
         status = "ok" if (info["image"] or info["caption"]) else f"FAILED ({info['error']})"
         print(f"  → {status}"
@@ -346,6 +361,7 @@ def _to_inbox_row(ev):
         ev.get("source", "Instagram"),
         ev.get("url", ""),
         datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        IG_PICK_MARK if ev.get("ig") else "",   # ★ IG? — pre-fills the Review flag
     ]
 
 
@@ -357,7 +373,8 @@ def cmd_write(args):
     title + date):
         title, date (YYYY-MM-DD), time (HH:MM 24h), end_time, duration,
         location, cost, calendar (name or code), tags (comma-separated),
-        source, url, ig_row (the IG Inbox row this came from)
+        source, url, ig_row (the IG Inbox row this came from),
+        ig (true → flag as an Instagram pick: purple on the calendar)
     Multiple events may share one ig_row (a post can list several events); the
     link is marked done once all of its events are written.
     """
@@ -368,10 +385,16 @@ def cmd_write(args):
 
     sheet = get_sheet()
 
-    # Ensure Inbox tab + header exist.
+    # Ensure Inbox tab + header exist, with the '★ IG?' column present so the
+    # flag we append in column N is read back by header name downstream. (The
+    # scraper's sheets_writer now writes the same 14-column header; this guards
+    # the case where an older 13-column header is still in place.)
     import gspread
     try:
         inbox = sheet.worksheet(INBOX_TAB)
+        header = inbox.row_values(1)
+        if header != INBOX_HEADERS:
+            inbox.update([INBOX_HEADERS], "A1")
     except gspread.WorksheetNotFound:
         inbox = sheet.add_worksheet(title=INBOX_TAB, rows=2000, cols=len(INBOX_HEADERS))
         inbox.update([INBOX_HEADERS], "A1")
@@ -397,8 +420,9 @@ def cmd_write(args):
         ws = get_ig_tab(sheet)
         updates = []
         for rn, n in ig_rows.items():
-            updates.append({"range": f"B{rn}", "values": [["done"]]})
-            updates.append({"range": f"C{rn}", "values": [[f"added {n} event(s) {datetime.now():%Y-%m-%d}"]]})
+            # Status → col C, Note → col D (the ★ IG? flag lives in col B).
+            updates.append({"range": f"C{rn}", "values": [["done"]]})
+            updates.append({"range": f"D{rn}", "values": [[f"added {n} event(s) {datetime.now():%Y-%m-%d}"]]})
         ws.batch_update(updates)
         print(f"Marked {len(ig_rows)} IG Inbox link(s) done.")
     else:

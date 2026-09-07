@@ -28,6 +28,14 @@ On his phone, for each good post: Instagram share sheet → **Copy link** → pa
 into column A of the **IG Inbox** tab of the Portland Events Inbox sheet, one
 link per row. He does this over the week; the batch runs later on demand.
 
+**Flagging a post as an Instagram pick.** The IG Inbox tab has a **`★ IG?`**
+column (B). Put anything in it (e.g. `★`) next to a link to mark that post's
+events as Instagram-post candidates — they ride through to the Review tab's own
+`★ IG?` column and land on the calendar in **purple** (a shared `ig=candidate`
+property), exactly like a pick flagged during the scraper review;
+`get_events.py --ig` pulls them back later. IG Inbox columns are now
+`A Link · B ★ IG? · C Status · D Note`.
+
 The first time ever: `python instagram_events.py init` creates the IG Inbox tab.
 
 ## The flow when Ian says "run the IG batch"
@@ -88,6 +96,7 @@ The first time ever: `python instagram_events.py init` creates the IG Inbox tab.
    | `calendar` | your routing guess — see below |
    | `url` | keep the original Instagram link |
    | `ig_row` | copy from the manifest so the link gets marked done |
+   | `ig` | copy the manifest's `ig` value onto **every** event from this post — `true` when Ian flagged the post `★ IG?`, so it's added in purple as an Instagram pick |
 
    **One post can list several events** (e.g. a weekly lineup) — emit one object
    per event, all sharing the same `ig_row`.
@@ -108,7 +117,7 @@ The first time ever: `python instagram_events.py init` creates the IG Inbox tab.
        "date": "2026-07-11", "time": "21:00",
        "location": "Lovecraft Bar", "cost": "$5",
        "tags": "goth, darkwave, 21+", "calendar": "Portland Live Music",
-       "url": "https://www.instagram.com/p/ABC123/", "ig_row": 2
+       "url": "https://www.instagram.com/p/ABC123/", "ig_row": 2, "ig": true
      }
    ]
    ```

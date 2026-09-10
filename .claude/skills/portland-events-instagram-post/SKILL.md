@@ -335,6 +335,10 @@ and hashtag sets). Lead with the weekend/week, 1–2 lines of flavor, then hasht
 like `#PDXEvents #Portland #FreePDX`. The graphic already carries the details, so
 the caption stays brief.
 
+**Always include the call-to-action line `Comment with questions or suggestions!`**
+in every caption (place it near the end, before the hashtags). This is required on
+every post — EOTW and PYW alike.
+
 **Tag list** — Ian tags, per event, the **venue**, the **organizer**, and the
 **performers** — every one that exists and has a findable account. Work through
 all three for each event:

@@ -181,6 +181,9 @@ KNOWN_DROP_PATTERNS = [
                                    # (preseason football, Fire/Thorns watch parties);
                                    # the actual games come from the sports scrapers
     "university of portland women's soccer",  # college games Ian doesn't track
+    "nfl",               # NFL watch parties (Mon/Thu/Sun football, esp. Wonderlove)
+    "private event",     # "Private Event", "CLOSED FOR A PRIVATE EVENT", etc.
+    "private party",     # variation of the above
 ]
 
 # Single-purpose sources whose calendar is definitionally correct — a sports
@@ -2509,6 +2512,8 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
     COMEDY_KEYWORDS = [
         "comedy", "stand-up", "stand up", "standup", "open mic", "improv",
         "roast battle", "laugh", "comedian", "comic", "joke night",
+        "tits up",  # recurring comedy happy hour at Alberta Street Pub (tagged
+                    # "music" by the source but it's stand-up)
     ]
     KARAOKE_KEYWORDS = ["karaoke"]
     # DJ/dance nights built around a theme (decade throwbacks, music-video

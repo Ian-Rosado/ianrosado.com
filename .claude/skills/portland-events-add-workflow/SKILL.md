@@ -206,6 +206,19 @@ sources are noisy. Don't trust the bucket — scan for these patterns:
 or food-vendor markets (e.g. *Portland Saturday Market*, vegan pop-up markets, a
 "Black & Indigenous Market") belong in **Portland Events**. When unsure, ask.
 
+### Clinton Street Theater — flag film screenings, keep events (manual, every run)
+
+Clinton Street Theater listings arrive from PDX Pipeline with a **`cstpdx.com`** URL
+(and often **no location**). Ian's rule: **generally exclude the movies, keep the
+genuine events** (festivals, live shadowcasts, drag/burlesque, Q&As). Because code
+can't reliably tell a film screening from a live event, this is **not auto-dropped** —
+Ian chose flag-don't-auto-drop. So each run, scan for CST listings (title contains
+"Clinton St(reet) Theater" or the URL is `cstpdx.com`) and **mark the plain film
+screenings `n` at Review** (e.g. *Shrek the Third*, a first-run/rep film title),
+leaving the actual events. When you programmatically set one to `n`, tag it with
+`record_claude_review_edit(<#>, "include", "n")` (see Step 3) so it doesn't pollute
+the corrections profile.
+
 ### Categorize tab columns (0-indexed)
 
 | Col | Idx | Field |

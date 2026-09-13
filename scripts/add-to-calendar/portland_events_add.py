@@ -83,7 +83,11 @@ def is_redundant_trivia(title):
     """True if this title is a trivia night run by a company we already have
     full recurring coverage for via trivia_generate.py."""
     title_l = title.lower()
-    return "trivia" in title_l and any(c in title_l for c in KNOWN_TRIVIA_COMPANIES)
+    # ShanRock brands its nights "Triviology"/"Trivialogy" (no literal "trivia"
+    # substring), so it slipped past the plain "trivia" check and PDX After Dark
+    # then mislabeled it Live Music. Accept those spellings too.
+    trivia_word = any(w in title_l for w in ("trivia", "triviology", "trivialogy"))
+    return trivia_word and any(c in title_l for c in KNOWN_TRIVIA_COMPANIES)
 
 
 # ── Trivia routing ───────────────────────────────────────────────────────────
@@ -182,6 +186,9 @@ KNOWN_DROP_PATTERNS = [
                                    # the actual games come from the sports scrapers
     "university of portland women's soccer",  # college games Ian doesn't track
     "nfl",               # NFL watch parties (Mon/Thu/Sun football, esp. Wonderlove)
+    "sunday football",   # Wonderlove et al. football watch parties (title has no
+    "night football",    # "nfl" — catches "Sunday Football", "Monday/Thursday
+                         # Night Football"; the games themselves aren't local events
     "private event",     # "Private Event", "CLOSED FOR A PRIVATE EVENT", etc.
     "private party",     # variation of the above
 ]

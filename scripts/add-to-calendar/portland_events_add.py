@@ -185,6 +185,9 @@ KNOWN_DROP_PATTERNS = [
                                    # (preseason football, Fire/Thorns watch parties);
                                    # the actual games come from the sports scrapers
     "university of portland women's soccer",  # college games Ian doesn't track
+    "university of portland men's soccer",    # same — college games Ian doesn't track
+    "potluck in the park",  # recurring free-meal service, not an event (cf. blanchet house)
+    "weekend train rides",  # recurring Oregon Rail Heritage Center rides — never wanted
     "nfl",               # NFL watch parties (Mon/Thu/Sun football, esp. Wonderlove)
     "sunday football",   # Wonderlove et al. football watch parties (title has no
     "night football",    # "nfl" — catches "Sunday Football", "Monday/Thursday

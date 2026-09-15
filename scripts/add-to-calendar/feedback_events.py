@@ -61,10 +61,25 @@ import inbox_common
 #   https://docs.google.com/spreadsheets/d/<THIS PART>/edit
 # (or pass --sheet-id on the command line). FEEDBACK_TAB is the worksheet the
 # Form writes to — Google's default name is "Form Responses 1".
-FEEDBACK_SHEET_ID = ""            # <-- set me once (or use --sheet-id)
+FEEDBACK_SHEET_ID = ""            # <-- set me once (or use --sheet-id); paste path doesn't need it
 FEEDBACK_TAB = "Form Responses 1"  # <-- confirm/override with --tab
 
 DEFAULT_SOURCE = "Feedback form"
+
+# The feedback Google Form's columns, in order. Ian's usual route is to paste
+# response rows WITHOUT the header, so this fixes what each column means:
+#   Timestamp | Your Name (optional) | Your Contact info (optional) | Feedback or Suggestions
+# The sheet-read path uses the sheet's own header row; this list is the
+# reference and the paste-order contract (see the skill's paste section).
+FORM_COLUMNS = [
+    "Timestamp",
+    "Your Name (optional)",
+    "Your Contact info (optional)",
+    "Feedback or Suggestions",
+]
+# Header substrings that mark a submitter (name/contact) column rather than the
+# event description, so the description text isn't polluted with contact info.
+CONTACT_HINTS = ("name", "contact", "email")
 
 # Bookkeeping tab (lives in the MAIN Portland Events Inbox sheet).
 LOG_TAB = "Feedback Log"
@@ -127,38 +142,52 @@ def _col_index(headers, *names):
     return None
 
 
+def _submitter_and_text(fields):
+    """Split a submission's answers into a submitter label (name/contact/email
+    columns) and the event-description text (everything else), keeping the
+    question labels so the extraction step has context. `fields` is an ordered
+    {header: value} of non-empty answers, Timestamp already removed."""
+    submitter_bits, lines = [], []
+    for h, v in fields.items():
+        if any(k in h.lower() for k in CONTACT_HINTS):
+            submitter_bits.append(v)
+        else:
+            lines.append(f"{h}: {v}")
+    return " / ".join(submitter_bits), "\n".join(lines)
+
+
 def read_submissions(resp_ws):
-    """Return a list of submission dicts, newest sheet-order preserved.
+    """Return a list of submission dicts, sheet order preserved.
 
     Each: {row, key (timestamp), submitter, fields {header: value}, text}.
-    `text` concatenates every non-empty answer as "Question: answer" lines so
-    the extraction step works no matter how the form's questions are worded.
+    Name/contact columns become `submitter`; the rest form `text` as
+    "Question: answer" lines, so the extraction step works no matter how the
+    form's questions are worded.
     """
     vals = resp_ws.get_all_values()
     if not vals:
         return []
     headers = vals[0]
     ts_i = _col_index(headers, "Timestamp") or 0
-    email_i = _col_index(headers, "Email Address", "Email")
     out = []
     for i, r in enumerate(vals[1:], start=2):  # row 1 = headers
         if not any((c or "").strip() for c in r):
             continue
         key = (r[ts_i] if len(r) > ts_i else "").strip()
-        submitter = (r[email_i].strip() if email_i is not None and len(r) > email_i else "")
-        fields, lines = {}, []
+        fields = {}
         for j, h in enumerate(headers):
-            val = (r[j] if len(r) > j else "").strip()
-            if not val or j in (ts_i,):
+            if j == ts_i:
                 continue
-            fields[h] = val
-            lines.append(f"{h}: {val}")
+            val = (r[j] if len(r) > j else "").strip()
+            if val:
+                fields[h] = val
+        submitter, text = _submitter_and_text(fields)
         out.append({
             "row": i,
             "key": key or f"row{i}",   # fall back to row id if a form has no Timestamp
             "submitter": submitter,
             "fields": fields,
-            "text": "\n".join(lines),
+            "text": text,
         })
     return out
 

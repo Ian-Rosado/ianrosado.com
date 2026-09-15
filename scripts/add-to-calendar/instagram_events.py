@@ -52,8 +52,12 @@ sys.stdout.reconfigure(encoding="utf-8")
 
 # ── Config ──────────────────────────────────────────────────────────────────
 
-SHEET_ID = "1mx4U8klkuTeR1E7lmChABlShfE_kVwAFaV37gAjoId4"
-INBOX_TAB = "Inbox"        # the existing pipeline entry point (13 cols, see below)
+import inbox_common
+
+# Shared with flyer_events.py / feedback_events.py — one source of truth for the
+# Inbox row shape, calendar codes, and sheet id (see inbox_common.py).
+SHEET_ID = inbox_common.SHEET_ID
+INBOX_TAB = inbox_common.INBOX_TAB   # the existing pipeline entry point
 IG_TAB = "IG Inbox"        # where phone-pasted Instagram links land
 
 WORK_DIR = Path("ig_work")  # gitignored; holds fetched flyers + manifest.json
@@ -72,7 +76,7 @@ IG_COOKIES_FILE = Path(__file__).resolve().parent / "ig_cookies.txt"
 # ★ IG?: any non-empty value flags every event from this post as an Instagram
 #   pick — it rides through to the Review tab's own '★ IG?' column and lands on
 #   the calendar in purple, exactly like a pick flagged during the scraper
-#   review (see _to_inbox_row / portland_events_add.py's IG handling).
+#   review (see inbox_common.to_inbox_row / portland_events_add.py's IG handling).
 # Status: blank/"pending" = to do, "done" = added, "skip" = ignored, "error".
 IG_HEADERS = ["Link", "★ IG?", "Status", "Note"]
 
@@ -80,12 +84,9 @@ IG_HEADERS = ["Link", "★ IG?", "Status", "Note"]
 #   A include | B Title | C Date | D Time | E End Time | F Duration (min)
 #   G Location | H Cost | I Calendar | J Tags | K Source | L URL | M Added
 #   N ★ IG?  (Instagram-pick flag; blank for scraper rows, set for IG picks)
-INBOX_HEADERS = [
-    "include", "Title", "Date", "Time", "End Time", "Duration (min)",
-    "Location", "Cost", "Calendar", "Tags", "Source", "URL", "Added", "★ IG?",
-]
+INBOX_HEADERS = inbox_common.INBOX_HEADERS
 # The '★ IG?' value written into the Inbox for a flagged pick.
-IG_PICK_MARK = "★"
+IG_PICK_MARK = inbox_common.IG_PICK_MARK
 
 # The Inbox "Calendar" column must hold the full calendar NAME (e.g.
 # "Portland Live Music") — that's what portland_events_add.py's categorize step
@@ -93,30 +94,15 @@ IG_PICK_MARK = "★"
 # NOT recognized and silently default to Portland Events, so we normalize any
 # short code back to its full name before writing. The categorize stage can
 # still override the guess; this is just a starting point.
-CALENDAR_CODES = {
-    "Portland Events": "events",
-    "Portland Live Music": "music",
-    "Portland Comedy": "comedy",
-    "Portland Karaoke": "karaoke",
-    "Portland Farmers Markets": "farmers_market",
-    "Portland Sports": "sports",
-    "Trivia Nights - SE": "trivia_se",
-    "Trivia Nights - N/NE": "trivia_nne",
-    "Trivia Nights - NW/SW": "trivia_nwsw",
-    "Trivia Nights - Further Out": "trivia_further",
-}
+CALENDAR_CODES = inbox_common.CALENDAR_CODES
 # Inverse: short code -> full name, so a code passed in rows.json still expands.
-_CODE_TO_NAME = {code: name for name, code in CALENDAR_CODES.items()}
+_CODE_TO_NAME = inbox_common._CODE_TO_NAME
 
 
 # ── Auth (shared token — scripts/google_auth.py) ────────────────────────────
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import google_auth
-
-
 def get_sheet():
-    return google_auth.get_gspread_client().open_by_key(SHEET_ID)
+    return inbox_common.get_sheet()
 
 
 def get_ig_tab(sheet, create=False):
@@ -338,33 +324,6 @@ def cmd_fetch(args):
     print("      writes a rows.json — then:  python instagram_events.py write rows.json")
 
 
-def _to_inbox_row(ev):
-    """Map one extracted-event dict to the 13-column Inbox row order.
-
-    The Inbox tab's first column is the blank 'include' flag (filled during
-    review), so the row must lead with an empty cell to stay aligned — see
-    INBOX_HEADERS / scripts/event-scrapers/sheets_writer.py.
-    """
-    cal = ev.get("calendar", "")
-    cal_name = _CODE_TO_NAME.get(cal, cal)  # accept a name or a code; store the name
-    return [
-        "",                            # include (blank; set during review)
-        ev.get("title", ""),
-        ev.get("date", ""),            # YYYY-MM-DD
-        ev.get("time", ""),            # HH:MM 24h
-        ev.get("end_time", ""),
-        ev.get("duration", ""),
-        ev.get("location", ""),
-        ev.get("cost", ""),
-        cal_name,
-        ev.get("tags", ""),            # comma-separated
-        ev.get("source", "Instagram"),
-        ev.get("url", ""),
-        datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        IG_PICK_MARK if ev.get("ig") else "",   # ★ IG? — pre-fills the Review flag
-    ]
-
-
 def cmd_write(args):
     """
     Append extracted events to the Inbox tab and mark their source IG links done.
@@ -384,31 +343,10 @@ def cmd_write(args):
         sys.exit(1)
 
     sheet = get_sheet()
-
-    # Ensure Inbox tab + header exist, with the '★ IG?' column present so the
-    # flag we append in column N is read back by header name downstream. (The
-    # scraper's sheets_writer now writes the same 14-column header; this guards
-    # the case where an older 13-column header is still in place.)
-    import gspread
-    try:
-        inbox = sheet.worksheet(INBOX_TAB)
-        header = inbox.row_values(1)
-        if header != INBOX_HEADERS:
-            inbox.update([INBOX_HEADERS], "A1")
-    except gspread.WorksheetNotFound:
-        inbox = sheet.add_worksheet(title=INBOX_TAB, rows=2000, cols=len(INBOX_HEADERS))
-        inbox.update([INBOX_HEADERS], "A1")
-
-    rows = [_to_inbox_row(ev) for ev in events]
+    inbox_common.append_events(events, default_source="Instagram",
+                               sheet=sheet, dry_run=args.dry_run)
     if args.dry_run:
-        print(f"[dry-run] would append {len(rows)} row(s) to '{INBOX_TAB}':")
-        for r in rows:
-            print("  " + " | ".join(str(c) for c in r[:8]))
         return
-
-    if rows:
-        inbox.append_rows(rows, value_input_option="USER_ENTERED")
-    print(f"Appended {len(rows)} event(s) to '{INBOX_TAB}'.")
 
     # Mark the source IG links done (and note how many events each produced).
     ig_rows = {}

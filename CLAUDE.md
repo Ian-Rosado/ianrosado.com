@@ -31,7 +31,8 @@ The `.claude/launch.json` is configured for the preview server using the full no
 
 The Portland Events calendar scripts and Instagram workflows (`scripts/add-to-calendar/`,
 `.claude/skills/portland-events-instagram-post/`, `.claude/skills/portland-events-instagram-ingest/`,
-`.claude/skills/portland-events-add-workflow/`)
+`.claude/skills/portland-events-add-workflow/`, `.claude/skills/portland-events-flyer-ingest/`,
+`.claude/skills/portland-events-feedback-ingest/`)
 need a few things that **aren't in git** — set these up once per machine:
 
 1. **Copy the calendar credentials** — these are gitignored on purpose (secrets) and must be
@@ -51,6 +52,20 @@ need a few things that **aren't in git** — set these up once per machine:
    driven by `scripts/add-to-calendar/instagram_events.py`. Links land in an
    "IG Inbox" sheet tab; the script fetches each flyer + caption, Claude extracts
    the event fields, and the rows feed the normal add-to-calendar review/commit.
+
+   **Two more intake methods feed the same Inbox → review → commit pipeline**
+   (all three front-ends share `scripts/add-to-calendar/inbox_common.py` for the
+   Inbox row shape + calendar routing):
+   - **Flyer photos** — Ian attaches photos of flyers he snaps around town in the
+     chat; Claude reads them with vision, extracts the fields, and
+     `flyer_events.py write` drops rows into the Inbox. See the
+     **portland-events-flyer-ingest** skill. No extra setup.
+   - **Feedback form** — `feedback_events.py` reads new (mostly free-text)
+     submissions from the public Google Form's responses sheet, Claude extracts
+     the fields, and it writes to the Inbox + logs each response done in a
+     "Feedback Log" tab. See the **portland-events-feedback-ingest** skill.
+     One-time: set `FEEDBACK_SHEET_ID` (the responses-sheet key) at the top of
+     `feedback_events.py`, then `python feedback_events.py init`.
 
 3. **Install GitHub CLI** (so PRs can be opened from the new machine), then authenticate:
    ```powershell

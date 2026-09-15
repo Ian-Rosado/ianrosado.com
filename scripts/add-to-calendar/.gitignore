@@ -8,3 +8,9 @@ venv/
 
 # Instagram ingest working dir (fetched flyers + manifest, per-machine)
 ig_work/
+
+# Flyer-photo ingest scratch (per-run rows.json)
+flyer_work/
+
+# Feedback-form ingest scratch (per-run manifest + rows.json)
+feedback_work/

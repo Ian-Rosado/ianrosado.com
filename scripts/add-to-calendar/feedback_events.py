@@ -246,15 +246,41 @@ def cmd_write(args):
 
     client = _client()
     sheet = client.open_by_key(inbox_common.SHEET_ID)
-    n = inbox_common.append_events(events, default_source=DEFAULT_SOURCE,
-                                   sheet=sheet, dry_run=args.dry_run)
+
+    # Dedup guard: skip events whose resp_key is already in the Feedback Log
+    # (a submission written on an earlier run — the usual cause is re-pasting a
+    # row we've already processed). Events without a resp_key (ad-hoc pastes)
+    # can't be deduped and always pass. --allow-dupes disables the guard.
+    already = set()
+    if not args.allow_dupes:
+        import gspread
+        try:
+            already = logged_keys(sheet.worksheet(LOG_TAB))
+        except gspread.WorksheetNotFound:
+            already = set()   # no Feedback Log tab yet → nothing logged
+    kept, skipped = [], []
+    for ev in events:
+        rk = ev.get("resp_key")
+        (skipped if (rk and rk in already) else kept).append(ev)
+
+    if skipped:
+        skeys = sorted({ev.get("resp_key") for ev in skipped})
+        print(f"Skipping {len(skipped)} event(s) from {len(skeys)} already-logged "
+              f"submission(s): {', '.join(skeys)}")
+        print("  (Already in the Feedback Log. Pass --allow-dupes to add anyway.)")
+    if not kept:
+        print("Nothing new to write.")
+        return
+
+    inbox_common.append_events(kept, default_source=DEFAULT_SOURCE,
+                               sheet=sheet, dry_run=args.dry_run)
     if args.dry_run:
         return
 
     # Log each source submission done (keyed by resp_key). Events sharing a
     # resp_key came from one submission; log it once with the event count.
     counts, submitters = {}, {}
-    for ev in events:
+    for ev in kept:
         rk = ev.get("resp_key")
         if rk:
             counts[rk] = counts.get(rk, 0) + 1
@@ -266,8 +292,8 @@ def cmd_write(args):
         log_ws.append_rows(rows, value_input_option="USER_ENTERED")
         print(f"Logged {len(counts)} submission(s) done in '{LOG_TAB}'.")
     else:
-        print("(No resp_key values in rows.json — nothing logged. Paste-path events "
-              "are expected to have none.)")
+        print("(No resp_key values in the written rows — nothing logged. Paste-path "
+              "events are expected to have none.)")
 
 
 def main():
@@ -284,6 +310,9 @@ def main():
     w = sub.add_parser("write", help="Append extracted events (rows.json) to Inbox, log submissions done.")
     w.add_argument("rows", help="Path to the JSON list of extracted event dicts.")
     w.add_argument("--dry-run", action="store_true", help="Show what would be written, don't write.")
+    w.add_argument("--allow-dupes", action="store_true",
+                   help="Write events even if their resp_key is already in the Feedback Log "
+                        "(default: skip already-logged submissions).")
     w.set_defaults(func=cmd_write)
 
     args = p.parse_args()

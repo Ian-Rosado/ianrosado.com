@@ -194,6 +194,14 @@ KNOWN_DROP_PATTERNS = [
                          # Night Football"; the games themselves aren't local events
     "private event",     # "Private Event", "CLOSED FOR A PRIVATE EVENT", etc.
     "private party",     # variation of the above
+    "community fridge",  # recurring mutual-aid fridge (Rosehip Medic), not an event (dropped 12x)
+]
+
+# Whole venues whose recurring program the user doesn't feature. Matched against
+# the title OR the location: PDX Pipeline embeds "@ Venue" in the title, while
+# other sources put the venue in the location field.
+KNOWN_DROP_VENUES = [
+    "hip chicks do wine",  # recurring winery events (wine flights, sangria, BBQ)
 ]
 
 # Single-purpose sources whose calendar is definitionally correct — a sports
@@ -230,10 +238,14 @@ TRUSTED_SOURCES = {
 _TOUR_RE = re.compile(r"\btour\b", re.I)
 
 
-def is_unwanted_recurring(title):
-    """True for recurring listings the user has repeatedly dropped at Review."""
+def is_unwanted_recurring(title, location=""):
+    """True for recurring listings the user has repeatedly dropped at Review —
+    matched against the title, or (for venue-wide drops) the title OR location."""
     title_l = title.lower()
-    return any(p in title_l for p in KNOWN_DROP_PATTERNS)
+    if any(p in title_l for p in KNOWN_DROP_PATTERNS):
+        return True
+    hay = f"{title_l} {location.lower()}"
+    return any(v in hay for v in KNOWN_DROP_VENUES)
 
 
 def is_bike_ride(tags_str, url=""):
@@ -2487,7 +2499,9 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
 
     # Drop recurring listings the user consistently rejects (tourist cruises, …).
     before = len(rows)
-    rows = [r for r in rows if not is_unwanted_recurring(get(r, "Title", "title", "summary"))]
+    rows = [r for r in rows if not is_unwanted_recurring(
+        get(r, "Title", "title", "summary"),
+        get(r, "Location", "location", "Venue", "venue"))]
     if before != len(rows):
         print(f"  Dropped {before - len(rows)} unwanted recurring listing(s) (see KNOWN_DROP_PATTERNS)")
 
@@ -2889,8 +2903,13 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
             loc = f"{loc}, Portland, OR"
 
         block_hit = blocklist_match(_norm_title(title), title)
+        # "sold out" / "canceled" / "cancelled" pre-fill 'n' (not a hard drop) —
+        # a title word is only a strong hint, so the row still surfaces in Review
+        # in case it's a false positive (e.g. a show named "Cancelled Plans").
+        title_low = title.lower()
         suggested_skip = (i in ai_skip or i in exact_skip or bool(block_hit)
-                          or "sold out" in title.lower())
+                          or any(w in title_low for w in
+                                 ("sold out", "canceled", "cancelled")))
 
         # Trusted recurring event: approved often enough to pre-fill 'y'.
         # Never on a row that's also flagged as a dup/blocked/venue-time hit.

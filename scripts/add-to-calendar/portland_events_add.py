@@ -1068,7 +1068,10 @@ def build_calendar_event_body(e):
     url          = e["url"]
     tags         = e.get("tags", "")
     source       = e.get("source", "")
-    end_time_str = get(row, "End Time", "end_time", "EndTime")
+    # Prefer an End Time set on the event (a Review-tab edit flows here via the
+    # override); otherwise fall back to the original Inbox row's End Time column.
+    # An explicit blank ("" from the Review tab) is honored — don't fall back.
+    end_time_str = e.get("end_time", get(row, "End Time", "end_time", "EndTime"))
     duration_str = get(row, "Duration (min)", "duration", "Duration")
 
     # Farmers markets and trivia are free by default — only carry a cost when
@@ -1149,7 +1152,7 @@ def resolve_calendar(calendar_str):
 
 REVIEW_TAB = "Review"
 REVIEW_HEADERS = [
-    "→ Include? (y/n/r)", "★ IG?", "#", "Date", "Time", "Calendar",
+    "→ Include? (y/n/r)", "★ IG?", "#", "Date", "Time", "End Time", "Calendar",
     "Title", "Location", "Cost", "Tags", "Source", "URL", "Calendar Link",
     "Note",
 ]
@@ -1165,8 +1168,10 @@ IG_FLAG_VALUE = "candidate"  # extendedProperties.shared.ig value
 
 REVIEW_INSTRUCTIONS = (
     "Keepers are pre-filled 'y' (will be added) — flip to 'n' to skip. "
-    "You can also EDIT any of Date, Time, Calendar, Title, Location, Cost, Tags, URL — "
+    "You can also EDIT any of Date, Time, End Time, Calendar, Title, Location, Cost, Tags, URL — "
     "your edits are written to the calendar. "
+    "For a multi-day event, leave Time blank and put an end DATE (YYYY-MM-DD) in End Time — "
+    "it becomes an all-day event spanning Date through that day (inclusive). "
     "Put anything (e.g. ★) in the 'IG?' column to flag an event as an Instagram pick — "
     "it's added in purple and tagged so it can be pulled up for a post later. "
     "Suggested duplicates are pre-filled 'n'. "
@@ -1240,6 +1245,7 @@ def write_review_tab(events, interactive=True):
             e["index"],
             e["date"],
             e["time"],
+            e.get("end_time", ""),
             e["calendar"],
             e["title"],
             e["location"],
@@ -1281,27 +1287,27 @@ def write_review_tab(events, interactive=True):
         return runs
 
     formats = [
-        {"range": "A1:N1", "format": {"textFormat": {"bold": True}}},
-        {"range": "A2:N2", "format": {
+        {"range": "A1:O1", "format": {"textFormat": {"bold": True}}},
+        {"range": "A2:O2", "format": {
             "textFormat": {"italic": True},
             "backgroundColor": {"red": 1.0, "green": 0.95, "blue": 0.8},
         }},
     ]
     dup_fmt = {"backgroundColor": {"red": 1.0, "green": 0.95, "blue": 0.6}}
     for a, b in _coalesce(dup_rows):
-        formats.append({"range": f"A{a}:N{b}", "format": dup_fmt})
+        formats.append({"range": f"A{a}:O{b}", "format": dup_fmt})
     # Venue+time '?' rows — orange so they stand out from yellow auto-skips
     review_fmt = {"backgroundColor": {"red": 1.0, "green": 0.8, "blue": 0.6}}
     for a, b in _coalesce(review_rows):
-        formats.append({"range": f"A{a}:N{b}", "format": review_fmt})
+        formats.append({"range": f"A{a}:O{b}", "format": review_fmt})
     # Trusted recurring pre-filled 'y' rows — green
     trusted_fmt = {"backgroundColor": {"red": 0.85, "green": 0.95, "blue": 0.85}}
     for a, b in _coalesce(trusted_rows):
-        formats.append({"range": f"A{a}:N{b}", "format": trusted_fmt})
-    # Highlight just the Calendar Link cell (now column M) for lookup-needed rows
+        formats.append({"range": f"A{a}:O{b}", "format": trusted_fmt})
+    # Highlight just the Calendar Link cell (now column N) for lookup-needed rows
     lookup_fmt = {"backgroundColor": {"red": 1.0, "green": 0.85, "blue": 0.85}}
     for a, b in _coalesce(lookup_rows):
-        formats.append({"range": f"M{a}:M{b}", "format": lookup_fmt})
+        formats.append({"range": f"N{a}:N{b}", "format": lookup_fmt})
 
     # Ensure the grid is tall enough for the highlight ranges before formatting.
     # ws.update (values) auto-expands the grid to fit the data, but batch_format's
@@ -1346,8 +1352,10 @@ def write_review_tab(events, interactive=True):
 def read_review_tab(ws):
     """Read back the Include column plus all editable fields from the Review tab.
 
-    Any edits you make in the sheet to Date, Time, Calendar, Title, Location,
-    Cost, Tags, or URL are read back and applied before the calendar write.
+    Any edits you make in the sheet to Date, Time, End Time, Calendar, Title,
+    Location, Cost, Tags, or URL are read back and applied before the calendar
+    write. End Time accepts a clock time (HH:MM) or, for a multi-day event with
+    a blank Time, an end DATE (YYYY-MM-DD) — same convention as the Inbox.
 
     Columns are resolved by HEADER NAME, not fixed position, so this stays
     correct across layout changes — e.g. the '★ IG?' column was inserted after
@@ -1393,7 +1401,8 @@ def read_review_tab(ws):
         "ig":       find_contains("ig?"),
         "num":      find_exact("#"),
         "date":     find_exact("date"),
-        "time":     find_exact("time"),
+        "time":     find_exact("time"),        # exact — avoids "end time"
+        "end_time": find_exact("end time"),
         "calendar": find_exact("calendar"),   # exact — avoids "calendar link"
         "title":    find_exact("title"),
         "location": find_exact("location"),
@@ -1435,6 +1444,7 @@ def read_review_tab(ws):
         ov = {
             "date":     cell(sheet_row, "date"),
             "time":     cell(sheet_row, "time"),
+            "end_time": cell(sheet_row, "end_time"),
             "title":    cell(sheet_row, "title"),
             "location": cell(sheet_row, "location"),
             "cost":     cell(sheet_row, "cost"),
@@ -2857,6 +2867,9 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
         tags         = get(row, "Tags", "tags", "Genre", "genre")
         source       = get(row, "Source", "source")
         url          = get(row, "URL", "url", "link", "Link")
+        # End Time from the Inbox (a clock time, or an end DATE for a multi-day
+        # event) — surfaced in the Review tab so it can be seen and edited there.
+        end_time_str = get(row, "End Time", "end_time", "EndTime")
         # Instagram-pick flag carried from the Inbox (set by the IG-ingest flow
         # from the IG Inbox '★ IG?' column). Pre-fills the Review tab's '★ IG?'
         # so the pick lands on the calendar in purple without re-flagging.
@@ -2892,6 +2905,7 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
             "title":          title,
             "date":           date_str,
             "time":           time_str,
+            "end_time":       end_time_str,
             "calendar":       cal_name,
             "location":       loc,
             "cost":           cost,
@@ -2954,7 +2968,7 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
 
     # Apply any manual field edits made in the Review tab. Any of these columns
     # can be edited in the sheet and the edit flows to the calendar write.
-    EDITABLE_FIELDS = ["date", "time", "calendar", "title", "location", "cost", "tags", "url"]
+    EDITABLE_FIELDS = ["date", "time", "end_time", "calendar", "title", "location", "cost", "tags", "url"]
     review_by_index = {e["index"]: e for e in review_events}
 
     # Mark Instagram-flagged events so build_calendar_event_body colors them and

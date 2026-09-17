@@ -175,6 +175,11 @@ Example — Ian pastes:
 
 ## Notes & failure modes
 
+- **Re-pasting is safe.** `write` skips any event whose `resp_key` is already in
+  the Feedback Log (the usual cause: pasting a row that was processed on an
+  earlier run) and prints which submissions it skipped. Pass `--allow-dupes` to
+  force those through. Events with no `resp_key` can't be deduped, so they always
+  write.
 - **Don't write to the calendar from this skill.** Only the pipeline's `commit`
   stage does, after Ian's Review-tab pass — the guardrail.
 - **Dedup is handled downstream** — don't worry about a submitted event already

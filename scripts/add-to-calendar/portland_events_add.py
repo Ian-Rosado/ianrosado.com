@@ -3050,11 +3050,17 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
     # call also promotes anything approved since last run — so run it even when
     # this batch produced no new skips.
     already_flagged = ai_skip | exact_skip | cross_source_skip
+    # Skips Claude made programmatically (e.g. flipping a past-dated event to 'n',
+    # or a dedup pass) are automation, not the user choosing to drop a title —
+    # keep them out of the audit queue the same way they're kept out of the
+    # user-mistake corrections profile.
+    claude_skipped = {i for i, ed in _load_claude_edits().items() if ed.get("include") == "n"}
     user_skipped = [
         review_by_index[e["index"]]
         for e in review_events
         if e["index"] not in kept_indices  # neither added ('y') nor replaced ('r')
         and e["index"] not in already_flagged
+        and e["index"] not in claude_skipped  # automated skip, not a user drop
         and not e.get("suggested_skip")  # wasn't pre-suggested, user chose this
         and not e.get("trusted_note")    # trusted vetoes go to the Trusted tab, not the blocklist
     ]

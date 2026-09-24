@@ -195,6 +195,14 @@ KNOWN_DROP_PATTERNS = [
     "private event",     # "Private Event", "CLOSED FOR A PRIVATE EVENT", etc.
     "private party",     # variation of the above
     "community fridge",  # recurring mutual-aid fridge (Rosehip Medic), not an event (dropped 12x)
+    # Free-food / meal services — recurring social services, not events (cf.
+    # blanchet house, potluck in the park). Kept specific to avoid false matches
+    # (e.g. "drop-in meals" not bare "drop-in", "community meals" not "community").
+    "street outreach",   # JOIN — Street Outreach Meals
+    "drop-in meals",     # Outside In — Drop-In Meals for Youth
+    "community meals",   # Central City Concern — Free Community Meals
+    "food pantry",       # generic food pantries
+    "assisi pantry",     # St. Francis of Assisi Pantry (dropped 5x)
 ]
 
 # Whole venues whose recurring program the user doesn't feature. Matched against

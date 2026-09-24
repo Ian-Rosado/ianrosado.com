@@ -184,8 +184,9 @@ KNOWN_DROP_PATTERNS = [
     "where to watch in portland",  # "Where to Watch" watch-party listicles
                                    # (preseason football, Fire/Thorns watch parties);
                                    # the actual games come from the sports scrapers
-    "university of portland women's soccer",  # college games Ian doesn't track
-    "university of portland men's soccer",    # same — college games Ian doesn't track
+    # (University of Portland soccer used to be dropped here; the Portland Pilots
+    #  scraper now provides UP home games authoritatively, so generic-source
+    #  listings dedup against those instead of being dropped.)
     "potluck in the park",  # recurring free-meal service, not an event (cf. blanchet house)
     "weekend train rides",  # recurring Oregon Rail Heritage Center rides — never wanted
     "nfl",               # NFL watch parties (Mon/Thu/Sun football, esp. Wonderlove)
@@ -229,6 +230,7 @@ TRUSTED_SOURCES = {
     "Portland Bangers":      "Portland Sports",
     "Portland Cherry Bombs": "Portland Sports",
     "Rose City Rollers":     "Portland Sports",
+    "Portland Pilots":       "Portland Sports",
 }
 
 # Exception to source trust: comedians and speakers tour through music venues

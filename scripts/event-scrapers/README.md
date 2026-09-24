@@ -108,8 +108,13 @@ gets its events from three sources, all normalized by one parser:
 | `portland_bangers.py` | Portland Bangers | soccer (USL League Two) | modular11 (via `modular11_common.py`), team 4928 |
 | `cherry_bombs_fc.py` | Portland Cherry Bombs | soccer (USL W League) | modular11, team 8112 |
 | `rose_city_rollers.py` | Rose City Rollers | roller derby | rosecityrollers.com (static HTML) |
+| `portland_pilots.py` | Portland Pilots (Univ. of Portland) | soccer (M/W), volleyball, basketball (M/W) | ESPN site.api (via `espn_common.py`), one call per team |
 
 Notes:
+- **Portland Pilots = University of Portland (D1).** One module pulls all five
+  teams (Merlo Field for soccer, Chiles Center for volleyball/basketball).
+  Titled "Portland Pilots <Sport>" so generic-source UP listings dedup against
+  these authoritative ones at commit rather than being dropped.
 - **Offseason returns 0, not an error.** Blazers (NBA), Rip City Remix (G League),
   and Winterhawks (WHL) all run fall→spring, so they return 0 upcoming games in
   summer; they auto-populate when the next season's schedule publishes (~Aug).

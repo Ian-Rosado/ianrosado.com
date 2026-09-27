@@ -258,6 +258,42 @@ def is_unwanted_recurring(title, location=""):
     return any(v in hay for v in KNOWN_DROP_VENUES)
 
 
+# Movie theaters that show ~exclusively films. An event at one of these whose
+# title reads as a plain screening (just the film name, maybe a year or a film
+# format) is a movie screening, which the user pre-skips at Review. Kept to
+# "pure" cinemas on purpose — mixed venues (Hollywood Theatre, McMenamins,
+# Tomorrow Theater) host concerts/talks too, so they're deliberately excluded.
+KNOWN_CINEMA_VENUES = [
+    "laurelhurst theater", "clinton street theater", "clinton st theater",
+    "moreland theater", "cinema 21", "studio one theater", "academy theater",
+    "living room theater", "5th avenue cinema", "cinemagic", "kiggins theat",
+]
+# Title markers that identify a screening even when the venue field is blank
+# (e.g. the Church of Film series lists no location).
+_SCREENING_MARKERS = ["church of film", "35mm", "16mm"]
+# Title words that signal MORE than a plain screening (a paired event, live
+# performance, festival, etc.) — those are left alone for a human call.
+_SCREENING_EXTRA = [
+    "q&a", "q & a", "premiere", "sing-along", "singalong", "sing along",
+    "festival", "live score", "live music", "live band", "cabaret", "burlesque",
+    "drag ", "trivia", "comedy", "concert", "workshop", "fundraiser", "benefit",
+    "afterparty", "after party",
+]
+
+
+def is_movie_screening(title, location=""):
+    """True for a plain movie screening — a known cinema venue, or a screening
+    marker in the title — but NOT when the title signals extra programming around
+    the film. Used to pre-fill 'n' at Review (a soft skip, not a hard drop, so a
+    special screening can still be rescued)."""
+    t = (title or "").lower()
+    if any(w in t for w in _SCREENING_EXTRA):
+        return False
+    loc = re.sub(r"\.", "", (location or "").lower())
+    return (any(v in loc for v in KNOWN_CINEMA_VENUES)
+            or any(m in t for m in _SCREENING_MARKERS))
+
+
 def is_bike_ride(tags_str, url=""):
     """True if this is a Pedalpalooza / Shift bike ride. Those live on the
     imported Pedalpalooza calendar and the user drops them at Review every run.
@@ -1278,7 +1314,7 @@ def write_review_tab(events, interactive=True):
             link_display,
             # One note column; the text (not the highlight) is the reliable
             # signal for WHY a row arrived pre-filled.
-            vt_note or trusted_note or e.get("block_note", ""),
+            vt_note or trusted_note or e.get("block_note", "") or e.get("screening_note", ""),
         ])
         sheet_row = len(data) + 2  # +2 for header + instructions rows
         if e.get("suggested_skip"):
@@ -2917,7 +2953,9 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
         # a title word is only a strong hint, so the row still surfaces in Review
         # in case it's a false positive (e.g. a show named "Cancelled Plans").
         title_low = title.lower()
+        movie_screening = is_movie_screening(title, loc)
         suggested_skip = (i in ai_skip or i in exact_skip or bool(block_hit)
+                          or movie_screening
                           or any(w in title_low for w in
                                  ("sold out", "canceled", "cancelled")))
 
@@ -2949,6 +2987,9 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
             # fuzzy blocklist hits carry the matched entry as a visible note
             "block_note":     (f"blocklist: {block_hit[:45]}" if block_hit
                                and _norm_title(title) != block_hit else ""),
+            # movie screening at a cinema — visible reason for the pre-filled 'n'
+            "screening_note": ("movie screening — flip to 'y' to keep"
+                               if movie_screening else ""),
             # venue+time overlap that needs a human call ('?' + note), if any
             "vt_review_note": vt_review_flags.get(i, ""),
             # non-empty = arrives pre-filled 'y'; flipping to 'n' vetoes it

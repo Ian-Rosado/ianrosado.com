@@ -27,6 +27,7 @@ export interface CalEvent {
   sortKey: number;     // minutes since midnight (Pacific) for chronological sort; -1 for all-day
   allDay: boolean;
   location: string;
+  mapUrl: string;      // Google Maps search link for the location, or '' if unmappable
   cost: string;
   costClass: CostClass; // free | paid | unknown — for filtering
   genres: string[];     // from extendedProperties.shared.genres
@@ -63,6 +64,38 @@ function stripHtml(s: string): string {
     .replace(/&nbsp;/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
+}
+
+// Decode HTML entities that leak in from scraped sources (e.g. "OMSI&#8217;s",
+// "Bread &amp; Blossom") without touching anything else in the string.
+function decodeEntities(s: string): string {
+  return s
+    .replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(Number(n)))
+    .replace(/&#x([0-9a-f]+);/gi, (_, n) => String.fromCodePoint(parseInt(n, 16)))
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;|&apos;/g, "'")
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&');
+}
+
+// Build a Google Maps search link for a free-text location. The universal
+// "maps/search/?api=1" URL opens the Maps app on phones and the web elsewhere.
+// Multi-line locations (common on ride calendars: venue / cross streets /
+// meet-up notes) keep only the first two lines. Locations with no state get
+// "Portland, OR" appended so bare venue names ("Ground Kontrol Classic Arcade")
+// resolve locally. Placeholders like "Online", "TBD" or "various bars" get no link.
+const UNMAPPABLE = /\b(online|virtual|zoom|livestream|tba|tbd|various|locations)\b/i;
+const HAS_REGION = /\b(OR|Oregon|WA|Washington|BC|ID|CA|United States|USA)\b|\b\d{5}\b/;
+export function buildMapUrl(location: string): string {
+  const lines = location.split('\n').map((l) => l.trim()).filter(Boolean);
+  if (!lines.length || UNMAPPABLE.test(lines[0])) return '';
+  let query = lines.slice(0, 2).filter((l) => !UNMAPPABLE.test(l)).join(', ');
+  if (!HAS_REGION.test(query)) {
+    query = /\bPortland$/i.test(query) ? `${query}, OR` : `${query}, Portland, OR`;
+  }
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
 }
 
 // Extract a cost from a description line. Returns ONLY a price or free token,
@@ -242,6 +275,8 @@ function toCalEvents(
   }
 
   const multiDay = days.length > 1;
+  const location = decodeEntities(item.location?.trim() ?? '');
+  const mapUrl = buildMapUrl(location);
 
   return days.map((date, i) => ({
     id: multiDay ? `${item.id}_${date}` : item.id,
@@ -251,7 +286,8 @@ function toCalEvents(
     endTime,
     sortKey,
     allDay,
-    location: item.location?.trim() ?? '',
+    location,
+    mapUrl,
     cost,
     costClass,
     genres,

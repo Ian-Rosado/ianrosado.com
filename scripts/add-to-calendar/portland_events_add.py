@@ -296,11 +296,16 @@ def is_movie_screening(title, location=""):
 
 # A location already names its place if it has a state/province, a zip, a
 # country, or a known out-of-Portland city — then no "Portland, OR" is added.
-# Word-bounded so "Cafe" doesn't read as ", CA"; abbreviations are case-sensitive
-# so "park or cafe" isn't Oregon.
+# A state only counts in address position (after a comma/space, before a zip,
+# comma, ")" or the end), so "Oregon Convention Center", "(BC 102)" and "park
+# or cafe" aren't read as places. A zip only counts at the end or before a comma,
+# so a house number ("14477 SE Stark St") isn't one.
+_STATE_TAIL = r"(?=\s*(?:\d{5}|,|\)|$))"
 _HAS_REGION = re.compile(
-    r"\b(OR|Ore|WA|Wash|CA|ID|BC|B\.C|USA)\b|\b\d{5}\b"
-    r"|(?i:\b(Oregon|Washington|United States|Canada)\b)")
+    r"[,\s]\s*(?:OR|Ore\.?|WA|Wash\.?|CA|ID|BC|B\.C\.?)" + _STATE_TAIL
+    + r"|[,\s]\s*(?i:Oregon|Washington)" + _STATE_TAIL
+    + r"|\b\d{5}(?:-\d{4})?(?=\s*(?:,|$))"
+    + r"|(?i:\b(?:USA|United States|Canada)\b)")
 _KNOWN_CITIES = re.compile(
     r"\b(Portland|Vancouver|Beaverton|Hillsboro|Gresham|Lake Oswego|Tigard|Tualatin"
     r"|Milwaukie|Oregon City|West Linn|Wilsonville|Happy Valley|Clackamas|Troutdale"

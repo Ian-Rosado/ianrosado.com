@@ -42,6 +42,9 @@ const link = e.url || e.googleUrl;
     {e.location && (
       <span class="text-stone-400"> · {e.location}</span>
     )}
+    {e.mapUrl && (
+      <a href={e.mapUrl} target="_blank" rel="noopener noreferrer" class="map-link ml-1 whitespace-nowrap text-xs text-orange-600 hover:text-orange-700 hover:underline" title={`Open ${e.location} in Google Maps`}>📍(map)</a>
+    )}
   </span>
 
   <!-- Cost -->

@@ -1,5 +1,17 @@
 {
   "_comment": "Map of venue/organizer name (lowercase, name before first comma of the event location) -> Instagram handle (no @). Used by get_events.py to build the post's tag list. Only add handles verified from the org's own site or IG page — a wrong tag pings a stranger. Grows over time like venues.json.",
+  "frog pond farm": "frogpondfarmoregon",
+  "portland art museum": "portlandartmuseum",
+  "prost portland": "prostportland",
+  "los mal hablados": "losmalhabladospdx",
+  "hermanos gutierrez": "hermanosgutierrez",
+  "kiln": "kiln.co",
+  "immigrant worker justice benefit": "worker_justice",
+  "worker justice": "worker_justice",
+  "urban harvest cider fest": "portlandfruittreeproject",
+  "portland fruit tree project": "portlandfruittreeproject",
+  "portland craft chocolate festival": "pdxccf",
+  "avatarave": "mato_at_ma.to",
   "portland dragonboat festival": "pdxdragonboat",
   "cathedral park performing arts collective": "cathedralparkarts",
   "cathedral park performing arts": "cathedralparkarts",
@@ -219,5 +231,7 @@
   "radical mycology": "mycoculturerad",
   "sellwood community house": "sellwoodcommunityhouse",
   "repair pdx": "repairpdx",
-  "chrome industries": "chrome_industries"
+  "chrome industries": "chrome_industries",
+  "ground kontrol": "groundkontrol",
+  "portland greek festival": "portlandgreekfestival"
 }

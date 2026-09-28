@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Portland Events – Event Detail Cards (Week)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;900&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #111;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    padding: 24px;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .post {
+    width: 1080px;
+    height: 1080px;
+    background: #15163a;          /* Indigo canvas — matches week grid */
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .card-header {
+    padding: 32px 48px 16px;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .week-label {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+    margin-bottom: 4px;
+  }
+  .title { font-family: 'DM Serif Display', serif; font-size: 46px; color: #fff; line-height: 1.05; }
+  .title span { color: #8a9bff; }  /* Indigo accent */
+  .logo { position: absolute; top: 32px; right: 48px; width: 68px; height: 68px; }
+  .divider {
+    height: 3px;
+    margin: 0 48px;
+    background: linear-gradient(90deg, #8a9bff, transparent);  /* Indigo accent */
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+  .card-body {
+    flex: 1;
+    padding: 24px 40px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    min-height: 0;
+  }
+  .day-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+  .day-name {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.38);
+  }
+  .day-num {
+    font-size: 52px;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1;
+  }
+  .events-pair {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    flex: 1;
+    min-height: 0;
+  }
+  .event-tile {
+    border-radius: 18px;
+    padding: 22px 28px 20px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+  .event-tile.teal   { --accent: #3ecfb0; background: #003d35; }
+  .event-tile.blue   { --accent: #5ca8ff; background: #0a2050; }
+  .event-tile.coral  { --accent: #ff7a5c; background: #5c1a10; }
+  .event-tile.purple { --accent: #b39dff; background: #2d1a5e; }
+  .event-tile.pink   { --accent: #f07ad8; background: #4a1040; }
+  .event-tile.amber  { --accent: #f0a500; background: #7a3d00; }
+  .event-tile.green  { --accent: #5cdc80; background: #0a3520; }
+  .category {
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .event-name {
+    font-family: 'DM Serif Display', serif;
+    font-size: 42px;
+    color: #fff;
+    line-height: 1.07;
+    margin-bottom: 10px;
+  }
+  .description {
+    font-size: 27px;
+    font-weight: 400;
+    color: rgba(255,255,255,0.68);
+    line-height: 1.5;
+    flex: 1;
+  }
+  .tile-meta {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    font-size: 19px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.5);
+  }
+  .card-footer {
+    padding: 12px 48px 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  .footer-site, .footer-handle { font-size: 19px; color: rgba(255,255,255,0.38); }
+</style>
+</head>
+<body>
+
+<!-- ─── Card · MON 28 ─── -->
+<div class="post">
+  <div class="card-header">
+    <div class="week-label">This week in Portland · SEP 28 – OCT 4</div>
+    <div class="title">Events of the <span>Week</span></div>
+    <svg class="logo" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="5" width="30" height="26" rx="4" fill="#F28C28"/><rect x="1" y="5" width="30" height="9" rx="4" fill="#d4720e"/><rect x="1" y="10" width="30" height="4" fill="#d4720e"/><rect x="9" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="19.5" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.6"/></svg>
+  </div>
+  <div class="divider"></div>
+  <div class="card-body">
+    <div class="day-header"><span class="day-name">Mon</span><span class="day-num">28</span></div>
+    <div class="events-pair">
+      <div class="event-tile teal">
+        <div class="category">☀️ Pumpkin Patch</div>
+        <div class="event-name">Pumpkin Patch @ Frog Pond Farm</div>
+        <div class="description">Kick off pumpkin season at Frog Pond Farm — llamas, a bounce house, a corn box, and rows of gourds to pick. A wholesome, kid-friendly way to start October.</div>
+        <div class="tile-meta">Frog Pond Farm · All day</div>
+      </div>
+      <div class="event-tile green">
+        <div class="category">🌙 Benefit Concert</div>
+        <div class="event-name">Immigrant Worker Justice Benefit</div>
+        <div class="description">A benefit concert for immigrant worker justice at the Hawthorne Theatre, headlined by Portland's own Latin skacore crew Los Mal Hablados. A high-energy, big-hearted way to open Latiné Heritage Month.</div>
+        <div class="tile-meta">Hawthorne Theatre · 6:30 PM · From $25</div>
+      </div>
+    </div>
+  </div>
+  <div class="card-footer"><span class="footer-site">pdx-events.com</span><span class="footer-handle">@portland_events_calendar</span></div>
+</div>
+
+<!-- ─── Card · TUE 29 ─── -->
+<div class="post">
+  <div class="card-header">
+    <div class="week-label">This week in Portland · SEP 28 – OCT 4</div>
+    <div class="title">Events of the <span>Week</span></div>
+    <svg class="logo" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="5" width="30" height="26" rx="4" fill="#F28C28"/><rect x="1" y="5" width="30" height="9" rx="4" fill="#d4720e"/><rect x="1" y="10" width="30" height="4" fill="#d4720e"/><rect x="9" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="19.5" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.6"/></svg>
+  </div>
+  <div class="divider"></div>
+  <div class="card-body">
+    <div class="day-header"><span class="day-name">Tue</span><span class="day-num">29</span></div>
+    <div class="events-pair">
+      <div class="event-tile amber">
+        <div class="category">☀️ Immersive Art</div>
+        <div class="event-name">Lookout Landscape</div>
+        <div class="description">The World Forestry Center's immersive forest-art exhibition surrounds you in light, sound, and canopy. A quiet, dreamy escape into the woods without leaving the city.</div>
+        <div class="tile-meta">World Forestry Center · 10 AM</div>
+      </div>
+      <div class="event-tile coral">
+        <div class="category">🌙 Live Music</div>
+        <div class="event-name">Hermanos Gutiérrez</div>
+        <div class="description">The Swiss-Ecuadorian brothers make cinematic, wordless desert guitar that fills a room — with Portland's own Y La Bamba opening. A gorgeous Latiné Heritage Month night at the Schnitzer.</div>
+        <div class="tile-meta">Arlene Schnitzer · 8 PM</div>
+      </div>
+    </div>
+  </div>
+  <div class="card-footer"><span class="footer-site">pdx-events.com</span><span class="footer-handle">@portland_events_calendar</span></div>
+</div>
+
+<!-- ─── Card · WED 30 ─── -->
+<div class="post">
+  <div class="card-header">
+    <div class="week-label">This week in Portland · SEP 28 – OCT 4</div>
+    <div class="title">Events of the <span>Week</span></div>
+    <svg class="logo" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="5" width="30" height="26" rx="4" fill="#F28C28"/><rect x="1" y="5" width="30" height="9" rx="4" fill="#d4720e"/><rect x="1" y="10" width="30" height="4" fill="#d4720e"/><rect x="9" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="19.5" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.6"/></svg>
+  </div>
+  <div class="divider"></div>
+  <div class="card-body">
+    <div class="day-header"><span class="day-name">Wed</span><span class="day-num">30</span></div>
+    <div class="events-pair">
+      <div class="event-tile purple">
+        <div class="category">☀️ Arcade</div>
+        <div class="event-name">$6 Free Play @ Ground Kontrol</div>
+        <div class="description">Ground Kontrol flips to free play — one cover, all the pinball and classic arcade games you can handle. A nostalgic downtown afternoon (all-ages early, 21+ later).</div>
+        <div class="tile-meta">Ground Kontrol · 12 PM · $6–12</div>
+      </div>
+      <div class="event-tile pink">
+        <div class="category">🌙 Dance & Benefit</div>
+        <div class="event-name">Dancing with the Rose City Stars</div>
+        <div class="description">Portland's spin on "Dancing with the Stars" pairs local personalities with pro dancers for a glittery night of competition at the Alberta Rose — all for a good cause.</div>
+        <div class="tile-meta">Alberta Rose Theatre · 7 PM</div>
+      </div>
+    </div>
+  </div>
+  <div class="card-footer"><span class="footer-site">pdx-events.com</span><span class="footer-handle">@portland_events_calendar</span></div>
+</div>
+
+<!-- ─── Card · THU 1 ─── -->
+<div class="post">
+  <div class="card-header">
+    <div class="week-label">This week in Portland · SEP 28 – OCT 4</div>
+    <div class="title">Events of the <span>Week</span></div>
+    <svg class="logo" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="5" width="30" height="26" rx="4" fill="#F28C28"/><rect x="1" y="5" width="30" height="9" rx="4" fill="#d4720e"/><rect x="1" y="10" width="30" height="4" fill="#d4720e"/><rect x="9" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="19.5" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.6"/></svg>
+  </div>
+  <div class="divider"></div>
+  <div class="card-body">
+    <div class="day-header"><span class="day-name">Thu</span><span class="day-num">1</span></div>
+    <div class="events-pair">
+      <div class="event-tile teal">
+        <div class="category">☀️ Free Museum</div>
+        <div class="event-name">Free First Thursday · PAM</div>
+        <div class="description">The Portland Art Museum throws open its doors free all day for First Thursday. Wander world-class galleries downtown, then catch the Pearl District art walk after dark.</div>
+        <div class="tile-meta">Portland Art Museum · 10 AM · Free</div>
+      </div>
+      <div class="event-tile green">
+        <div class="category">🌙 Talk & Ideas</div>
+        <div class="event-name">This Is Not a Talk About AI</div>
+        <div class="description">A provocative live talk at Kiln that uses fire, anthropology, and technology to ask what makes us human. Come for big ideas and real conversation — not a tech pitch.</div>
+        <div class="tile-meta">Kiln · 5 PM</div>
+      </div>
+    </div>
+  </div>
+  <div class="card-footer"><span class="footer-site">pdx-events.com</span><span class="footer-handle">@portland_events_calendar</span></div>
+</div>
+
+<!-- ─── Card · FRI 2 ─── -->
+<div class="post">
+  <div class="card-header">
+    <div class="week-label">This week in Portland · SEP 28 – OCT 4</div>
+    <div class="title">Events of the <span>Week</span></div>
+    <svg class="logo" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="5" width="30" height="26" rx="4" fill="#F28C28"/><rect x="1" y="5" width="30" height="9" rx="4" fill="#d4720e"/><rect x="1" y="10" width="30" height="4" fill="#d4720e"/><rect x="9" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="19.5" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.6"/></svg>
+  </div>
+  <div class="divider"></div>
+  <div class="card-body">
+    <div class="day-header"><span class="day-name">Fri</span><span class="day-num">2</span></div>
+    <div class="events-pair">
+      <div class="event-tile amber">
+        <div class="category">☀️ Cultural Festival</div>
+        <div class="event-name">Portland Greek Festival</div>
+        <div class="description">Three days of Greek food, pastries, dancing, and culture at Holy Trinity Cathedral — free to enter, impossible to leave hungry. Opa!</div>
+        <div class="tile-meta">Holy Trinity · 10 AM · Free</div>
+      </div>
+      <div class="event-tile coral">
+        <div class="category">🌙 Oktoberfest</div>
+        <div class="event-name">Prost Oktoberfest</div>
+        <div class="description">Portland's favorite German bar throws a full Oktoberfest on N Mississippi — steins, brats, live oompah, and a heated tent. Peak fall in the city.</div>
+        <div class="tile-meta">Prost Portland · All day</div>
+      </div>
+    </div>
+  </div>
+  <div class="card-footer"><span class="footer-site">pdx-events.com</span><span class="footer-handle">@portland_events_calendar</span></div>
+</div>
+
+<!-- ─── Card · SAT 3 ─── -->
+<div class="post">
+  <div class="card-header">
+    <div class="week-label">This week in Portland · SEP 28 – OCT 4</div>
+    <div class="title">Events of the <span>Week</span></div>
+    <svg class="logo" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="5" width="30" height="26" rx="4" fill="#F28C28"/><rect x="1" y="5" width="30" height="9" rx="4" fill="#d4720e"/><rect x="1" y="10" width="30" height="4" fill="#d4720e"/><rect x="9" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="19.5" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.6"/></svg>
+  </div>
+  <div class="divider"></div>
+  <div class="card-body">
+    <div class="day-header"><span class="day-name">Sat</span><span class="day-num">3</span></div>
+    <div class="events-pair">
+      <div class="event-tile purple">
+        <div class="category">☀️ Cider Fest</div>
+        <div class="event-name">Urban Harvest Cider Fest</div>
+        <div class="description">Leaven Community's free harvest fest presses fresh cider from neighborhood apples, with live music, crafts, and fall fun. Bring your own apples or other fruit to press, or just show up and enjoy!</div>
+        <div class="tile-meta">Leaven Community Center · 12 PM · Free</div>
+      </div>
+      <div class="event-tile pink">
+        <div class="category">🌙 Pop-Punk Night</div>
+        <div class="event-name">Tell All Your Friends</div>
+        <div class="description">Vol. 2 of the all-out pop-punk cover night at Dante's — sing along to every 2000s emo anthem you pretend you've outgrown. Eyeliner encouraged.</div>
+        <div class="tile-meta">Dante's · 8:30 PM</div>
+      </div>
+    </div>
+  </div>
+  <div class="card-footer"><span class="footer-site">pdx-events.com</span><span class="footer-handle">@portland_events_calendar</span></div>
+</div>
+
+<!-- ─── Card · SUN 4 ─── -->
+<div class="post">
+  <div class="card-header">
+    <div class="week-label">This week in Portland · SEP 28 – OCT 4</div>
+    <div class="title">Events of the <span>Week</span></div>
+    <svg class="logo" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="5" width="30" height="26" rx="4" fill="#F28C28"/><rect x="1" y="5" width="30" height="9" rx="4" fill="#d4720e"/><rect x="1" y="10" width="30" height="4" fill="#d4720e"/><rect x="9" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="19.5" y="1" width="3.5" height="9" rx="1.75" fill="#a85a0a"/><rect x="5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="18" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="13.5" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.95"/><rect x="22" y="24.5" width="5" height="4.5" rx="1" fill="white" opacity="0.6"/></svg>
+  </div>
+  <div class="divider"></div>
+  <div class="card-body">
+    <div class="day-header"><span class="day-name">Sun</span><span class="day-num">4</span></div>
+    <div class="events-pair">
+      <div class="event-tile teal">
+        <div class="category">☀️ Food Festival</div>
+        <div class="event-name">Portland Craft Chocolate Festival</div>
+        <div class="description">Taste your way through dozens of craft chocolate makers at Olympic Mills — bean-to-bar samples, truffles, and more. A rich, delicious weekend for your sweet tooth.</div>
+        <div class="tile-meta">Olympic Mills · 11 AM</div>
+      </div>
+      <div class="event-tile green">
+        <div class="category">🌙 Dance Party</div>
+        <div class="event-name">AVATARAVE</div>
+        <div class="description">A high-energy, anime-inspired queer rave at Holocene to close out the week — DJs, techno and house, and a come-as-your-favorite-character crowd. 21+.</div>
+        <div class="tile-meta">Holocene · 9 PM · 21+</div>
+      </div>
+    </div>
+  </div>
+  <div class="card-footer"><span class="footer-site">pdx-events.com</span><span class="footer-handle">@portland_events_calendar</span></div>
+</div>
+
+</body>
+</html>

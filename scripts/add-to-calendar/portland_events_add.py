@@ -294,6 +294,30 @@ def is_movie_screening(title, location=""):
             or any(m in t for m in _SCREENING_MARKERS))
 
 
+# A location already names its place if it has a state/province, a zip, a
+# country, or a known out-of-Portland city — then no "Portland, OR" is added.
+# Word-bounded so "Cafe" doesn't read as ", CA"; abbreviations are case-sensitive
+# so "park or cafe" isn't Oregon.
+_HAS_REGION = re.compile(
+    r"\b(OR|Ore|WA|Wash|CA|ID|BC|B\.C|USA)\b|\b\d{5}\b"
+    r"|(?i:\b(Oregon|Washington|United States|Canada)\b)")
+_KNOWN_CITIES = re.compile(
+    r"\b(Portland|Vancouver|Beaverton|Hillsboro|Gresham|Lake Oswego|Tigard|Tualatin"
+    r"|Milwaukie|Oregon City|West Linn|Wilsonville|Happy Valley|Clackamas|Troutdale"
+    r"|Fairview|Sherwood|Forest Grove|Cornelius|Gaston|Canby|Camas|Washougal"
+    r"|Battle Ground|Ridgefield|Salem|Eugene|Corvallis|Bend|Hood River|Astoria"
+    r"|Seattle|Chicago)\b", re.I)
+
+
+def with_default_city(location):
+    """Clean a raw location and append ", Portland, OR" only when it names no
+    place of its own. Also decodes HTML entities scrapers leak ("OMSI&#8217;s")."""
+    loc = html.unescape(location or "").strip()
+    if not loc or _HAS_REGION.search(loc) or _KNOWN_CITIES.search(loc):
+        return loc
+    return f"{loc}, Portland, OR"
+
+
 def is_bike_ride(tags_str, url=""):
     """True if this is a Pedalpalooza / Shift bike ride. Those live on the
     imported Pedalpalooza calendar and the user drops them at Review every run.
@@ -2942,11 +2966,7 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
         cal_name, _ = cal_result
         title = build_title(title_raw, cal_name, tags)
 
-        loc = location.strip() if location else ""
-        cities = [", OR", ", WA", ", CA", "Portland", "Vancouver", "Troutdale",
-                  "Canby", "Beaverton", "Hillsboro", "Lake Oswego", "Gresham"]
-        if loc and not any(c in loc for c in cities):
-            loc = f"{loc}, Portland, OR"
+        loc = with_default_city(location)
 
         block_hit = blocklist_match(_norm_title(title), title)
         # "sold out" / "canceled" / "cancelled" pre-fill 'n' (not a hard drop) —

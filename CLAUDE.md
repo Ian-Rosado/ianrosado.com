@@ -87,6 +87,12 @@ PNG, and you commit/PR as usual.
    schtasks /Create /TN "PortlandEvents Weekly Prep" /TR '"<repo>\scripts\weekly_prep.cmd"' /SC WEEKLY /D MON /ST 06:00
    ```
 
+**Trivia Nights refresh** — the four Trivia Nights calendars are generated from
+`scripts/add-to-calendar/trivia_schedule.json`. To re-pull every trivia
+company's schedule: `python trivia_scrape.py` (diff only) → `--write` to update
+the JSON → `python trivia_generate.py --dry-run` → `python trivia_generate.py`.
+New venues whose site gives no address go in `ADDRESS_OVERRIDES` in the scraper.
+
 5. **(Optional) Instagram fetch cookies** — export a Netscape `cookies.txt` from a
    browser logged into instagram.com and save it as
    `scripts/add-to-calendar/ig_cookies.txt` (gitignored). The IG-ingest fetch uses

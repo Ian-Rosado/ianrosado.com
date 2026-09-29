@@ -355,6 +355,28 @@ duplicate if any of:
   (before or after the human review) to resolve the `?` rows and catch matches
   the mechanical layer misses (re-phrasings, headliner-vs-lineup, nicknames).
   `?` means *surfaced, not skipped* — read_dedup_tab only treats `y` as skip.
+- **Rarity-weighted title match, all calendars** (`find_fuzzy_dup_existing`,
+  helpers in `dedup_match.py`) — title words are weighted by how rare they are
+  across the window + batch, venue words inside titles are ignored, and
+  weekdays/filler ("tour", "live", "night") don't count. Same date plus:
+  strong weighted overlap and same place, start within 90 min → `y`
+  ("title+venue" / "title+time" dup); same distinctive act at a **different
+  venue** → `?` "same act, different venue" (a source has the venue wrong —
+  Bella Kay at Crystal vs Wonder Ballroom); same place but hours apart → `?`
+  "different time" (early/late shows). Two titles that each carry their own
+  distinctive word ("Eraserhead x Fresh Cut Flowers" vs "Blue Velvet x …")
+  never auto-match.
+- **Venue normalization + `venue_aliases.json`** — venues compare after
+  accent folding, "&" → "and", theatre → theater, a trailing "Portland"
+  dropped, and the alias table (Whitsell / PAM CUT / Finley → Portland Art
+  Museum, …). When a dup slips through because two sources name one venue
+  differently, **add the variant to `venue_aliases.json`**. A street address
+  only matches when one side has no venue name (the trivia calendars are
+  address-only); two named venues at one address are different rooms.
+- **Link refresh ranks links** (`url_rank`): a matched duplicate only replaces
+  an existing event's link with a *better kind* (ticket/organizer page >
+  aggregator page > homepage/social), and only when the match is at the same
+  place or a strong 2+-word title match.
 
 ```python
 import re

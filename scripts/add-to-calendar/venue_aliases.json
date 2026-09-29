@@ -1,0 +1,10 @@
+{
+  "_comment": "canonical venue -> other names sources use for the SAME place. Matching is on normalize_venue() output (lowercase, no leading 'the', '&' -> 'and', theatre -> theater, trailing ', Portland' dropped), so list variants in that form. Add a line whenever a duplicate slips through because two sources name one venue differently.",
+  "portland art museum": ["whitsell auditorium", "whitsell theater", "whitsell", "pam cut at the whitsell", "pam cut at whitsell", "finley learning studio", "pam"],
+  "tomorrow theater": ["pam cut tomorrow theater", "pam cut's tomorrow theater", "pam cuts tomorrow theater"],
+  "arlene schnitzer concert hall": ["arlene schnitzer hall", "schnitzer concert hall", "arlene schnitzer", "schnitz"],
+  "olympic mills commerce center": ["olympic mills building", "olympic mills"],
+  "mission theater": ["mcmenamins mission theater"],
+  "goodfoot": ["goodfoot pub and lounge", "goodfoot lounge", "goodfoot pub"],
+  "powell's city of books": ["powell's burnside", "powells burnside", "powell's books burnside", "powells city of books"]
+}

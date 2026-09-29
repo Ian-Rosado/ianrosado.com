@@ -7,8 +7,10 @@ Format: iCalendar feed (https://parks.portlandciviclab.org/events/calendar.ics),
         parsed by hand (a tiny subset of RFC 5545: unfolding + text escapes).
 Calendar: events
 
-Government meetings (oversight committees, hearings) share the feed and are
-dropped. Parks events are free; volunteer days get a "volunteer" tag.
+Government meetings (oversight committees, hearings) share the feed; the
+add-to-calendar pipeline drops those for every source (KNOWN_DROP_PATTERNS in
+portland_events_add.py). Parks events are free; volunteer days get a
+"volunteer" tag.
 """
 
 import re
@@ -22,7 +24,6 @@ SOURCE = "Portland Parks Atlas"
 ICS_URL = "https://parks.portlandciviclab.org/events/calendar.ics"
 PACIFIC = dateutil_tz.gettz("America/Los_Angeles")
 
-_MEETING_RE = re.compile(r"\bmeeting\b|committee|hearing|board of|commission|webinar", re.I)
 _VOLUNTEER_RE = re.compile(r"volunteer|stewardship|tending|weed|planting|clean.?up|crew|restoration", re.I)
 
 
@@ -67,7 +68,7 @@ def scrape():
     events = []
     for v in parse_ics(resp.text):
         title = _unescape(v.get("SUMMARY", ("", ""))[1])
-        if not title or _MEETING_RE.search(title) or "DTSTART" not in v:
+        if not title or "DTSTART" not in v:
             continue
         start, all_day = _parse_dt(v["DTSTART"][1], v["DTSTART"][0])
         end = None

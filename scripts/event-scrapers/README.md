@@ -71,6 +71,12 @@ Output files land in `output/events_YYYY-MM-DD.json` and `output/events_YYYY-MM-
 | `artichoke.py` | Artichoke Music | music | web_fetch (Eventbrite organizer embedded JSON) |
 | `toc_portland.py` | TOC Portland | music | web_fetch |
 | `partiful.py` | Partiful | events | web_fetch (per-event `__NEXT_DATA__`), fed by a manual inbox — see below |
+| `mato.py` | Mato (ma.to) | events/music/comedy by category | Playwright to capture the listing's Next.js "load more" Server Action id, then call it for a 30-day window (clean JSON) |
+| `tunnel_vision.py` | Tunnel Vision PDX (underground/weird weekly) | events | web_fetch the 2 newest beehiiv issues; parse `<strong>title</strong> <em>date</em> Venue \| price` paragraphs |
+| `clinton_street.py` | Clinton Street Theater | events | The Events Calendar REST API (via `tribe_common.py`) |
+| `ground_kontrol.py` | Ground Kontrol (pinball/arcade tournaments) | events | The Events Calendar REST API (via `tribe_common.py`); venue-closure notices dropped |
+| `parks_atlas.py` | Portland Parks Atlas (PP&R volunteer + park events) | events | iCalendar feed; committee meetings dropped |
+| `multcolib.py` | Multnomah County Library | events | web_fetch the Drupal listing (browser headers required); recurring services (storytime, tech help, ESL/GED, teen/kids clubs) filtered out by title |
 
 ### Partiful (manual inbox)
 

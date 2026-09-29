@@ -1,0 +1,24 @@
+[
+  {"name": "The Raven's Wing Magical Co-Op", "type": "squarespace", "url": "https://theravenswing.com/events",
+   "exclude": ["kitchen table tarot", "soma flow", "children"], "tags": ["spiritual", "community"],
+   "location": "The Raven's Wing Magical Co-Op, 7927 SE 13th Ave, Portland, OR 97202"},
+  {"name": "ADX Portland", "type": "squarespace", "url": "https://artdesignxchange.com/events",
+   "exclude": ["pcxn monthly", "paper jam", "skinfolk", "bread & butter", "bread and butter"], "tags": ["maker", "workshop"],
+   "location": "ADX, 417 SE 11th Ave, Portland, OR 97214"},
+  {"name": "AIGA Portland dMob", "type": "squarespace", "url": "https://www.aigapdx.org/events",
+   "match": ["dmob"], "tags": ["design", "community"]},
+
+  {"name": "Portland Movie Club", "type": "meetup", "url": "https://www.meetup.com/pdx-movie-club/", "tags": ["film", "discussion"]},
+  {"name": "Portland Casual Jams", "type": "meetup", "url": "https://www.meetup.com/portland-casual-jams/",
+   "match": ["newcomers", "build a song"], "calendar": "music", "tags": ["jam"]},
+  {"name": "Pagans of Portlandia", "type": "meetup", "url": "https://www.meetup.com/pagans-of-portlandia/", "tags": ["spiritual", "community"]},
+  {"name": "Harmony Sing-Along", "type": "meetup", "url": "https://www.meetup.com/song-circle-folk-music-singalongs-from-the-60s-70s/", "tags": ["sing-along", "community"]},
+  {"name": "Queer Soccer For The Tentatively Fit", "type": "meetup", "url": "https://www.meetup.com/queer-soccer-for-the-tentatively-fit/", "tags": ["sports", "lgbtq"]},
+  {"name": "PDX Sewists", "type": "meetup", "url": "https://www.meetup.com/pdx-sewists/", "tags": ["crafts", "sewing"]},
+  {"name": "Portland Area Board Games", "type": "meetup", "url": "https://www.meetup.com/pdxgames/", "tags": ["games"]},
+  {"name": "sad girl cinema club", "type": "meetup", "url": "https://www.meetup.com/sad-girl-cinema-club/", "tags": ["film"]},
+
+  {"name": "Howl at the Moon", "type": "full_moon", "url": "https://makeportlandweirder.com/",
+   "title": "Howl at the Moon", "location": "Powell Butte Nature Park, 16160 SE Powell Blvd, Portland, OR 97236",
+   "time": "19:30", "cost": "Free", "tags": ["outdoors", "weird", "free"]}
+]

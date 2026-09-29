@@ -93,6 +93,17 @@ company's schedule: `python trivia_scrape.py` (diff only) → `--write` to updat
 the JSON → `python trivia_generate.py --dry-run` → `python trivia_generate.py`.
 New venues whose site gives no address go in `ADDRESS_OVERRIDES` in the scraper.
 
+**Recurring fixtures (non-trivia)** — weekly/monthly nights from Tunnel Vision
+PDX's recurring calendar (goth nights, drag bingo, jams, cemetery tours ...) are
+generated from `scripts/add-to-calendar/recurring_schedule.json` by
+`recurring_generate.py`, same model as trivia (one RRULE event per entry,
+idempotent, prunes removed entries). To refresh: rebuild the "Recurring Review"
+sheet tab from the Tunnel Vision page (paid-tier page — needs a logged-in
+browser), review y/n, then `python recurring_generate.py --from-sheet` →
+`--dry-run` → run. Fixtures with no fixed pattern are pulled weekly from their
+own sites by `scripts/event-scrapers/scrapers/linked_sources.py`
+(config: `linked_sources.json`).
+
 5. **(Optional) Instagram fetch cookies** — export a Netscape `cookies.txt` from a
    browser logged into instagram.com and save it as
    `scripts/add-to-calendar/ig_cookies.txt` (gitignored). The IG-ingest fetch uses

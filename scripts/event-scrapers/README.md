@@ -136,6 +136,17 @@ Notes:
   are ticket-waitlist forms), but the USL league pages embed a modular11
   widget whose data is in static HTML — that's what those two scrapers read.
 
+## Linked sources (small hand-picked sources)
+
+`linked_sources.py` reads a list of small sources from `linked_sources.json`
+— mostly the "moveable" / monthly-with-no-fixed-day fixtures from Tunnel Vision
+PDX's recurring calendar, whose own sites carry the real dates. One reader per
+`type`: `squarespace` (`<url>?format=json` upcoming items), `meetup` / `jsonld`
+(schema.org Event JSON-LD on the page), and `full_moon` (computed full-moon
+dates at a fixed place/time). Per entry: `match` / `exclude` title keywords
+(exclude nights already on the calendar as recurring events), `calendar`,
+`tags`, and a fallback `location`. Add a source by adding a line to the JSON.
+
 ## Sources Requiring Chrome / manual (not scriptable)
 
 - curbsideserenade.org — Square Online (JS-required)

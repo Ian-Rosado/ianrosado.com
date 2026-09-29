@@ -19,8 +19,12 @@ trivia_schedule.json entry shape:
     "day": "MO",                 # MO TU WE TH FR SA SU
     "time": "19:00",             # 24h local
     "rrule": "FREQ=WEEKLY;BYDAY=MO",   # optional; defaults to weekly on `day`
+    "cost": "$5/team",           # optional; defaults to "Free"
+    "start_date": "2026-10-12",  # optional; first night for a venue that hasn't started yet
     "calendar": "Trivia Nights - N/NE"
   }
+
+trivia_scrape.py re-pulls every company's schedule and updates this file.
 
 Usage:
   python trivia_generate.py --dry-run        # preview, no writes
@@ -68,12 +72,13 @@ def trivia_key(entry):
     return f"{entry['calendar']}|{entry['venue'].strip().lower()}|{entry['day']}"
 
 
-def next_occurrence(byday, time_str):
-    """Next date (>= today) whose weekday matches byday, combined with time."""
+def next_occurrence(byday, time_str, not_before=None):
+    """Next date (>= today, and >= not_before) whose weekday matches byday,
+    combined with time."""
     target = BYDAY_TO_WEEKDAY.get(byday[:2], 0)
-    today = date.today()
-    delta = (target - today.weekday()) % 7
-    d = today + timedelta(days=delta)
+    start = max(date.today(), not_before or date.today())
+    delta = (target - start.weekday()) % 7
+    d = start + timedelta(days=delta)
     hh, mm = (int(x) for x in time_str.split(":"))
     return datetime.combine(d, dtime(hh, mm))
 
@@ -86,16 +91,20 @@ def build_event_body(entry):
     url = entry.get("company_url", "").strip()
     day_full = {"MO": "Monday", "TU": "Tuesday", "WE": "Wednesday", "TH": "Thursday",
                 "FR": "Friday", "SA": "Saturday", "SU": "Sunday"}.get(entry["day"][:2], "")
-    desc_lines = ["Free"]
+    cost = entry.get("cost", "").strip() or "Free"
+    is_free = "free" in cost.lower()
+    desc_lines = [cost]
     if url:
         desc_lines.append(url)
     # Final "Tags:" line — the website parses this at build time (see
     # build_description in portland_events_add.py). Keep it so trivia events
     # carry the same facet convention as scraped events.
-    desc_lines.append("Tags: trivia, free")
+    desc_lines.append("Tags: trivia, free" if is_free else "Tags: trivia")
     description = "\n".join(desc_lines)
 
-    start_dt = next_occurrence(entry["day"], entry["time"])
+    start_date = entry.get("start_date")
+    start_dt = next_occurrence(entry["day"], entry["time"],
+                               date.fromisoformat(start_date) if start_date else None)
     end_dt = start_dt + timedelta(minutes=DEFAULT_DURATION_MIN)
     rrule = entry.get("rrule") or f"FREQ=WEEKLY;BYDAY={entry['day'][:2]}"
 
@@ -107,7 +116,7 @@ def build_event_body(entry):
         "end":   {"dateTime": end_dt.strftime("%Y-%m-%dT%H:%M:%S"),   "timeZone": TIMEZONE},
         "recurrence": [f"RRULE:{rrule}"],
         "extendedProperties": {
-            "shared": {"cost": "free", "source": company or "Trivia"},
+            "shared": {"cost": "free" if is_free else "paid", "source": company or "Trivia"},
             "private": {"managed": MANAGED_TAG, "trivia_key": trivia_key(entry)},
         },
     }
@@ -122,6 +131,12 @@ def fetch_managed(svc, cal_id):
             showDeleted=False, maxResults=250, pageToken=page, singleEvents=False,
         ).execute()
         for ev in resp.get("items", []):
+            # Skip edited single occurrences of a recurring event: they carry the
+            # master's trivia_key too, and letting one shadow the master meant
+            # updates hit the instance (error) and prunes deleted only the
+            # instance, leaving the old master behind as a duplicate.
+            if ev.get("recurringEventId"):
+                continue
             k = ev.get("extendedProperties", {}).get("private", {}).get("trivia_key")
             if k:
                 out[k] = ev

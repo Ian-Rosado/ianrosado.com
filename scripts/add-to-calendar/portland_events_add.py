@@ -34,7 +34,7 @@ import json
 import re
 import sys
 import unicodedata
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -1338,7 +1338,8 @@ def write_review_tab(events, interactive=True):
             link_display,
             # One note column; the text (not the highlight) is the reliable
             # signal for WHY a row arrived pre-filled.
-            vt_note or trusted_note or e.get("block_note", "") or e.get("screening_note", ""),
+            (e.get("skip_note") if e.get("suggested_skip") else "")
+            or vt_note or trusted_note or e.get("block_note", "") or e.get("screening_note", ""),
         ])
         sheet_row = len(data) + 2  # +2 for header + instructions rows
         if e.get("suggested_skip"):
@@ -1711,19 +1712,34 @@ def open_existing_tab(name):
     return client.open_by_key(SHEET_ID).worksheet(name)
 
 
+def explain_dup_note(note):
+    """Turn a Dedup-tab 'Why (auto)' note into a plain-language Review note."""
+    m = re.match(r"(venue\+time|title) dup of on-cal:\s*(.*)", note or "")
+    if m:
+        how = "same venue + time" if m.group(1) == "venue+time" else "same title"
+        return f"duplicate: already on calendar as \"{m.group(2)}\" ({how})"
+    m = re.match(r"cross-source dup of #(\d+)", note or "")
+    if m:
+        return f"duplicate of row #{m.group(1)} (same event from another source)"
+    return "duplicate: marked 'y' in the Dedup tab" + (f" — {note}" if note else "")
+
+
 def read_dedup_tab():
     """Read flags from an already-filled Dedup tab.
 
-    Returns (skip_indices, review_flags):
+    Returns (skip_indices, review_flags, skip_notes):
       skip_indices — set of indices marked 'y' (skip as a duplicate)
       review_flags — dict {index: note} for indices marked '?' (a venue+time
                      overlap that needs a human call; not auto-skipped)
+      skip_notes   — dict {index: auto 'Why' note} for the 'y' rows, so the
+                     Review tab can say why a row arrived pre-filled 'n'
     """
     client = get_sheets_client()
     ws = client.open_by_key(SHEET_ID).worksheet(DEDUP_TAB)
     all_values = ws.get_all_values()
     skip_indices = set()
     review_flags = {}
+    skip_notes = {}
     for row in _rows_after_header(all_values):
         if not row or not row[0].isdigit():
             continue
@@ -1731,9 +1747,10 @@ def read_dedup_tab():
         note = row[7].strip() if len(row) > 7 else ""
         if flag == "y":
             skip_indices.add(int(row[0]))
+            skip_notes[int(row[0])] = note
         elif flag == "?":
             review_flags[int(row[0])] = note
-    return skip_indices, review_flags
+    return skip_indices, review_flags, skip_notes
 
 
 # ─── Blocklist ───────────────────────────────────────────────────────────────
@@ -2757,11 +2774,9 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
     print(f"Fetching existing events ({min_date} to {max_date})...")
 
     existing_by_cal = {}
-    existing_titles_by_cal = {}
     for cal_name, cal_id in CALENDARS.items():
         evs = fetch_existing_events(service, cal_id, min_date, max_date)
         existing_by_cal[cal_id] = evs
-        existing_titles_by_cal[cal_id] = {ev.get("summary", "").lower().strip() for ev in evs}
         if evs:
             print(f"  {cal_name}: {len(evs)} existing")
 
@@ -2778,8 +2793,6 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
         for ev in pedal_evs:
             ev["_dedup_only"] = True
         existing_by_cal[pdx_events_id].extend(pedal_evs)
-        existing_titles_by_cal[pdx_events_id].update(
-            ev.get("summary", "").lower().strip() for ev in pedal_evs)
         print(f"  Pedalpalooza (folded into Portland Events dedup): {len(pedal_evs)} existing")
 
     # ── Intra-batch cross-source dedup (computed up front) ───────────────────
@@ -2803,6 +2816,7 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
 
     # ── Step 1: Categorize + Step 2: Deduplicate ─────────────────────────────
     vt_review_flags = {}  # idx -> note, for venue+time overlaps needing review ('?')
+    dedup_skip_notes = {}  # idx -> Dedup-tab 'Why' for rows skipped as duplicates
     if skip_to_review or stage in ("review", "commit"):
         # Read already-filled Categorize and Dedup tabs — skip interactive steps
         print("\nReading Categorize tab...")
@@ -2813,7 +2827,7 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
         print(f"  {len(cat_assignments)} calendar assignments read")
 
         print("Reading Dedup tab...")
-        ai_skip, vt_review_flags = read_dedup_tab()
+        ai_skip, vt_review_flags, dedup_skip_notes = read_dedup_tab()
         print(f"  {len(ai_skip)} events flagged as duplicates")
         if vt_review_flags:
             print(f"  {len(vt_review_flags)} event(s) flagged '?' for venue+time review")
@@ -2828,6 +2842,8 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
         if no_ai:
             # No interactive dedup tab; still apply the auto intra-batch skips.
             ai_skip = set(cross_source_skip)
+            dedup_skip_notes = {i: f"cross-source dup of #{cross_source_dup_of[i]}"
+                                for i in cross_source_skip if cross_source_dup_of.get(i) is not None}
         else:
             ai_skip = step2_deduplicate(rows, existing_by_cal,
                                         cross_source_skip, cross_source_dup_of)
@@ -2855,7 +2871,34 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
     _url_freq = _Counter(u for _, u in _url_date_pairs)
     existing_url_dates = {(d, u) for d, u in _url_date_pairs if _url_freq[u] <= 2}
 
+    # Dates each existing title covers, per calendar. An exact title match only
+    # counts as a duplicate on a date the existing event actually occupies — a
+    # band's second night, or a series on another date, is a new event. (Was
+    # date-blind: any same-titled event anywhere in the window skipped the row.)
+    # Recurring events arrive expanded (singleEvents=True), and an all-day
+    # multi-day event covers every day of its span.
+    existing_title_dates = {}
+    for cal_id, evs in existing_by_cal.items():
+        for ev in evs:
+            s = ev.get("start", {})
+            e_ = ev.get("end", {})
+            d0 = (s.get("dateTime") or s.get("date") or "")[:10]
+            if not d0:
+                continue
+            days = {d0}
+            if s.get("date") and e_.get("date"):  # all-day: end date is exclusive
+                try:
+                    cur, stop = date.fromisoformat(d0), date.fromisoformat(e_["date"][:10])
+                    while cur < stop and len(days) < 62:
+                        days.add(cur.isoformat())
+                        cur += timedelta(days=1)
+                except ValueError:
+                    pass
+            existing_title_dates.setdefault(
+                (cal_id, ev.get("summary", "").lower().strip()), set()).update(days)
+
     exact_skip = set()
+    exact_skip_notes = {}  # idx -> why it matched an existing calendar event
     for i, row in enumerate(rows):
         calendar_str = row.get("_calendar_assigned") or get(row, "Calendar", "calendar")
         cal_result = resolve_calendar(calendar_str)
@@ -2866,14 +2909,18 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
         tags      = get(row, "Tags", "tags")
         cal_name  = cal_result[0]
         title     = build_title(title_raw, cal_name, tags)
-        existing_titles = existing_titles_by_cal.get(cal_id, set())
-        if title.lower().strip() in existing_titles or title_raw.lower().strip() in existing_titles:
-            exact_skip.add(i)
+        date_str = get(row, "Date", "date")
+        for t in (title.lower().strip(), title_raw.lower().strip()):
+            if date_str in existing_title_dates.get((cal_id, t), set()):
+                exact_skip.add(i)
+                exact_skip_notes[i] = f"same title already on {cal_name} that date"
+                break
+        if i in exact_skip:
             continue
         url = get(row, "URL", "url", "link", "Link").strip().rstrip("/").lower()
-        date_str = get(row, "Date", "date")
         if url and (date_str, url) in existing_url_dates:
             exact_skip.add(i)
+            exact_skip_notes[i] = "same event link already on the calendar that date"
 
     # ── Refresh existing-calendar duplicates with better scraped data ────────
     # Rows skipped because they duplicate something ALREADY on the calendar
@@ -2974,10 +3021,23 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
         # in case it's a false positive (e.g. a show named "Cancelled Plans").
         title_low = title.lower()
         movie_screening = is_movie_screening(title, loc)
+        status_word = next((w for w in ("sold out", "canceled", "cancelled")
+                            if w in title_low), "")
         suggested_skip = (i in ai_skip or i in exact_skip or bool(block_hit)
-                          or movie_screening
-                          or any(w in title_low for w in
-                                 ("sold out", "canceled", "cancelled")))
+                          or movie_screening or bool(status_word))
+        # Why this row arrives pre-filled 'n' — the first applicable reason, in
+        # plain words, so the Review tab never shows an unexplained 'n'.
+        skip_note = ""
+        if i in ai_skip:
+            skip_note = explain_dup_note(dedup_skip_notes.get(i, ""))
+        elif i in exact_skip:
+            skip_note = "duplicate: " + exact_skip_notes.get(i, "already on the calendar")
+        elif block_hit:
+            skip_note = f"blocklist: {block_hit[:45]} (you've skipped this before)"
+        elif movie_screening:
+            skip_note = "movie screening — flip to 'y' to keep"
+        elif status_word:
+            skip_note = f"title says '{status_word}'"
 
         # Trusted recurring event: approved often enough to pre-fill 'y'.
         # Never on a row that's also flagged as a dup/blocked/venue-time hit.
@@ -3004,6 +3064,8 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
             # ai_skip already includes intra-batch cross-source dupes (via the
             # Dedup tab, or set(cross_source_skip) under --no-ai).
             "suggested_skip": suggested_skip,
+            # why it's pre-filled 'n' (set whenever suggested_skip is)
+            "skip_note":      skip_note,
             # fuzzy blocklist hits carry the matched entry as a visible note
             "block_note":     (f"blocklist: {block_hit[:45]}" if block_hit
                                and _norm_title(title) != block_hit else ""),

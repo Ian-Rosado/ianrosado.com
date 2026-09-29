@@ -31,6 +31,7 @@ Authentication:
 import csv
 import html
 import json
+import math
 import re
 import sys
 import unicodedata
@@ -43,6 +44,9 @@ sys.stdout.reconfigure(encoding="utf-8")
 # Shared OAuth helper (scripts/google_auth.py) — one token for all scripts.
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import google_auth
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from dedup_match import fold_text, title_words, TitleIDF, address_key
 
 # Google Sheet inbox (Portland Events Inbox)
 SHEET_ID = "1mx4U8klkuTeR1E7lmChABlShfE_kVwAFaV37gAjoId4"
@@ -204,6 +208,15 @@ KNOWN_DROP_PATTERNS = [
     "community meals",   # Central City Concern — Free Community Meals
     "food pantry",       # generic food pantries
     "assisi pantry",     # St. Francis of Assisi Pantry (dropped 5x)
+    # Venue notices that share a venue's event feed (were filtered inside the
+    # Ground Kontrol scraper; any source can carry them).
+    "closed from",       # "Blue Side Closed From 3:30-6:30PM For a Private Event"
+    "closed for a",      # "Closed for a private party / holiday"
+    "holiday hours",
+    # Government meetings on public-agency calendars (were filtered inside the
+    # Parks Atlas scraper; City/County calendars carry them too).
+    "oversight committee", "advisory committee", "committee meeting",
+    "commission meeting", "board meeting", "public hearing",
 ]
 
 # Whole venues whose recurring program the user doesn't feature. Matched against
@@ -262,7 +275,9 @@ def is_unwanted_recurring(title, location=""):
 # title reads as a plain screening (just the film name, maybe a year or a film
 # format) is a movie screening, which the user pre-skips at Review. Kept to
 # "pure" cinemas on purpose — mixed venues (Hollywood Theatre, McMenamins,
-# Tomorrow Theater) host concerts/talks too, so they're deliberately excluded.
+# Tomorrow Theater, the Whitsell) host concerts/talks too, and the user picks
+# screenings there film-by-film: in the 2026-09-29 batch a mixed-venue rule
+# would have pre-skipped 17 kept screenings to save 13 flips, so it's not used.
 KNOWN_CINEMA_VENUES = [
     "laurelhurst theater", "clinton street theater", "clinton st theater",
     "moreland theater", "cinema 21", "studio one theater", "academy theater",
@@ -285,13 +300,58 @@ def is_movie_screening(title, location=""):
     """True for a plain movie screening — a known cinema venue, or a screening
     marker in the title — but NOT when the title signals extra programming around
     the film. Used to pre-fill 'n' at Review (a soft skip, not a hard drop, so a
-    special screening can still be rescued)."""
+    special screening can still be rescued). Runs on every scraper's rows."""
     t = (title or "").lower()
     if any(w in t for w in _SCREENING_EXTRA):
         return False
     loc = re.sub(r"\.", "", (location or "").lower())
     return (any(v in loc for v in KNOWN_CINEMA_VENUES)
             or any(m in t for m in _SCREENING_MARKERS))
+
+
+# ── Local pro/semi-pro sports ────────────────────────────────────────────────
+# General sources (Mato especially) list team games two ways: the actual home
+# game (already on Portland Sports from the team scrapers) and bar watch
+# parties ("Thorns vs Boston" at The Pharmacy). Home games route to Portland
+# Sports so they dedup against the scraper's listing; watch parties drop, like
+# the NFL watch parties already in KNOWN_DROP_PATTERNS.
+LOCAL_TEAMS = {
+    # team word -> home-venue substrings (lowercase, as they appear in locations)
+    "thorns": ["providence park"], "timbers": ["providence park"],
+    "trail blazers": ["moda center"], "blazers": ["moda center"],
+    "portland fire": ["moda center", "veterans memorial coliseum", "chiles center"],
+    "winterhawks": ["veterans memorial coliseum", "moda center"],
+    "rip city remix": ["chiles center", "veterans memorial coliseum"],
+    "hillsboro hops": ["ron tonkin", "hillsboro ballpark"], "hops": ["ron tonkin", "hillsboro ballpark"],
+    "pickles": ["walker stadium"], "rose city rollers": ["oaks park", "hangar"],
+    "bangers": ["providence park", "hillsboro stadium"], "cherry bombs": ["hillsboro stadium"],
+    "pilots": ["merlo field", "chiles center"],
+}
+_MATCHUP_RE = re.compile(r"\b(vs\.?|v\.|versus|at)\b", re.I)
+
+
+def _local_team(title_l):
+    return next((t for t in LOCAL_TEAMS if re.search(r"\b" + re.escape(t) + r"\b", title_l)), None)
+
+
+def is_sports_watch_party(title, location=""):
+    """A watch party: titled as one, with a matchup; or a local team's matchup
+    listed at a venue that isn't one of its home venues (a bar screening it)."""
+    t = (title or "").lower()
+    loc = (location or "").lower()
+    if "watch party" in t and (_MATCHUP_RE.search(t) or _local_team(t)):
+        return True
+    team = _local_team(t)
+    return bool(team and _MATCHUP_RE.search(t) and loc
+                and not any(h in loc for h in LOCAL_TEAMS[team]))
+
+
+def is_local_home_game(title, location=""):
+    """A local team's matchup at one of its home venues -> Portland Sports."""
+    t = (title or "").lower()
+    team = _local_team(t)
+    return bool(team and _MATCHUP_RE.search(t)
+                and any(h in (location or "").lower() for h in LOCAL_TEAMS[team]))
 
 
 # A location already names its place if it has a state/province, a zip, a
@@ -694,6 +754,10 @@ def step2_deduplicate(rows, existing_by_cal, cross_source_skip=None, cross_sourc
 
     # Index existing calendar events by date for venue+time matching.
     vt_index = build_venue_time_index(existing_by_cal)
+    # ...and for rarity-weighted title matching (across every calendar).
+    fz_index, fz_idf = build_fuzzy_index(
+        existing_by_cal, [get(r, "Title", "title", "summary") for r in rows])
+    fz_sure = fz_unsure = 0
 
     incoming_data = []
     prefilled = 0
@@ -740,6 +804,21 @@ def step2_deduplicate(rows, existing_by_cal, cross_source_skip=None, cross_sourc
                         skip_flag = "?"  # overlap only — left for the dedup pass
                         note = f"title overlap (review): {esum[:55]}"
                         title_unsure += 1
+            if skip_flag != "y":
+                # Rarity-weighted title match across all calendars: catches
+                # rewordings, headliner-only listings, doors-vs-show times, and
+                # sources that disagree on the venue.
+                fz = find_fuzzy_dup_existing(title, date_str, location, time_str, fz_index, fz_idf)
+                if fz:
+                    esum, is_sure, how = fz
+                    if is_sure:
+                        skip_flag = "y"
+                        note = f"{how} dup of on-cal: {esum[:55]}"
+                        fz_sure += 1
+                    elif not skip_flag:
+                        skip_flag = "?"
+                        note = f"same act, {how} (review): {esum[:70]}"
+                        fz_unsure += 1
         incoming_data.append([
             orig_idx, title, date_str, location,
             get(row, "Source", "source"), cal_name,
@@ -753,6 +832,9 @@ def step2_deduplicate(rows, existing_by_cal, cross_source_skip=None, cross_sourc
     if title_sure or title_unsure:
         print(f"  Title match vs calendar: {title_sure} sure dup(s) auto-skipped, "
               f"{title_unsure} overlap(s) flagged '?' for review")
+    if fz_sure or fz_unsure:
+        print(f"  Weighted title match (all calendars): {fz_sure} sure dup(s) auto-skipped, "
+              f"{fz_unsure} same-act/different-venue flagged '?' for review")
 
     ws.append_rows(incoming_data, value_input_option="USER_ENTERED")
 
@@ -941,6 +1023,41 @@ def is_venue_level_url(url):
     return any(re.match(p, url.strip(), re.I) for p in VENUE_LEVEL_URL_PATTERNS)
 
 
+# Aggregators: their per-event pages are useful but secondhand — a direct
+# ticket/organizer/venue event page is better.
+AGGREGATOR_HOSTS = (
+    "ma.to", "pdxafterdark.com", "bandsintown.com", "communityplaylist.com",
+    "dopdx.com", "pdxpipeline.com", "everout.com", "wweek.com", "travelportland.com",
+    "nearhear.app", "calagator.org", "laughspdx.com", "queersocialclub.com",
+    "19hz.info", "flyerescape.dad", "pc-pdx.com", "portlandlivingonthecheap.com",
+    "pdxparent.com", "tunnelvisionpdx.com",
+)
+_SOCIAL_HOSTS = ("instagram.com", "facebook.com", "fb.me", "linktr.ee", "tiktok.com")
+
+
+def url_rank(url):
+    """How specific/authoritative a link is, for choosing between two links to
+    the same event: 3 = a specific ticket/organizer/venue event page,
+    2 = an aggregator's event page, 1 = a venue homepage or social post,
+    0 = generic listing page or none."""
+    if not url or is_generic_url(url):
+        return 0
+    u = url.strip().lower()
+    m = re.match(r"https?://(?:www\.)?([^/]+)(/[^?#]*)?", u)
+    if not m:
+        return 0
+    host, path = m.group(1), (m.group(2) or "/")
+    if any(host == h or host.endswith("." + h) for h in _SOCIAL_HOSTS):
+        return 1
+    if path.strip("/") == "" or u.rstrip("/") in {v.rstrip("/").lower() for v in load_venue_map().values()}:
+        return 1  # a site's homepage / a venue's main page, not this event
+    if is_venue_level_url(url):
+        return 1
+    if any(host == h or host.endswith("." + h) for h in AGGREGATOR_HOSTS):
+        return 2
+    return 3
+
+
 def is_generic_url(url):
     """True if the URL is a listing/index page, not specific to one event."""
     if not url:
@@ -983,11 +1100,35 @@ def normalize_venue(location):
     s = re.sub(r"\s+on\s+\w+.*$", "", s)
     # Drop a leading article.
     s = re.sub(r"^the\s+", "", s)
-    # Strip stray punctuation but keep & / ' - which appear in real venue names.
-    s = re.sub(r"[^\w'&/ -]", " ", s)
+    # Fold accents / special letters and spell out "&", so "Twilight Cafe & Bar"
+    # and "Twilight Cafe and Bar" are one key (a real missed-duplicate pair).
+    s = fold_text(s)
+    # Strip stray punctuation but keep / ' - which appear in real venue names.
+    s = re.sub(r"[^\w'/ -]", " ", s)
+    # Spelling variants: "Mission Theatre" = "Mission Theater".
+    s = re.sub(r"\btheatre\b", "theater", s)
+    s = re.sub(r"\bcentre\b", "center", s)
     # Collapse whitespace.
     s = re.sub(r"\s+", " ", s).strip()
-    return s
+    # A trailing city with no comma ("The Den Portland") isn't part of the name.
+    s = re.sub(r"\s+(portland|pdx)(\s+or(egon)?)?$", "", s).strip()
+    # Known alternate names for the same place (venue_aliases.json).
+    return load_venue_aliases().get(s, s)
+
+
+_VENUE_ALIASES_CACHE = None
+
+
+def load_venue_aliases():
+    """venue_aliases.json -> {variant: canonical}. Variants are listed in
+    normalize_venue() form (the lookup runs on its output)."""
+    global _VENUE_ALIASES_CACHE
+    if _VENUE_ALIASES_CACHE is None:
+        path = Path(__file__).resolve().parent / "venue_aliases.json"
+        data = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+        _VENUE_ALIASES_CACHE = {v: canon for canon, variants in data.items()
+                                if not canon.startswith("_") for v in variants}
+    return _VENUE_ALIASES_CACHE
 
 
 _VENUE_MAP_CACHE = None
@@ -1714,9 +1855,11 @@ def open_existing_tab(name):
 
 def explain_dup_note(note):
     """Turn a Dedup-tab 'Why (auto)' note into a plain-language Review note."""
-    m = re.match(r"(venue\+time|title) dup of on-cal:\s*(.*)", note or "")
+    m = re.match(r"(venue\+time|title|title\+venue|title\+time) dup of on-cal:\s*(.*)", note or "")
     if m:
-        how = "same venue + time" if m.group(1) == "venue+time" else "same title"
+        how = {"venue+time": "same venue + time", "title": "same title",
+               "title+venue": "similar title, same venue",
+               "title+time": "similar title, same time"}[m.group(1)]
         return f"duplicate: already on calendar as \"{m.group(2)}\" ({how})"
     m = re.match(r"cross-source dup of #(\d+)", note or "")
     if m:
@@ -1833,31 +1976,44 @@ def _title_words(s):
     stop = {"the", "a", "an", "and", "&", "with", "w", "at", "in", "of",
             "feat", "ft", "vs", "plus", "+", "•", "-"}
     s = re.sub(r"^\s*\[[^\]]+\]\s*", "", s or "")
-    s = unicodedata.normalize("NFKD", s)
-    s = "".join(c for c in s if not unicodedata.combining(c))
-    return {w for w in re.sub(r"[^a-z0-9 ]", " ", s.lower()).split() if w not in stop and len(w) > 1}
+    s = fold_text(s)  # accents + special letters ("LØLØ" -> "lolo"), '&' -> 'and'
+    return {w for w in re.sub(r"[^a-z0-9 ]", " ", s).split() if w not in stop and len(w) > 1}
 
 
-def find_matching_existing_event(title, date_str, cal_id, existing_by_cal):
+def find_matching_existing_event(title, date_str, cal_id, existing_by_cal, location=None):
     """Find the existing calendar event an incoming title/date most likely
-    duplicates, for in-place refresh. Same word-overlap heuristic as
-    _fuzzy_dedup_incoming, restricted to the same date."""
-    wt = _title_words(title)
+    duplicates, for in-place refresh. Word overlap on the same date, using the
+    dedup matcher's word set (which drops filler like "tour", "live", "night"
+    that used to attach one show's link to another).
+
+    When `location` is given (the refresh path), a match must also be at the
+    same place, or share at least two title words at 80%+ overlap — a
+    title-only match at a different venue once swapped DOMi & JD BECK's link
+    for another night's show."""
+    wt = title_words(title)
     if not wt:
         return None
+    vnorm = normalize_venue(location) if location is not None else None
     best, best_score = None, 0.0
     for ev in existing_by_cal.get(cal_id, []):
         start = ev.get("start", {})
         ev_date = (start.get("dateTime") or start.get("date") or "")[:10]
         if ev_date != date_str:
             continue
-        we = _title_words(ev.get("summary", ""))
+        we = title_words(ev.get("summary", ""))
         if not we:
             continue
         overlap = len(wt & we) / min(len(wt), len(we))
+        if overlap < 0.55:
+            continue
+        if location is not None:
+            eloc = ev.get("location", "")
+            same = _same_place(vnorm, location, normalize_venue(eloc), eloc)
+            if not same and not (overlap >= 0.8 and len(wt & we) >= 2):
+                continue
         if overlap > best_score:
             best_score, best = overlap, ev
-    return best if best_score >= 0.55 else None
+    return best
 
 
 # ─── Venue + time duplicate detection ────────────────────────────────────────
@@ -1895,11 +2051,39 @@ def _venues_match(a, b):
         return False
     if a == b:
         return True
-    return (len(a) >= 6 and len(b) >= 6) and (a in b or b in a)
+    if (len(a) >= 6 and len(b) >= 6) and (a in b or b in a):
+        return True
+    # Same distinctive words once generic room words are set aside: "arlene
+    # schnitzer hall" ~ "arlene schnitzer concert hall", "olympic mills
+    # building" ~ "olympic mills commerce center". Equality, not subset — a
+    # subset let "hollywood theater" match "hollywood library".
+    wa, wb = set(a.split()) - _GENERIC_VENUE_WORDS, set(b.split()) - _GENERIC_VENUE_WORDS
+    return bool(wa) and wa == wb
+
+
+_GENERIC_VENUE_WORDS = {"hall", "concert", "building", "center", "commerce", "theater",
+                        "bar", "pub", "lounge", "club", "cafe", "and", "grill", "room",
+                        "auditorium", "venue", "ballroom", "tavern", "house", "co",
+                        "company", "brewing", "brewery", "taproom", "the", "at", "of"}
+
+
+def _same_place(vnorm_a, loc_a, vnorm_b, loc_b):
+    """Venue names match, or both locations carry the same street address —
+    the trivia calendars list venues by address only ("2100 NW Glisan St"),
+    while scrapers name them ("The Pharmacy, 2100 NW Glisan St")."""
+    if _venues_match(vnorm_a, vnorm_b):
+        return True
+    # Address fallback only when one side has no venue NAME (its normalized
+    # form is empty or starts with the house number) — two named venues at one
+    # address (Oaks Park's rink vs its amusement park) are different rooms.
+    if (vnorm_a and not vnorm_a[0].isdigit()) and (vnorm_b and not vnorm_b[0].isdigit()):
+        return False
+    aa, ab = address_key(loc_a), address_key(loc_b)
+    return bool(aa) and aa == ab
 
 
 def build_venue_time_index(existing_by_cal):
-    """date(str) -> list of (venue_norm, start_minutes|None, summary, is_festival).
+    """date(str) -> list of (venue_norm, start_minutes|None, summary, is_festival, location).
     Pooled across every calendar so a concert can match a festival umbrella or a
     mis-categorized event on another calendar."""
     index = {}
@@ -1909,12 +2093,12 @@ def build_venue_time_index(existing_by_cal):
             d = (start.get("dateTime") or start.get("date") or "")[:10]
             loc = ev.get("location", "")
             vnorm = normalize_venue(loc)
-            if not d or not vnorm:
+            if not d or not (vnorm or address_key(loc)):
                 continue
             summary = ev.get("summary", "")
             is_fest = bool(_FESTIVAL_RE.search(summary)) or bool(_PARK_VENUE_RE.search(loc))
             index.setdefault(d, []).append(
-                (vnorm, _start_minutes(start.get("dateTime", "")), summary, is_fest))
+                (vnorm, _start_minutes(start.get("dateTime", "")), summary, is_fest, loc))
     return index
 
 
@@ -1929,14 +2113,14 @@ def find_venue_time_dup(title, date_str, location, time_str, vt_index):
     this act — so an act matches the bill it appears in, not a co-bill listed
     separately."""
     vnorm = normalize_venue(location)
-    if not vnorm:
+    if not vnorm and not address_key(location):
         return None
     m = re.match(r"^\s*(\d{1,2}):(\d{2})\s*$", time_str or "")
     cm = int(m.group(1)) * 60 + int(m.group(2)) if m else None
     wt = _title_words(title)
     fallback = None
-    for (evenue, estart, esum, is_fest) in vt_index.get(date_str, []):
-        if not _venues_match(evenue, vnorm):
+    for (evenue, estart, esum, is_fest, eloc) in vt_index.get(date_str, []):
+        if not _same_place(vnorm, location, evenue, eloc):
             continue
         if cm is not None and estart is not None and abs(cm - estart) > VENUE_TIME_THRESHOLD_MIN:
             continue
@@ -1947,6 +2131,81 @@ def find_venue_time_dup(title, date_str, location, time_str, vt_index):
         if fallback is None:
             fallback = (esum, False)    # same slot, different billing — hold '?'
     return fallback
+
+
+# ─── Rarity-weighted title dedup (all calendars) ─────────────────────────────
+# The venue+time and exact-title passes miss the same show billed differently
+# ("Dossey, Camp Crush & Deepest" vs "DOSSEY w/ Camp Crush, Deepest Darkest"),
+# and sources that disagree on the venue (Bella Kay at "Crystal Ballroom" vs
+# "Wonder Ballroom"). This pass weights title words by rarity across the
+# existing window + incoming batch, so a distinctive shared word ("dossey",
+# "kultur") counts for much more than a common one ("trivia", "night").
+FUZZY_SURE_OVERLAP = 0.6       # weighted overlap for a same-place/same-time dup
+FUZZY_VENUE_CONFLICT = 0.75    # same act, different venue -> '?' for review
+FUZZY_TIME_WINDOW_MIN = 90     # doors vs show time can differ by an hour+
+FUZZY_RARE_MAX_DF = 5          # a word in <=5 titles counts as distinctive
+
+
+def build_fuzzy_index(existing_by_cal, incoming_titles):
+    """(index, idf): index is date -> [(summary, location, venue_norm,
+    start_minutes, calendar_id)] across every calendar; idf weights title words
+    over the existing window plus the incoming batch."""
+    index, pool = {}, list(incoming_titles)
+    for cal_id, evs in existing_by_cal.items():
+        for ev in evs:
+            start = ev.get("start", {})
+            d = (start.get("dateTime") or start.get("date") or "")[:10]
+            summary = ev.get("summary", "")
+            if not d or not summary:
+                continue
+            loc = ev.get("location", "")
+            pool.append(summary)
+            index.setdefault(d, []).append(
+                (summary, loc, normalize_venue(loc), _start_minutes(start.get("dateTime", "")), cal_id))
+    return index, TitleIDF(pool)
+
+
+def find_fuzzy_dup_existing(title, date_str, location, time_str, fz_index, idf):
+    """Return (existing_summary, is_sure, how) or None. how is 'title+venue',
+    'title+time' (sure) or 'different venue' ('?' — one source likely has the
+    venue wrong)."""
+    m = re.match(r"^\s*(\d{1,2}):(\d{2})\s*$", time_str or "")
+    cm = int(m.group(1)) * 60 + int(m.group(2)) if m else None
+    vnorm = normalize_venue(location)
+    has_place = bool(vnorm or address_key(location))
+    best = None
+    for (esum, eloc, evnorm, estart, _cal) in fz_index.get(date_str, []):
+        # Venue names inside titles ("Oaks Park Scaregrounds" vs "Kids' Mornings
+        # at Oaks Park") aren't evidence of the same event — set them aside.
+        venue_words = set(vnorm.split()) | set(evnorm.split())
+        wa, wb = title_words(title) - venue_words, title_words(esum) - venue_words
+        ov = idf.overlap_sets(wa, wb)
+        if ov < FUZZY_SURE_OVERLAP:
+            continue
+        rare = any(idf.is_rare(w, FUZZY_RARE_MAX_DF) for w in wa & wb)
+        same = has_place and _same_place(vnorm, location, evnorm, eloc)
+        dt = abs(cm - estart) if (cm is not None and estart is not None) else None
+        close = dt is None or dt <= FUZZY_TIME_WINDOW_MIN
+        e_has_place = bool(evnorm or address_key(eloc))
+        if idf.distinct_on_both_sides(wa, wb, FUZZY_RARE_MAX_DF) and not (dt is not None and dt <= 30):
+            continue  # "Eraserhead x Fresh Cut Flowers" vs "Blue Velvet x Fresh Cut Flowers"
+        if same and close:
+            hit = (esum, True, "title+venue")
+        elif same:
+            # Same place, similar title, hours apart: an early/late pair, or one
+            # source has the time wrong — a human call.
+            hit = (f"{esum} (at {estart // 60:02d}:{estart % 60:02d})", False, "different time")
+        elif rare and (not has_place or not e_has_place) and dt is not None and dt <= FUZZY_TIME_WINDOW_MIN:
+            hit = (esum, True, "title+time")
+        elif rare and has_place and e_has_place and ov >= FUZZY_VENUE_CONFLICT and close:
+            hit = (f"{esum} @ {eloc.split(',')[0][:30]}", False, "different venue")
+        else:
+            continue
+        if best is None or (hit[1] and not best[1]):
+            best = hit
+            if hit[1]:
+                break
+    return best
 
 
 def find_existing_event_to_replace(title, date_str, location, time_str, cal_id, existing_by_cal):
@@ -1966,7 +2225,7 @@ def find_existing_event_to_replace(title, date_str, location, time_str, cal_id, 
 
     # 1) Venue + time overlap across all calendars.
     vt_fallback = None
-    if vnorm:
+    if vnorm or address_key(location):
         for ev_cal_id, evs in existing_by_cal.items():
             for ev in evs:
                 if ev.get("_dedup_only"):
@@ -1975,7 +2234,8 @@ def find_existing_event_to_replace(title, date_str, location, time_str, cal_id, 
                 ev_date = (start.get("dateTime") or start.get("date") or "")[:10]
                 if ev_date != date_str:
                     continue
-                if not _venues_match(normalize_venue(ev.get("location", "")), vnorm):
+                eloc = ev.get("location", "")
+                if not _same_place(vnorm, location, normalize_venue(eloc), eloc):
                     continue
                 estart = _start_minutes(start.get("dateTime", ""))
                 if cm is not None and estart is not None and abs(cm - estart) > VENUE_TIME_THRESHOLD_MIN:
@@ -2012,6 +2272,11 @@ def compute_event_refresh(existing_event, new_url, new_cost, new_tags_str, sourc
     new_url_resolved = new_url if (new_url and not is_generic_url(new_url)) else ""
     new_tags = [t.strip().lower() for t in (new_tags_str or "").split(",") if t.strip()]
 
+    # Only replace the link with a BETTER kind of link. With many overlapping
+    # sources, "last scraper wins" churned good links — a direct etix ticket
+    # page got swapped for an aggregator's copy of the listing.
+    if new_url_resolved and url_rank(new_url_resolved) <= url_rank(existing_url):
+        new_url_resolved = ""
     final_url = new_url_resolved or existing_url
     final_cost = new_cost.strip() if new_cost and new_cost.strip() else existing_cost
     final_tags = new_tags if new_tags else existing_tags
@@ -2396,10 +2661,8 @@ def _fuzzy_dedup_incoming(rows):
     OVERLAP_THRESHOLD = 0.55  # 55% word overlap → likely same event
 
     def _words(s):
-        # Significant words only — strip articles, conjunctions, punctuation
-        stop = {"the", "a", "an", "and", "&", "with", "w", "at", "in", "of",
-                "feat", "ft", "vs", "plus", "+", "•", "-"}
-        return {w for w in re.sub(r"[^a-z0-9 ]", " ", s.lower()).split() if w not in stop and len(w) > 1}
+        # Significant words only (accent-folded, same stopwords as _title_words)
+        return _title_words(s)
 
     def _overlap(a, b):
         wa, wb = _words(a), _words(b)
@@ -2417,10 +2680,8 @@ def _fuzzy_dedup_incoming(rows):
                       "online", "virtual", "various", "various locations"}
 
     def _venue_key(loc):
-        v = (loc or "").split(",")[0].strip().lower()
-        v = re.sub(r"^the\s+", "", v)
-        v = re.sub(r"[^a-z0-9 ]", " ", v)
-        return re.sub(r"\s+", " ", v).strip()
+        # Same normalization (and alias table) as the calendar-side checks.
+        return normalize_venue(loc)
 
     def _minutes(t):
         m = re.match(r"^\s*(\d{1,2}):(\d{2})", t or "")
@@ -2431,7 +2692,9 @@ def _fuzzy_dedup_incoming(rows):
         if s is None:
             return None
         e = _minutes(get(row, "End Time", "end_time", "EndTime"))
-        if e is None or e <= s:
+        # An end 6h+ after the start is usually a venue's open hours, not the
+        # event ("CreativeMornings" 8am-9pm) — it would "overlap" everything.
+        if e is None or e <= s or e - s > 360:
             e = s + DEFAULT_DURATION_MINUTES
         return (s, e)
 
@@ -2440,7 +2703,8 @@ def _fuzzy_dedup_incoming(rows):
         vb = _venue_key(get(rb, "Location", "location", "Venue", "venue"))
         if not va or not vb or va in GENERIC_VENUES or vb in GENERIC_VENUES:
             return False
-        if not _venues_match(va, vb):
+        if not _same_place(va, get(ra, "Location", "location", "Venue", "venue"),
+                           vb, get(rb, "Location", "location", "Venue", "venue")):
             return False
         wa, wb = _window(ra), _window(rb)
         if not wa or not wb:
@@ -2478,6 +2742,17 @@ def _fuzzy_dedup_incoming(rows):
                 skip.add(loser)
                 dup_of[loser] = idxs[0]
 
+    # Rarity weights over the batch's titles: a shared distinctive word ("blue
+    # velvet") outweighs filler ("special event night") that dilutes plain
+    # word overlap.
+    idf = TitleIDF(get(r, "Title", "title", "summary") for r in rows)
+
+    def _weighted_title_dup(ta, tb):
+        wa, wb = title_words(ta), title_words(tb)
+        return (idf.overlap_sets(wa, wb) >= FUZZY_SURE_OVERLAP
+                and any(idf.is_rare(w, FUZZY_RARE_MAX_DF) for w in wa & wb)
+                and not idf.distinct_on_both_sides(wa, wb, FUZZY_RARE_MAX_DF))
+
     # Group by date
     by_date = {}
     for i, row in enumerate(rows):
@@ -2510,8 +2785,13 @@ def _fuzzy_dedup_incoming(rows):
                 vb = _venue_key(get(rb, "Location", "location", "Venue", "venue"))
                 venue_conflict = (va and vb
                                   and va not in GENERIC_VENUES and vb not in GENERIC_VENUES
-                                  and not _venues_match(va, vb))
-                title_dup = (not venue_conflict) and _overlap(ta, tb) >= OVERLAP_THRESHOLD
+                                  and not _same_place(
+                                      va, get(ra, "Location", "location", "Venue", "venue"),
+                                      vb, get(rb, "Location", "location", "Venue", "venue")))
+                title_dup = (not venue_conflict) and (
+                    _overlap(ta, tb) >= OVERLAP_THRESHOLD or _weighted_title_dup(ta, tb)) \
+                    and not idf.distinct_on_both_sides(
+                        title_words(ta), title_words(tb), FUZZY_RARE_MAX_DF)
                 venue_time_dup = (not title_dup) and _venue_time_dup(ra, rb)
                 if title_dup or venue_time_dup:
                     if title_dup:
@@ -2591,6 +2871,14 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
         get(r, "Location", "location", "Venue", "venue"))]
     if before != len(rows):
         print(f"  Dropped {before - len(rows)} unwanted recurring listing(s) (see KNOWN_DROP_PATTERNS)")
+
+    # Drop sports watch parties (a bar showing a game) — any source.
+    before = len(rows)
+    rows = [r for r in rows if not is_sports_watch_party(
+        get(r, "Title", "title", "summary"),
+        get(r, "Location", "location", "Venue", "venue"))]
+    if before != len(rows):
+        print(f"  Dropped {before - len(rows)} sports watch part(y/ies)")
 
     # Drop "Ace Hotel" events — Portland's Ace closed in 2021, so they're all
     # in other cities.
@@ -2718,6 +3006,12 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
                 row["Calendar"] = "Portland Sports"
                 row["_assigned_by"] = "keyword: college sports"
                 college_sports_fixed += 1
+            elif is_local_home_game(title_l, location_l):
+                # A general source's listing of a local team's home game — route
+                # it to Portland Sports so it dedups against the team scraper.
+                row["Calendar"] = "Portland Sports"
+                row["_assigned_by"] = "keyword: local team home game"
+                college_sports_fixed += 1
 
         # Trivia → the neighborhood's Trivia Nights calendar (dedup then drops
         # any that duplicate a recurring trivia_generate.py event; trivia at an
@@ -2757,7 +3051,7 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
     if market_fixed:
         print(f"  Routed {market_fixed} market event(s) -> Farmers Markets / Events")
     if college_sports_fixed:
-        print(f"  Routed {college_sports_fixed} college-athletics event(s) -> Portland Sports")
+        print(f"  Routed {college_sports_fixed} college/local-team game(s) -> Portland Sports")
     if dance_fixed:
         print(f"  Auto-detected {dance_fixed} dance-party events -> Portland Events")
     if venue_comedy_fixed:
@@ -2947,14 +3241,15 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
         if cal_name in FREE_DEFAULT_CALENDARS and classify_cost(cost) != "paid":
             cost = "Free"
 
-        match = find_matching_existing_event(title, date_str, cal_id, existing_by_cal)
+        row_location = get(row, "Location", "location", "Venue", "venue")
+        match = find_matching_existing_event(title, date_str, cal_id, existing_by_cal,
+                                             location=row_location)
         if not match:
             continue
         # Dedup-only matches (folded-in Pedalpalooza events) live on a different,
         # read-only calendar — skip the incoming row, but never try to patch them.
         if match.get("_dedup_only"):
             continue
-        row_location = get(row, "Location", "location", "Venue", "venue")
         resolved_url, _ = resolve_event_url(url, row_location)
         needs_update, new_desc, new_ext_props, new_location = compute_event_refresh(
             match, resolved_url, cost, tags, source, row_location

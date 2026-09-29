@@ -6,7 +6,8 @@ Format: The Events Calendar (Tribe) REST API — see tribe_common.py.
 Calendar: events
 
 Venue notices ("Blue Side Closed From 3:30-6:30PM For a Private Event") share
-the calendar with real events and are dropped.
+the calendar with real events; the add-to-calendar pipeline drops those for
+every source (KNOWN_DROP_PATTERNS in portland_events_add.py).
 """
 
 import re
@@ -17,14 +18,11 @@ SOURCE = "Ground Kontrol"
 BASE = "https://groundkontrol.com"
 LOCATION = "Ground Kontrol, 115 NW 5th Ave, Portland, OR 97209"
 
-_NOTICE_RE = re.compile(r"\bclosed\b|private event|\bclosure\b|holiday hours", re.I)
-
-
 def scrape():
     events = []
     for ev in fetch_tribe_events(BASE):
         e = tribe_to_event(ev, SOURCE, tags=["games", "arcade"], default_location=LOCATION)
-        if not e["title"] or _NOTICE_RE.search(e["title"]):
+        if not e["title"]:
             continue
         if "ground kontrol" not in e["location"].lower():
             e["location"] = LOCATION

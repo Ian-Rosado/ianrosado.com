@@ -20,7 +20,7 @@ const pathname = Astro.url.pathname;
 const siteUrl = 'https://www.pdx-events.com';
 const canonicalUrl = `${siteUrl}${pathname}`;
 const pageTitle = title === 'PDX Events' ? 'PDX Events' : `${title} | PDX Events`;
-const ogImageUrl = ogImage ? `${siteUrl}${ogImage}` : `${siteUrl}/og-default.jpg`;
+const ogImageUrl = ogImage ? `${siteUrl}${ogImage}` : `${siteUrl}/images/IMG_1945.jpg`;
 
 const navLinks = [
   { href: '/', label: 'Events' },
@@ -67,7 +67,14 @@ function isActive(href: string) {
     <meta name="twitter:image" content={ogImageUrl} />
 
     <!-- Favicon -->
+    <!-- DuckDuckGo/Bing ignore SVG icons; .ico + 48px-multiple PNGs cover them -->
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png" />
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="theme-color" content="#ea580c" />
 
     <!-- Structured data -->
     <script type="application/ld+json" set:html={JSON.stringify({
@@ -79,7 +86,20 @@ function isActive(href: string) {
           "url": "https://www.pdx-events.com",
           "name": "PDX Events",
           "description": "Curated event calendars, favorites, and resources for Portland, Oregon.",
-          "publisher": { "@id": "https://www.pdx-events.com/#person" }
+          "publisher": { "@id": "https://www.pdx-events.com/#organization" }
+        },
+        {
+          "@type": "Organization",
+          "@id": "https://www.pdx-events.com/#organization",
+          "name": "PDX Events",
+          "url": "https://www.pdx-events.com",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://www.pdx-events.com/icon-512.png",
+            "width": 512,
+            "height": 512
+          },
+          "founder": { "@id": "https://www.pdx-events.com/#person" }
         },
         {
           "@type": "Person",

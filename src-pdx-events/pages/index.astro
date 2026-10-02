@@ -10,7 +10,8 @@ import EventsView from '../../src-shared/components/EventsView.astro';
   ogImage="/images/IMG_1945.jpg"
 >
   <!-- Hero image -->
-  <div class="w-full relative" style="height: 420px; overflow: hidden;">
+  <!-- Shorter on mobile so the top of the events list is visible on load -->
+  <div class="w-full relative overflow-hidden h-[180px] sm:h-[300px] md:h-[420px]">
     <img
       src="/images/IMG_1945.jpg"
       alt="Portland, Oregon skyline and cityscape"
@@ -18,9 +19,9 @@ import EventsView from '../../src-shared/components/EventsView.astro';
       loading="eager"
     />
     <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent flex items-end">
-      <div class="px-6 pb-8 max-w-5xl mx-auto w-full">
-        <h1 class="text-4xl font-semibold text-white drop-shadow" style="font-family: var(--font-serif)">Portland Events</h1>
-        <p class="text-white/80 text-lg mt-2 max-w-xl drop-shadow">Curated calendars for things happening around Portland — events, markets, trivia, rides, and more.</p>
+      <div class="px-4 pb-4 sm:px-6 sm:pb-8 max-w-5xl mx-auto w-full">
+        <h1 class="text-3xl sm:text-4xl font-semibold text-white drop-shadow" style="font-family: var(--font-serif)">Portland Events</h1>
+        <p class="hidden sm:block text-white/80 text-lg mt-2 max-w-xl drop-shadow">Curated calendars for things happening around Portland — events, markets, trivia, rides, and more.</p>
       </div>
     </div>
   </div>

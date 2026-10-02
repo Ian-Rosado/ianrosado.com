@@ -38,5 +38,30 @@ jobs:
           if [ -z "$HOOK" ]; then
             echo "VERCEL_HOOK_PDX_EVENTS not set — skipping pdx-events.com"
           else
+            # Remember the live homepage's ETag so the IndexNow step can tell
+            # when the new deploy is serving.
+            echo "PDX_OLD_ETAG=$(curl -fsSI https://www.pdx-events.com/ | grep -i '^etag:' | tr -d '\r' | cut -d' ' -f2)" >> "$GITHUB_ENV"
             curl -fsS -X POST "$HOOK" && echo "Triggered pdx-events.com rebuild"
+            echo "PDX_TRIGGERED=1" >> "$GITHUB_ENV"
           fi
+
+      # Tell Bing (and other IndexNow engines — Bing's index also feeds
+      # DuckDuckGo) that the events homepage changed, so it's re-crawled
+      # within hours instead of days. Waits (up to 15 min) for the new deploy
+      # to go live first. The key file is public-pdx-events/<key>.txt.
+      - name: Notify IndexNow (pdx-events.com)
+        if: env.PDX_TRIGGERED == '1'
+        env:
+          KEY: d93e546b1de34261a4226ff61beaa007
+        run: |
+          for i in $(seq 1 30); do
+            sleep 30
+            ETAG=$(curl -fsSI https://www.pdx-events.com/ | grep -i '^etag:' | tr -d '\r' | cut -d' ' -f2)
+            if [ -n "$ETAG" ] && [ "$ETAG" != "$PDX_OLD_ETAG" ]; then
+              echo "New deploy is live after ~$((i * 30))s"
+              break
+            fi
+          done
+          BODY='{"host":"www.pdx-events.com","key":"'"$KEY"'","keyLocation":"https://www.pdx-events.com/'"$KEY"'.txt","urlList":["https://www.pdx-events.com/"]}'
+          curl -sS -o /dev/null -w 'IndexNow HTTP %{http_code}\n' -X POST https://api.indexnow.org/indexnow \
+            -H 'Content-Type: application/json; charset=utf-8' -d "$BODY"

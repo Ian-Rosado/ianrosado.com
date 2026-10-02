@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<!--
+  EVENT CARDS — Plan Your Weekend Oct 2–4, 2026 (Purple theme #5)
+  8 cards, one per event.
+-->
+<title>Event Cards – Plan Your Weekend Oct 2–4</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;900&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #111;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 12px;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .post {
+    width: 1080px;
+    height: 1080px;
+    background: #1c0e30;          /* Purple canvas */
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .top-bar {
+    padding: 36px 52px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-shrink: 0;
+  }
+  .event-date {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #b39dff;              /* Purple accent */
+  }
+  .event-type {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+    text-align: right;
+  }
+  .tile {
+    margin: 24px 52px 0;
+    border-radius: 20px;
+    padding: 40px 52px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .tile-body { flex: 1; display: flex; flex-direction: column; justify-content: flex-start; }
+  .tile-tag {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 18px;
+    line-height: 1;
+  }
+  .event-name {
+    font-family: 'DM Serif Display', serif;
+    font-size: 72px;
+    color: #fff;
+    line-height: 1.05;
+    margin-bottom: 28px;
+  }
+  .event-name.long { font-size: 52px; }
+  .description {
+    font-size: 30px;
+    font-weight: 400;
+    color: rgba(255,255,255,0.72);
+    line-height: 1.45;
+    flex: 1;
+  }
+  .tile-meta {
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid rgba(255,255,255,0.15);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-shrink: 0;
+  }
+  .meta-venue { font-size: 26px; font-weight: 700; color: #fff; line-height: 1.3; }
+  .meta-details { font-size: 26px; font-weight: 500; color: rgba(255,255,255,0.6); text-align: right; line-height: 1.3; }
+  .footer {
+    padding: 16px 52px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  .footer-handle { font-size: 22px; color: rgba(255,255,255,0.25); }
+  .footer-site { font-size: 22px; color: rgba(255,255,255,0.35); font-weight: 600; }
+  /* Tile color themes — purple skipped (blends with Purple canvas) */
+  .green  { background: #0a3520; } .green  .tile-tag { color: #5cdc80; }
+  .teal   { background: #003d35; } .teal   .tile-tag { color: #3ecfb0; }
+  .blue   { background: #0a2050; } .blue   .tile-tag { color: #5ca8ff; }
+  .amber  { background: #7a3d00; } .amber  .tile-tag { color: #f0a500; }
+  .coral  { background: #5c1a10; } .coral  .tile-tag { color: #ff7a5c; }
+  .purple { background: #2d1a5e; } .purple .tile-tag { color: #b39dff; }
+  .pink   { background: #4a1040; } .pink   .tile-tag { color: #f07ad8; }
+</style>
+</head>
+<body>
+
+<!-- Card 1: Pier Park Stewardship -->
+<div class="post">
+  <div class="top-bar"><div class="event-date">Fri · Oct 2</div><div class="event-type">Plan Your Weekend</div></div>
+  <div class="tile teal">
+    <div class="tile-body">
+      <div class="tile-tag">🌲 Volunteer · Free</div>
+      <div class="event-name">Pier Park Stewardship</div>
+      <div class="description">Lend a hand caring for St. Johns' beloved Pier Park — planting, mulching, and tidying trails with Portland Parks. Free, family-friendly, and a feel-good way to start the weekend outside.</div>
+    </div>
+    <div class="tile-meta"><div class="meta-venue">Pier Park</div><div class="meta-details">Fri 10 AM · Free</div></div>
+  </div>
+  <div class="footer"><div class="footer-handle">@portland_events_calendar</div><div class="footer-site">pdx-events.com</div></div>
+</div>
+
+<!-- Card 2: Plaidurday Party -->
+<div class="post">
+  <div class="top-bar"><div class="event-date">Fri · Oct 2</div><div class="event-type">Plan Your Weekend</div></div>
+  <div class="tile blue">
+    <div class="tile-body">
+      <div class="tile-tag">🎉 Themed Party</div>
+      <div class="event-name">Plaidurday Party</div>
+      <div class="description">It's Plaidurday — the global celebration of all things plaid — and Dixie Tavern throws the party. Dust off your flannel and come dance; the more tartan, the better.  Get free cover for wearing plaid!</div>
+    </div>
+    <div class="tile-meta"><div class="meta-venue">Dixie Tavern</div><div class="meta-details">Fri 8:30 PM</div></div>
+  </div>
+  <div class="footer"><div class="footer-handle">@portland_events_calendar</div><div class="footer-site">pdx-events.com</div></div>
+</div>
+
+<!-- Card 3: Craft Chocolate Festival -->
+<div class="post">
+  <div class="top-bar"><div class="event-date">Sat–Sun · Oct 3–4</div><div class="event-type">Plan Your Weekend</div></div>
+  <div class="tile amber">
+    <div class="tile-body">
+      <div class="tile-tag">🍫 Chocolate Fest</div>
+      <div class="event-name">Craft Chocolate Festival</div>
+      <div class="description">Taste your way through dozens of craft chocolate makers at Olympic Mills — bean-to-bar samples, truffles, and more. A rich, delicious weekend for your sweet tooth.</div>
+    </div>
+    <div class="tile-meta"><div class="meta-venue">Olympic Mills</div><div class="meta-details">Sat–Sun · 11 AM</div></div>
+  </div>
+  <div class="footer"><div class="footer-handle">@portland_events_calendar</div><div class="footer-site">pdx-events.com</div></div>
+</div>
+
+<!-- Card 4: Pandyfest Backyard Show -->
+<div class="post">
+  <div class="top-bar"><div class="event-date">Sat · Oct 3</div><div class="event-type">Plan Your Weekend</div></div>
+  <div class="tile coral">
+    <div class="tile-body">
+      <div class="tile-tag">🎸 Backyard Show</div>
+      <div class="event-name">Pandyfest Backyard Show</div>
+      <div class="description">A DIY backyard music show in NE Portland — intimate, grassroots, and exactly the kind of lineup that keeps Portland's underground scene alive. $20 at the gate. DM @pandyfestpdx on Instagram for location.</div>
+    </div>
+    <div class="tile-meta"><div class="meta-venue">NE Portland</div><div class="meta-details">Sat 4 PM · $20</div></div>
+  </div>
+  <div class="footer"><div class="footer-handle">@portland_events_calendar</div><div class="footer-site">pdx-events.com</div></div>
+</div>
+
+<!-- Card 5: Sexy Nerds Party -->
+<div class="post">
+  <div class="top-bar"><div class="event-date">Sat · Oct 3</div><div class="event-type">Plan Your Weekend</div></div>
+  <div class="tile green">
+    <div class="tile-body">
+      <div class="tile-tag">🤓 Dance Party</div>
+      <div class="event-name">Sexy Nerds Party</div>
+      <div class="description">White Owl's Sexy Nerds Party is a come-as-your-hottest-nerd dance night — cosplay encouraged, judgment checked at the door. Nerd is an easy costume to start getting in the Halloween spirit!</div>
+    </div>
+    <div class="tile-meta"><div class="meta-venue">White Owl Social Club</div><div class="meta-details">Sat 9 PM</div></div>
+  </div>
+  <div class="footer"><div class="footer-handle">@portland_events_calendar</div><div class="footer-site">pdx-events.com</div></div>
+</div>
+
+<!-- Card 7: Football Singles -->
+<div class="post">
+  <div class="top-bar"><div class="event-date">Sun · Oct 4</div><div class="event-type">Plan Your Weekend</div></div>
+  <div class="tile teal">
+    <div class="tile-body">
+      <div class="tile-tag">🏈 Singles Mixer · Free</div>
+      <div class="event-name">Football Singles Mixer</div>
+      <div class="description">Meet Your Match hosts a football-watch singles mixer at The Garden Tavern — catch the game, meet someone new, keep it low-pressure. Free to join.</div>
+    </div>
+    <div class="tile-meta"><div class="meta-venue">The Garden Tavern</div><div class="meta-details">Sun 1 PM · Free</div></div>
+  </div>
+  <div class="footer"><div class="footer-handle">@portland_events_calendar</div><div class="footer-site">pdx-events.com</div></div>
+</div>
+
+<!-- Card 7b: Felted Pumpkin Workshop -->
+<div class="post">
+  <div class="top-bar"><div class="event-date">Sun · Oct 4</div><div class="event-type">Plan Your Weekend</div></div>
+  <div class="tile pink">
+    <div class="tile-body">
+      <div class="tile-tag">🎃 Maker Workshop</div>
+      <div class="event-name">Felted Pumpkin Workshop</div>
+      <div class="description">Make your own felted pumpkin with the Overcast Animation Collective at ADX Fest — a cozy, hands-on craft session and part of ADX's big weekend of maker workshops. Beginner-friendly.  Part of the larger ADX-Fest happening all month!</div>
+    </div>
+    <div class="tile-meta"><div class="meta-venue">ADX</div><div class="meta-details">Sun 2 PM</div></div>
+  </div>
+  <div class="footer"><div class="footer-handle">@portland_events_calendar</div><div class="footer-site">pdx-events.com</div></div>
+</div>
+
+<!-- Card 8: Stumptown Strays Costume Contest -->
+<div class="post">
+  <div class="top-bar"><div class="event-date">Sun · Oct 4</div><div class="event-type">Plan Your Weekend</div></div>
+  <div class="tile blue">
+    <div class="tile-body">
+      <div class="tile-tag">🐕 Costume Contest</div>
+      <div class="event-name">Stumptown Strays Costume Contest</div>
+      <div class="description">Dress your dog to the nines for Stumptown Strays' costume contest at The Bye and Bye — prizes, treats, and a parade of very good costumed pups, all benefiting rescue. $10 to enter a costume, free to watch.</div>
+    </div>
+    <div class="tile-meta"><div class="meta-venue">The Bye and Bye</div><div class="meta-details">Sun 2 PM · $10</div></div>
+  </div>
+  <div class="footer"><div class="footer-handle">@portland_events_calendar</div><div class="footer-site">pdx-events.com</div></div>
+</div>
+
+</body>
+</html>

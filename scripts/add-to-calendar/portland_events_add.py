@@ -193,6 +193,7 @@ KNOWN_DROP_PATTERNS = [
     #  listings dedup against those instead of being dropped.)
     "potluck in the park",  # recurring free-meal service, not an event (cf. blanchet house)
     "weekend train rides",  # recurring Oregon Rail Heritage Center rides — never wanted
+    "vespers",           # recurring choral/organ vespers services — not featured (dropped 3x)
     "nfl",               # NFL watch parties (Mon/Thu/Sun football, esp. Wonderlove)
     "sunday football",   # Wonderlove et al. football watch parties (title has no
     "night football",    # "nfl" — catches "Sunday Football", "Monday/Thursday
@@ -261,11 +262,18 @@ TRUSTED_SOURCES = {
 _TOUR_RE = re.compile(r"\btour\b", re.I)
 
 
-def is_unwanted_recurring(title, location=""):
+def is_unwanted_recurring(title, location="", source=""):
     """True for recurring listings the user has repeatedly dropped at Review —
     matched against the title, or (for venue-wide drops) the title OR location."""
     title_l = title.lower()
     if any(p in title_l for p in KNOWN_DROP_PATTERNS):
+        return True
+    # University of Portland athletics: the dedicated Portland Pilots scraper
+    # provides UP home games authoritatively (titled "Portland Pilots <Sport>").
+    # Generic sources list the same teams as "University of Portland <Sport> ..."
+    # — home dupes and non-local road games — so drop those outright and let the
+    # Pilots scraper be the single source of truth.
+    if "university of portland" in title_l and source != "Portland Pilots":
         return True
     hay = f"{title_l} {location.lower()}"
     return any(v in hay for v in KNOWN_DROP_VENUES)
@@ -283,6 +291,13 @@ KNOWN_CINEMA_VENUES = [
     "moreland theater", "cinema 21", "studio one theater", "academy theater",
     "living room theater", "5th avenue cinema", "cinemagic", "kiggins theat",
 ]
+# Mixed repertory venues: they screen films AND host concerts/talks, so the
+# user picks screenings there film-by-film. Treated as a cinema ONLY when the
+# title also reads as a plain film (a "(YYYY)" year or a 35mm/16mm marker) — so
+# "Ghost in the Shell (1995)" pre-skips but "<Band> Live" doesn't. A blanket
+# cinema rule here pre-skipped more kept screenings than it saved (2026-09-29).
+MIXED_CINEMA_VENUES = ["hollywood theat", "whitsell"]
+_SCREENING_YEAR_RE = re.compile(r"\(\d{4}\)")
 # Title markers that identify a screening even when the venue field is blank
 # (e.g. the Church of Film series lists no location).
 _SCREENING_MARKERS = ["church of film", "35mm", "16mm"]
@@ -305,8 +320,12 @@ def is_movie_screening(title, location=""):
     if any(w in t for w in _SCREENING_EXTRA):
         return False
     loc = re.sub(r"\.", "", (location or "").lower())
-    return (any(v in loc for v in KNOWN_CINEMA_VENUES)
-            or any(m in t for m in _SCREENING_MARKERS))
+    if (any(v in loc for v in KNOWN_CINEMA_VENUES)
+            or any(m in t for m in _SCREENING_MARKERS)):
+        return True
+    # Mixed repertory venue: only a plain-film title (has a "(YYYY)") counts.
+    return (any(v in loc for v in MIXED_CINEMA_VENUES)
+            and bool(_SCREENING_YEAR_RE.search(t)))
 
 
 # ── Local pro/semi-pro sports ────────────────────────────────────────────────
@@ -2868,7 +2887,8 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
     before = len(rows)
     rows = [r for r in rows if not is_unwanted_recurring(
         get(r, "Title", "title", "summary"),
-        get(r, "Location", "location", "Venue", "venue"))]
+        get(r, "Location", "location", "Venue", "venue"),
+        get(r, "Source", "source"))]
     if before != len(rows):
         print(f"  Dropped {before - len(rows)} unwanted recurring listing(s) (see KNOWN_DROP_PATTERNS)")
 

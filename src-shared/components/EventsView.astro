@@ -5,12 +5,16 @@ import {
   fetchAllEvents,
   EVENT_CATEGORIES,
 } from '../lib/events';
-import { groupByDate, formatDisplayDate, type CalEvent } from '../lib/google-calendar';
+import { groupByDate, formatDisplayDate } from '../lib/google-calendar';
 
-const TZ = 'America/Los_Angeles';
+// Only the first few days are server-rendered. Rendering all ~90 days made
+// the page 12 MB of HTML (slow on phones, truncated by crawlers); the rest is
+// rendered client-side from /events.json (see src-shared/lib/events-payload).
+const SSR_DAYS = 3;
 
 const allEvents = await fetchAllEvents();
 const grouped = groupByDate(allEvents);
+const ssrDays = [...grouped.entries()].slice(0, SSR_DAYS);
 
 const totalCount = allEvents.length;
 const freeCount = allEvents.filter((e) => e.costClass === 'free').length;
@@ -20,80 +24,6 @@ const dateKeys = [...grouped.keys()].sort();
 const minDate = dateKeys[0] ?? '';
 const maxDate = dateKeys[dateKeys.length - 1] ?? '';
 
-// ---- Calendar grid construction (desktop only) -------------------------
-// Build one month grid (Sun–Sat weeks) per calendar month that has events,
-// from the current Pacific month through the furthest event.
-const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: TZ }); // YYYY-MM-DD
-
-function ymKey(d: Date) {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-}
-
-// Parse a YYYY-MM-DD string into a local Date at noon (TZ-edge-safe).
-function parseDay(s: string) {
-  return new Date(s + 'T12:00:00');
-}
-
-const today = parseDay(todayStr);
-const lastEventDate = allEvents.length
-  ? parseDay(allEvents[allEvents.length - 1].date)
-  : today;
-
-interface DayCell {
-  date: string; // YYYY-MM-DD, or '' for padding cells
-  day: number;
-  inMonth: boolean;
-  isToday: boolean;
-  events: CalEvent[];
-}
-interface MonthGrid {
-  key: string; // YYYY-MM
-  label: string; // "June 2026"
-  weeks: DayCell[][];
-}
-
-function buildMonth(year: number, month: number): MonthGrid {
-  const first = new Date(year, month, 1);
-  const label = first.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-  const startPad = first.getDay(); // 0=Sun
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-  const cells: DayCell[] = [];
-  // Leading padding
-  for (let i = 0; i < startPad; i++) {
-    cells.push({ date: '', day: 0, inMonth: false, isToday: false, events: [] });
-  }
-  for (let d = 1; d <= daysInMonth; d++) {
-    const ds = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-    cells.push({
-      date: ds,
-      day: d,
-      inMonth: true,
-      isToday: ds === todayStr,
-      events: grouped.get(ds) ?? [],
-    });
-  }
-  // Trailing padding to complete the last week
-  while (cells.length % 7 !== 0) {
-    cells.push({ date: '', day: 0, inMonth: false, isToday: false, events: [] });
-  }
-  const weeks: DayCell[][] = [];
-  for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7));
-  return { key: ymKey(first), label, weeks };
-}
-
-const months: MonthGrid[] = [];
-{
-  const cursor = new Date(today.getFullYear(), today.getMonth(), 1);
-  const end = new Date(lastEventDate.getFullYear(), lastEventDate.getMonth(), 1);
-  while (cursor <= end) {
-    months.push(buildMonth(cursor.getFullYear(), cursor.getMonth()));
-    cursor.setMonth(cursor.getMonth() + 1);
-  }
-}
-
-const weekdayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-const MAX_CHIPS = 4; // events shown in a day cell before "+N more"
 ---
 
 <div class="events-view max-w-3xl lg:max-w-5xl mx-auto px-4 py-8">
@@ -148,18 +78,23 @@ const MAX_CHIPS = 4; // events shown in a day cell before "+N more"
     </div>
   </div>
 
+
   <!-- ===================== LIST VIEW ===================== -->
+  <!-- Server renders the first SSR_DAYS days; the script appends the rest
+       from /events.json as the user scrolls, and re-renders on filter. -->
   <div id="list-view">
-    {[...grouped.entries()].map(([date, dayEvents]) => (
-      <section class="date-group mb-5" data-date={date}>
-        <h2 class="date-heading text-xs font-semibold uppercase tracking-widest text-stone-500 mb-1.5 sticky top-[120px] bg-white/90 backdrop-blur py-0.5">
-          {formatDisplayDate(date)}
-        </h2>
-        <ul class="divide-y divide-stone-50">
-          {dayEvents.map((event) => <EventRow event={event} />)}
-        </ul>
-      </section>
-    ))}
+    <div id="list-days">
+      {ssrDays.map(([date, dayEvents]) => (
+        <section class="date-group mb-5" data-date={date}>
+          <h2 class="date-heading text-xs font-semibold uppercase tracking-widest text-stone-500 mb-1.5 sticky top-[120px] bg-white/90 backdrop-blur py-0.5">{formatDisplayDate(date)}</h2>
+          <ul class="divide-y divide-stone-50">
+            {dayEvents.map((event) => <EventRow event={event} />)}
+          </ul>
+        </section>
+      ))}
+    </div>
+    <div id="list-sentinel" aria-hidden="true"></div>
+    <p id="list-status" class={`text-center py-6 text-sm text-stone-400 ${dateKeys.length > SSR_DAYS ? '' : 'hidden'}`}>Loading more events…</p>
     <div id="no-results" class="hidden text-center py-12">
       <p class="text-stone-400 text-sm mb-3">No events match your filters.</p>
       <button id="clear-filters"
@@ -173,6 +108,7 @@ const MAX_CHIPS = 4; // events shown in a day cell before "+N more"
   </div>
 
   <!-- ===================== CALENDAR VIEW (desktop only) ===================== -->
+  <!-- Month grid is built client-side from /events.json when shown. -->
   <div id="calendar-view" class="hidden">
     <!-- Month nav -->
     <div class="flex items-center justify-center gap-4 mb-4">
@@ -181,47 +117,10 @@ const MAX_CHIPS = 4; // events shown in a day cell before "+N more"
       <button id="cal-next" class="px-2 py-1 rounded hover:bg-stone-100 text-stone-500" aria-label="Next month">›</button>
     </div>
 
-    {months.map((m, i) => (
-      <div class="month-grid" data-month={m.key} data-label={m.label} style={i === 0 ? '' : 'display:none'}>
-        <div class="grid grid-cols-7 text-center text-xs font-semibold uppercase tracking-wide text-stone-400 mb-1">
-          {weekdayLabels.map((w) => <div class="py-1">{w}</div>)}
-        </div>
-        <div class="grid grid-cols-7 gap-px bg-stone-100 border border-stone-100 rounded-lg overflow-hidden">
-          {m.weeks.flat().map((cell) => (
-            <div
-              class={`cal-cell relative bg-white min-h-[110px] p-1.5 text-left align-top ${cell.inMonth ? '' : 'bg-stone-50/50'} ${cell.events.length ? 'cursor-pointer hover:bg-orange-50/40' : ''}`}
-              data-date={cell.date}
-            >
-              {cell.inMonth && (
-                <div class={`text-xs mb-1 ${cell.isToday ? 'font-bold text-white bg-orange-600 rounded-full w-5 h-5 inline-flex items-center justify-center' : 'text-stone-400'}`}>
-                  {cell.day}
-                </div>
-              )}
-              <div class="space-y-0.5">
-                {cell.events.slice(0, MAX_CHIPS).map((ev) => {
-                  const c = COLOR_MAP[ev.color] ?? COLOR_MAP['orange'];
-                  return (
-                    <div
-                      class="cal-chip flex items-center gap-1 text-[11px] leading-tight truncate"
-                      data-category={ev.calendarSlug}
-                      data-cost={ev.costClass}
-                      data-title={ev.title.toLowerCase()}
-                      data-location={(ev.location || '').toLowerCase()}
-                    >
-                      <span class={`flex-shrink-0 w-1.5 h-1.5 rounded-full ${c.dot}`}></span>
-                      <span class="truncate text-stone-700">{ev.allDay ? '' : ev.time + ' '}{ev.title}</span>
-                    </div>
-                  );
-                })}
-                {cell.events.length > MAX_CHIPS && (
-                  <div class="cal-more text-[11px] text-stone-400 pl-2.5">+{cell.events.length - MAX_CHIPS} more</div>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    ))}
+    <div class="grid grid-cols-7 text-center text-xs font-semibold uppercase tracking-wide text-stone-400 mb-1">
+      {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((w) => <div class="py-1">{w}</div>)}
+    </div>
+    <div id="cal-grid" class="grid grid-cols-7 gap-px bg-stone-100 border border-stone-100 rounded-lg overflow-hidden"></div>
 
     <!-- Single shared popover, positioned + populated on day click -->
     <div id="cal-popover" class="hidden fixed z-50 w-80 max-h-96 overflow-y-auto bg-white rounded-xl border border-stone-200 shadow-xl p-3">
@@ -230,32 +129,6 @@ const MAX_CHIPS = 4; // events shown in a day cell before "+N more"
     </div>
   </div>
 </div>
-
-<!-- Day → events data island for the calendar popover (avoids duplicating
-     all event DOM into every cell) -->
-<script type="application/json" id="day-events-data" set:html={JSON.stringify(
-  Object.fromEntries(
-    [...grouped.entries()].map(([date, evs]) => [
-      date,
-      evs.map((e) => ({
-        title: e.title,
-        time: e.allDay ? 'all day' : e.time,
-        location: e.location,
-        mapUrl: e.mapUrl,
-        cost: e.cost,
-        costClass: e.costClass,
-        dot: (COLOR_MAP[e.color] ?? COLOR_MAP['orange']).dot,
-        link: e.url || e.googleUrl,
-        category: e.calendarSlug,
-        title_lc: e.title.toLowerCase(),
-        location_lc: (e.location || '').toLowerCase(),
-      })),
-    ]),
-  ),
-)} />
-<script type="application/json" id="day-labels-data" set:html={JSON.stringify(
-  Object.fromEntries([...grouped.keys()].map((d) => [d, formatDisplayDate(d)]))
-)} />
 
 <style>
   .filter-pill {
@@ -288,7 +161,62 @@ const MAX_CHIPS = 4; // events shown in a day cell before "+N more"
   }
 </style>
 
+<!-- Event row styles. Global (not scoped) because rows come from EventRow and
+     from innerHTML; short class names keep thousands of rows compact. -->
+<style is:global>
+  .events-view .er {
+    display: flex; align-items: baseline; gap: 0.5rem;
+    padding: 0.375rem 0.5rem; margin: 0 -0.5rem; border-radius: 0.25rem;
+    transition: background-color 0.15s;
+  }
+  .events-view .er:hover { background: rgb(250 250 249); }
+  .events-view .er-dot {
+    margin-top: 0.375rem; flex-shrink: 0; width: 0.5rem; height: 0.5rem; border-radius: 9999px;
+  }
+  .events-view .er-time {
+    flex-shrink: 0; width: 4rem; text-align: right;
+    font-size: 0.75rem; line-height: 1rem; font-variant-numeric: tabular-nums; color: rgb(168 162 158);
+  }
+  .events-view .er-main {
+    flex: 1; min-width: 0; font-size: 0.875rem; line-height: 1.375; overflow-wrap: break-word;
+  }
+  .events-view .er-title { color: rgb(28 25 23); font-weight: 500; transition: color 0.15s; }
+  .events-view a.er-title:hover { color: rgb(234 88 12); }
+  .events-view .er-loc { color: rgb(168 162 158); }
+  .events-view .er-map {
+    margin-left: 0.25rem; white-space: nowrap; font-size: 0.75rem; color: rgb(234 88 12);
+  }
+  .events-view .er-map:hover { color: rgb(194 65 12); text-decoration: underline; }
+  .events-view .er-free { flex-shrink: 0; font-size: 0.75rem; line-height: 1rem; font-weight: 600; color: rgb(21 128 61); }
+  .events-view .er-cost { flex-shrink: 0; font-size: 0.75rem; line-height: 1rem; color: rgb(120 113 108); }
+</style>
+
 <script>
+  // ---- Data -------------------------------------------------------------
+  // Full event list comes from /events.json (shape documented in
+  // src-shared/lib/events-payload.ts). Until it arrives, only the
+  // server-rendered first days are on the page; filter changes made in the
+  // meantime are applied as soon as it loads.
+  type EventTuple = [number, string, string, string, string, string, string, string];
+  interface Ev {
+    cat: number; time: string; title: string; loc: string; map: string;
+    cost: string; cc: string; link: string; titleLc: string; locLc: string;
+  }
+  interface Day { date: string; events: Ev[] }
+
+  const TZ = 'America/Los_Angeles';
+  const MAP_PREFIX = 'https://www.google.com/maps/search/?api=1&query=';
+  const ROWS_PER_CHUNK = 150; // rows appended per scroll step
+  const PRELOAD_PX = 1500;    // render ahead this far below the viewport
+  const MAX_CHIPS = 4;        // events shown in a calendar cell before "+N more"
+
+  let cats: [string, string, string][] = []; // [slug, dotClass, calendarName]
+  let allDays: Day[] | null = null;
+  const dayMap = new Map<string, Ev[]>();
+  let viewDays: Day[] = [];   // allDays after filters — what the list shows
+  let renderedIdx = 0;        // how many of viewDays are in the DOM
+  let pendingApply = false;
+
   // ---- Filtering (shared by both views) --------------------------------
   // `date` is a list-view-only filter (YYYY-MM-DD, '' = all dates).
   // `categories` is a multi-select set of slugs; empty = show all types.
@@ -299,13 +227,86 @@ const MAX_CHIPS = 4; // events shown in a day cell before "+N more"
     date: '',
   };
 
-  const rows = Array.from(document.querySelectorAll<HTMLElement>('.event-row'));
-  const groups = Array.from(document.querySelectorAll<HTMLElement>('.date-group'));
-  const chips = Array.from(document.querySelectorAll<HTMLElement>('.cal-chip'));
+  const listDays = document.getElementById('list-days')!;
+  const sentinel = document.getElementById('list-sentinel')!;
+  const listStatus = document.getElementById('list-status');
   const countEl = document.getElementById('result-count');
   const noResults = document.getElementById('no-results');
-  const listView = document.getElementById('list-view');
   const eventsView = document.querySelector<HTMLElement>('.events-view');
+
+  function escapeHtml(s: string): string {
+    return s.replace(/[&<>"']/g, (c) => (
+      { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string
+    ));
+  }
+
+  // Same output as formatDisplayDate() in google-calendar.ts: "Sat, Jun 7"
+  function dayLabel(date: string): string {
+    return new Date(date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  }
+
+  // Must match EventRow.astro's markup.
+  function rowHtml(ev: Ev): string {
+    const [, dot, calName] = cats[ev.cat] ?? ['', 'bg-orange-500', ''];
+    const title = ev.link
+      ? `<a href="${escapeHtml(ev.link)}" target="_blank" rel="noopener noreferrer" class="er-title">${escapeHtml(ev.title)}</a>`
+      : `<span class="er-title">${escapeHtml(ev.title)}</span>`;
+    const loc = ev.loc ? `<span class="er-loc"> · ${escapeHtml(ev.loc)}</span>` : '';
+    const map = ev.map
+      ? `<a href="${escapeHtml(MAP_PREFIX + ev.map)}" target="_blank" rel="noopener noreferrer" class="er-map" title="Open in Google Maps">📍(map)</a>`
+      : '';
+    const cost = ev.cc === 'free'
+      ? '<span class="er-free">Free</span>'
+      : ev.cost ? `<span class="er-cost">${escapeHtml(ev.cost)}</span>` : '';
+    return `<li class="er"><span class="er-dot ${dot}" title="${escapeHtml(calName)}"></span><span class="er-time">${escapeHtml(ev.time)}</span><span class="er-main">${title}${loc} ${map}</span>${cost}</li>`;
+  }
+
+  // Must match the date-group section in the template above.
+  function dayHtml(day: Day): string {
+    return `<section class="date-group mb-5" data-date="${day.date}"><h2 class="date-heading text-xs font-semibold uppercase tracking-widest text-stone-500 mb-1.5 sticky top-[120px] bg-white/90 backdrop-blur py-0.5">${dayLabel(day.date)}</h2><ul class="divide-y divide-stone-50">${day.events.map(rowHtml).join('')}</ul></section>`;
+  }
+
+  function matches(ev: Ev): boolean {
+    const okCost = state.cost === 'all' || ev.cc === state.cost;
+    const okCat = state.categories.size === 0 || state.categories.has(cats[ev.cat]?.[0] ?? '');
+    const okSearch = !state.search || ev.titleLc.includes(state.search) || ev.locLc.includes(state.search);
+    return okCost && okCat && okSearch;
+  }
+
+  // ---- List rendering (incremental) -------------------------------------
+  function isListVisible(): boolean {
+    return !document.getElementById('list-view')?.classList.contains('hidden');
+  }
+
+  function renderMore() {
+    let rows = 0;
+    let html = '';
+    while (renderedIdx < viewDays.length && rows < ROWS_PER_CHUNK) {
+      const day = viewDays[renderedIdx++];
+      html += dayHtml(day);
+      rows += day.events.length;
+    }
+    if (html) listDays.insertAdjacentHTML('beforeend', html);
+  }
+
+  // Keep appending while the end of the list is within PRELOAD_PX of the
+  // viewport. One chunk per frame so a long list never blocks scrolling.
+  function fillList() {
+    if (!allDays || !isListVisible() || renderedIdx >= viewDays.length) return;
+    if (sentinel.getBoundingClientRect().top > window.innerHeight + PRELOAD_PX) return;
+    renderMore();
+    requestAnimationFrame(fillList);
+  }
+  // A scroll listener rather than an IntersectionObserver: a fast fling or a
+  // jump (End key, scrollbar drag) can skip past the sentinel entirely, and an
+  // observer never fires in that case.
+  let fillQueued = false;
+  window.addEventListener('scroll', () => {
+    if (fillQueued) return;
+    fillQueued = true;
+    requestAnimationFrame(() => { fillQueued = false; fillList(); });
+  }, { passive: true });
+  window.addEventListener('resize', fillList, { passive: true });
 
   // After a filter change, scroll back to the top of the results so the user
   // sees the filtered list from the start. Deferred to the next frame so it
@@ -326,35 +327,26 @@ const MAX_CHIPS = 4; // events shown in a day cell before "+N more"
     }, delay);
   }
 
-  function matches(el: HTMLElement): boolean {
-    const cost = el.dataset.cost ?? 'unknown';
-    const category = el.dataset.category ?? '';
-    const title = el.dataset.title ?? '';
-    const location = el.dataset.location ?? '';
-    const okCost = state.cost === 'all' || cost === state.cost;
-    const okCat = state.categories.size === 0 || state.categories.has(category);
-    const okSearch = !state.search || title.includes(state.search) || location.includes(state.search);
-    return okCost && okCat && okSearch;
-  }
-
   function apply() {
+    if (!allDays) { pendingApply = true; return; }
+    viewDays = [];
     let visible = 0;
-    // Iterate by group so the date filter can short-circuit whole days.
-    for (const group of groups) {
-      const dateOk = !state.date || group.dataset.date === state.date;
-      let anyVisible = false;
-      for (const row of group.querySelectorAll<HTMLElement>('.event-row')) {
-        const show = dateOk && matches(row);
-        row.style.display = show ? '' : 'none';
-        if (show) { visible++; anyVisible = true; }
+    for (const day of allDays) {
+      if (state.date && day.date !== state.date) continue;
+      const events = day.events.filter(matches);
+      if (events.length) {
+        viewDays.push({ date: day.date, events });
+        visible += events.length;
       }
-      group.style.display = anyVisible ? '' : 'none';
     }
-    // Calendar chips filter independently (date filter is list-only)
-    for (const chip of chips) chip.style.display = matches(chip) ? '' : 'none';
+    listDays.innerHTML = '';
+    renderedIdx = 0;
+    renderMore();
+    fillList();
 
     if (countEl) countEl.textContent = String(visible);
     if (noResults) noResults.classList.toggle('hidden', visible !== 0);
+    if (isCalendarVisible()) renderMonth(monthIdx);
   }
 
   // Reflect the category set onto the Type pills' pressed state.
@@ -441,6 +433,9 @@ const MAX_CHIPS = 4; // events shown in a day cell before "+N more"
   const btnCal = document.getElementById('view-calendar');
 
   const dateFilterGroup = document.getElementById('date-filter-group');
+  function isCalendarVisible(): boolean {
+    return !calendarViewEl?.classList.contains('hidden');
+  }
   function setView(view: 'list' | 'calendar') {
     const isList = view === 'list';
     listViewEl?.classList.toggle('hidden', !isList);
@@ -449,69 +444,74 @@ const MAX_CHIPS = 4; // events shown in a day cell before "+N more"
     btnCal?.setAttribute('aria-pressed', String(!isList));
     // Date picker only makes sense in list view
     dateFilterGroup?.classList.toggle('hidden', !isList);
+    if (isList) fillList(); else renderMonth(monthIdx);
   }
   btnList?.addEventListener('click', () => setView('list'));
   btnCal?.addEventListener('click', () => setView('calendar'));
 
-  // Calendar view is desktop-only — force list below the lg breakpoint
-  const lgQuery = window.matchMedia('(min-width: 1024px)');
-  function enforceBreakpoint() {
-    if (!lgQuery.matches) setView('list');
-  }
-  lgQuery.addEventListener('change', enforceBreakpoint);
-  enforceBreakpoint();
-
-  // ---- Calendar month navigation ---------------------------------------
-  const monthGrids = Array.from(document.querySelectorAll<HTMLElement>('.month-grid'));
+  // ---- Calendar month grid (desktop only) -------------------------------
+  // One month at a time, Sun–Sat weeks, from the current Pacific month
+  // through the furthest event. Rebuilt on navigation and filter changes.
+  const calGrid = document.getElementById('cal-grid');
   const monthLabel = document.getElementById('cal-month-label');
+  const calPrev = document.getElementById('cal-prev') as HTMLButtonElement | null;
+  const calNext = document.getElementById('cal-next') as HTMLButtonElement | null;
+  const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: TZ }); // YYYY-MM-DD
+  let months: [number, number][] = []; // [year, monthIndex]
   let monthIdx = 0;
 
-  function showMonth(idx: number) {
-    if (idx < 0 || idx >= monthGrids.length) return;
-    monthIdx = idx;
-    monthGrids.forEach((g, i) => (g.style.display = i === idx ? '' : 'none'));
-    if (monthLabel) monthLabel.textContent = monthGrids[idx]?.dataset.label ?? '';
-    const prev = document.getElementById('cal-prev') as HTMLButtonElement | null;
-    const next = document.getElementById('cal-next') as HTMLButtonElement | null;
-    if (prev) prev.disabled = idx === 0;
-    if (next) next.disabled = idx === monthGrids.length - 1;
-    if (prev) prev.style.opacity = idx === 0 ? '0.3' : '1';
-    if (next) next.style.opacity = idx === monthGrids.length - 1 ? '0.3' : '1';
+  function buildMonthList() {
+    const [ty, tm] = todayStr.split('-').map(Number);
+    const last = allDays?.length ? allDays[allDays.length - 1].date : todayStr;
+    const [ly, lm] = last.split('-').map(Number);
+    months = [];
+    for (let y = ty, m = tm - 1; y * 12 + m <= ly * 12 + lm - 1; ) {
+      months.push([y, m]);
+      if (++m === 12) { m = 0; y++; }
+    }
   }
-  document.getElementById('cal-prev')?.addEventListener('click', () => showMonth(monthIdx - 1));
-  document.getElementById('cal-next')?.addEventListener('click', () => showMonth(monthIdx + 1));
-  if (monthGrids.length) showMonth(0);
 
-  // ---- Day popover (single shared element, built from JSON data island) -
-  interface DayEvent {
-    title: string; time: string; location: string; mapUrl: string; cost: string;
-    costClass: string; dot: string; link: string; category: string;
-    title_lc: string; location_lc: string;
+  function renderMonth(idx: number) {
+    if (!allDays || !calGrid || !months.length) return;
+    monthIdx = Math.max(0, Math.min(idx, months.length - 1));
+    const [y, m] = months[monthIdx];
+    const first = new Date(y, m, 1);
+    if (monthLabel) monthLabel.textContent = first.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+    const startPad = first.getDay(); // 0=Sun
+    const daysInMonth = new Date(y, m + 1, 0).getDate();
+    const pad = '<div class="cal-cell relative bg-white min-h-[110px] p-1.5 bg-stone-50/50"></div>';
+    let html = pad.repeat(startPad);
+    for (let d = 1; d <= daysInMonth; d++) {
+      const ds = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      const events = (dayMap.get(ds) ?? []).filter(matches);
+      const dayNum = ds === todayStr
+        ? `<div class="text-xs mb-1 font-bold text-white bg-orange-600 rounded-full w-5 h-5 inline-flex items-center justify-center">${d}</div>`
+        : `<div class="text-xs mb-1 text-stone-400">${d}</div>`;
+      const chips = events.slice(0, MAX_CHIPS).map((ev) =>
+        `<div class="cal-chip flex items-center gap-1 text-[11px] leading-tight truncate"><span class="flex-shrink-0 w-1.5 h-1.5 rounded-full ${cats[ev.cat]?.[1] ?? ''}"></span><span class="truncate text-stone-700">${ev.time === 'all day' ? '' : escapeHtml(ev.time) + ' '}${escapeHtml(ev.title)}</span></div>`,
+      ).join('');
+      const more = events.length > MAX_CHIPS
+        ? `<div class="cal-more text-[11px] text-stone-400 pl-2.5">+${events.length - MAX_CHIPS} more</div>`
+        : '';
+      html += `<div class="cal-cell relative bg-white min-h-[110px] p-1.5 text-left align-top ${events.length ? 'cursor-pointer hover:bg-orange-50/40' : ''}" data-date="${ds}"${events.length ? ' data-has-events' : ''}>${dayNum}<div class="space-y-0.5">${chips}${more}</div></div>`;
+    }
+    html += pad.repeat((7 - ((startPad + daysInMonth) % 7)) % 7);
+    calGrid.innerHTML = html;
+    closePopover();
+
+    if (calPrev) { calPrev.disabled = monthIdx === 0; calPrev.style.opacity = monthIdx === 0 ? '0.3' : '1'; }
+    const atEnd = monthIdx === months.length - 1;
+    if (calNext) { calNext.disabled = atEnd; calNext.style.opacity = atEnd ? '0.3' : '1'; }
   }
-  const dayData: Record<string, DayEvent[]> = JSON.parse(
-    document.getElementById('day-events-data')?.textContent || '{}',
-  );
-  const dayLabels: Record<string, string> = JSON.parse(
-    document.getElementById('day-labels-data')?.textContent || '{}',
-  );
+  calPrev?.addEventListener('click', () => renderMonth(monthIdx - 1));
+  calNext?.addEventListener('click', () => renderMonth(monthIdx + 1));
 
+  // ---- Day popover (single shared element) ------------------------------
   const popover = document.getElementById('cal-popover');
   const popDate = document.getElementById('cal-popover-date');
   const popList = document.getElementById('cal-popover-list');
   let openCell: HTMLElement | null = null;
-
-  function matchesEvent(ev: DayEvent): boolean {
-    const okCost = state.cost === 'all' || ev.costClass === state.cost;
-    const okCat = state.categories.size === 0 || state.categories.has(ev.category);
-    const okSearch = !state.search || ev.title_lc.includes(state.search) || ev.location_lc.includes(state.search);
-    return okCost && okCat && okSearch;
-  }
-
-  function escapeHtml(s: string): string {
-    return s.replace(/[&<>"']/g, (c) => (
-      { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string
-    ));
-  }
 
   function closePopover() {
     popover?.classList.add('hidden');
@@ -519,27 +519,10 @@ const MAX_CHIPS = 4; // events shown in a day cell before "+N more"
   }
 
   function openPopover(cell: HTMLElement, date: string) {
-    const events = (dayData[date] || []).filter(matchesEvent);
+    const events = (dayMap.get(date) ?? []).filter(matches);
     if (!events.length || !popover || !popDate || !popList) return;
-    popDate.textContent = dayLabels[date] || date;
-    popList.innerHTML = events.map((ev) => {
-      const titleHtml = ev.link
-        ? `<a href="${escapeHtml(ev.link)}" target="_blank" rel="noopener noreferrer" class="text-stone-900 hover:text-orange-600 font-medium">${escapeHtml(ev.title)}</a>`
-        : `<span class="text-stone-900 font-medium">${escapeHtml(ev.title)}</span>`;
-      const loc = ev.location ? `<span class="text-stone-400"> · ${escapeHtml(ev.location)}</span>` : '';
-      const map = ev.mapUrl
-        ? `<a href="${escapeHtml(ev.mapUrl)}" target="_blank" rel="noopener noreferrer" class="map-link ml-1 whitespace-nowrap text-xs text-orange-600 hover:text-orange-700 hover:underline" title="Open in Google Maps">📍(map)</a>`
-        : '';
-      const cost = ev.costClass === 'free'
-        ? '<span class="flex-shrink-0 text-xs font-semibold text-green-700">Free</span>'
-        : ev.cost ? `<span class="flex-shrink-0 text-xs text-stone-500">${escapeHtml(ev.cost)}</span>` : '';
-      return `<li class="flex items-baseline gap-2 py-1.5">
-        <span class="mt-1.5 flex-shrink-0 w-2 h-2 rounded-full ${ev.dot}"></span>
-        <span class="flex-shrink-0 w-16 text-xs tabular-nums text-stone-400 text-right">${escapeHtml(ev.time)}</span>
-        <span class="flex-1 min-w-0 text-sm leading-snug">${titleHtml}${loc}${map}</span>
-        ${cost}
-      </li>`;
-    }).join('');
+    popDate.textContent = dayLabel(date);
+    popList.innerHTML = events.map(rowHtml).join('');
 
     // Position near the clicked cell, clamped to viewport
     const r = cell.getBoundingClientRect();
@@ -554,14 +537,12 @@ const MAX_CHIPS = 4; // events shown in a day cell before "+N more"
     openCell = cell;
   }
 
-  document.querySelectorAll<HTMLElement>('.cal-cell').forEach((cell) => {
-    const date = cell.dataset.date;
-    if (!date || !(dayData[date]?.length)) return;
-    cell.addEventListener('click', (e) => {
-      e.stopPropagation();
-      if (openCell === cell) { closePopover(); return; }
-      openPopover(cell, date);
-    });
+  calGrid?.addEventListener('click', (e) => {
+    const cell = (e.target as HTMLElement).closest<HTMLElement>('.cal-cell[data-has-events]');
+    if (!cell?.dataset.date) return;
+    e.stopPropagation();
+    if (openCell === cell) { closePopover(); return; }
+    openPopover(cell, cell.dataset.date);
   });
   popover?.addEventListener('click', (e) => e.stopPropagation());
   document.addEventListener('click', closePopover);
@@ -571,4 +552,49 @@ const MAX_CHIPS = 4; // events shown in a day cell before "+N more"
     if (popover && !popover.classList.contains('hidden') && popover.contains(e.target as Node)) return;
     closePopover();
   }, true);
+
+  // Calendar view is desktop-only — force list below the lg breakpoint
+  const lgQuery = window.matchMedia('(min-width: 1024px)');
+  function enforceBreakpoint() {
+    if (!lgQuery.matches) setView('list');
+  }
+  lgQuery.addEventListener('change', enforceBreakpoint);
+  enforceBreakpoint();
+
+  // ---- Load the full event list -----------------------------------------
+  fetch('/events.json')
+    .then((r) => {
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      return r.json();
+    })
+    .then((data: { cats: [string, string, string][]; days: [string, EventTuple[]][] }) => {
+      cats = data.cats;
+      allDays = data.days.map(([date, tuples]) => {
+        const events = tuples.map(([cat, time, title, loc, map, cost, cc, link]) => ({
+          cat, time, title, loc, map, cost, cc, link,
+          titleLc: title.toLowerCase(), locLc: loc.toLowerCase(),
+        }));
+        dayMap.set(date, events);
+        return { date, events };
+      });
+      buildMonthList();
+      listStatus?.classList.add('hidden');
+
+      if (pendingApply) {
+        apply();
+      } else {
+        // No filters yet: keep the server-rendered days and continue after them.
+        viewDays = allDays;
+        renderedIdx = listDays.querySelectorAll('.date-group').length;
+        fillList();
+        if (isCalendarVisible()) renderMonth(monthIdx);
+      }
+    })
+    .catch((err) => {
+      console.error('Failed to load /events.json', err);
+      if (listStatus) {
+        listStatus.textContent = "Couldn't load the rest of the events — try refreshing the page.";
+        listStatus.classList.remove('hidden');
+      }
+    });
 </script>

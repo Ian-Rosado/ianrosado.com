@@ -31,7 +31,16 @@ export const EVENT_CATEGORIES: EventCategory[] = [
 // Fetch every calendar in parallel and return one flat, date-sorted list.
 // Trivia is fetched as a group (4 sub-calendars) but all carry slug 'trivia'
 // and the group's display name.
-export async function fetchAllEvents(): Promise<CalEvent[]> {
+//
+// Cached for the build so the page and /events.json share one fetch (and
+// therefore identical data). Not cached in dev, so edits show up on reload.
+let cached: Promise<CalEvent[]> | null = null;
+export function fetchAllEvents(): Promise<CalEvent[]> {
+  if (!import.meta.env.PROD) return fetchAllEventsUncached();
+  return (cached ??= fetchAllEventsUncached());
+}
+
+async function fetchAllEventsUncached(): Promise<CalEvent[]> {
   const results = await Promise.all([
     ...CALENDARS.map((c) => fetchCalendarEvents(c.id, c.name, c.slug, c.color)),
     fetchMultipleCalendars(

@@ -1417,9 +1417,11 @@ REVIEW_INSTRUCTIONS = (
     "Put anything (e.g. ★) in the 'IG?' column to flag an event as an Instagram pick — "
     "it's added in purple and tagged so it can be pulled up for a post later. "
     "Suggested duplicates are pre-filled 'n'. "
-    "Rows pre-filled '?' overlap an existing event at the same venue+time — "
-    "see 'Note' and change to 'y' to add a new event, 'r' to REPLACE the existing "
-    "event with this one (updates it in place, keeping its link), or 'n' to skip. "
+    "Orange rows overlap an existing calendar event and are pre-filled with the "
+    "usual call for that kind of overlap (same venue+time but different billing → "
+    "'y' as a separate event; same title / same act → 'n' as a duplicate). Check "
+    "the 'Note', then keep it, flip to 'y'/'n', or set 'r' to REPLACE the existing "
+    "event with this one (updates it in place, keeping its link). "
     + ("Rows pre-filled 'y' are trusted recurring events you've approved 3+ times "
        "(see 'Note') — flip one to 'n' and it will never be pre-filled 'y' again. "
        if TRUSTED_AUTO_Y_ENABLED else "")
@@ -1427,6 +1429,42 @@ REVIEW_INSTRUCTIONS = (
     "have no specific link (add the venue to venues.json, or paste a URL in the URL column). "
     "When done, return to the terminal and press Enter."
 )
+
+def _overlap_category(note):
+    """Classify a '?' overlap note (set by the dedup passes) into one of the four
+    overlap kinds, or '' if the note isn't an overlap. Keyed off the note phrases
+    the prep stage writes, which are what survive the Dedup-tab round-trip."""
+    n = (note or "").lower()
+    if "venue+time overlap (review)" in n:
+        return "venue_time_diff_billing"
+    if "title overlap (review)" in n:
+        return "title_soft_match"
+    if "different time (review)" in n:
+        return "same_act_diff_time"
+    if "different venue (review)" in n:
+        return "same_act_diff_venue"
+    return ""
+
+
+# Learned defaults for overlap '?' rows, from the first weeks of review logged in
+# review_overlaps.jsonl: a same-venue+time collision whose titles DON'T overlap is
+# usually a genuinely separate event (two rooms, a bill plus a side act) → pre-fill
+# 'y'; the title / same-act overlaps are usually the event already on the calendar
+# → pre-fill 'n'. These stay soft pre-fills — the row is still highlighted orange
+# and the user flips the exceptions (and can set 'r' to replace in place).
+_OVERLAP_PREFILL = {
+    "venue_time_diff_billing": "y",
+    "title_soft_match":        "n",
+    "same_act_diff_time":      "n",
+    "same_act_diff_venue":     "n",
+}
+
+
+def overlap_prefill(note):
+    """Pre-filled Include value for a '?' overlap note; '?' if unrecognized
+    (unknown overlap kinds still fall back to a human call)."""
+    return _OVERLAP_PREFILL.get(_overlap_category(note), "?")
+
 
 def write_review_tab(events, interactive=True):
     """Write all candidate events to the Review tab for disposition.
@@ -1468,7 +1506,11 @@ def write_review_tab(events, interactive=True):
         if e.get("suggested_skip"):
             include_suggestion = "n"
         elif vt_note:
-            include_suggestion = "?"  # venue+time overlap — needs a human call
+            # Overlap with an existing event: pre-fill the learned default for
+            # this overlap kind (venue+time/diff-billing → 'y'; title/same-act
+            # overlaps → 'n'), falling back to '?' for anything unrecognized.
+            # Still highlighted orange + flippable; the resolution is logged.
+            include_suggestion = overlap_prefill(vt_note)
         elif trusted_note:
             include_suggestion = "y"  # trusted recurring — flip to 'n' to veto
         else:
@@ -1708,6 +1750,10 @@ def read_review_tab(ws):
 # ─── Review-corrections feedback log ─────────────────────────────────────────
 
 REVIEW_CORRECTIONS_LOG = "review_corrections.jsonl"
+# One record per commit of how each '?' overlap row was finally dispositioned
+# (category + y/n/r), so the pre-fill defaults in _OVERLAP_PREFILL can be audited
+# and tuned against real decisions over time.
+REVIEW_OVERLAPS_LOG = "review_overlaps.jsonl"
 
 # When Claude does its own pass over the *already-written* Review tab (e.g. an
 # extra dedup layer that flips a pre-filled 'y' to skip, or fixes a field),
@@ -1760,10 +1806,12 @@ def record_claude_review_edit(index, field, value):
         print(f"  (claude-edit record skipped: {ex})")
 
 
-def log_review_corrections(review_events, include_indices, overrides):
+def log_review_corrections(review_events, include_indices, overrides, replace_indices=None):
     """Diff the script's proposed dispositions against the user's final Review-tab
     choices and append the corrections to a running JSONL log, so recurring
     categorization/dedup mistakes can be profiled and folded back into the rules.
+    Also logs how each '?' overlap row was resolved (category + y/n/r) to
+    REVIEW_OVERLAPS_LOG so the pre-fill defaults can be audited.
 
     Must be called BEFORE field edits are applied to review_events, so the dicts
     still hold the script's original proposals. Logging must never break the
@@ -1771,6 +1819,8 @@ def log_review_corrections(review_events, include_indices, overrides):
     """
     import json
     from datetime import datetime
+    replace_indices = replace_indices or set()
+    kept_indices = set(include_indices) | set(replace_indices)
     try:
         claude_edits = _load_claude_edits()
 
@@ -1783,10 +1833,45 @@ def log_review_corrections(review_events, include_indices, overrides):
             return "user"
 
         by_idx = {e["index"]: e for e in review_events}
+
+        # Overlap '?' resolutions — logged on their own (one record per run) to
+        # audit the _OVERLAP_PREFILL defaults. Excluded from the dropped/rescued
+        # diff below: an overlap 'n' is a dedup call, not a user drop, so it must
+        # not feed the blocklist queue or the user-mistake profile.
+        overlap_decisions = []
+        for idx, e in by_idx.items():
+            cat = _overlap_category(e.get("vt_review_note", ""))
+            if not cat:
+                continue
+            disp = ("y" if idx in include_indices
+                    else "r" if idx in replace_indices else "n")
+            overlap_decisions.append({
+                "title": e["title"], "date": e["date"], "calendar": e["calendar"],
+                "category": cat, "prefill": _OVERLAP_PREFILL.get(cat, "?"),
+                "disposition": disp, "by": _tag(idx, "include", disp),
+            })
+        if overlap_decisions:
+            from collections import Counter as _C
+            rec = {
+                "timestamp": datetime.now().isoformat(timespec="seconds"),
+                "count": len(overlap_decisions),
+                "by_category": {
+                    c: dict(_C(d["disposition"] for d in overlap_decisions if d["category"] == c))
+                    for c in sorted({d["category"] for d in overlap_decisions})},
+                "decisions": overlap_decisions,
+            }
+            with open(REVIEW_OVERLAPS_LOG, "a", encoding="utf-8") as f:
+                f.write(json.dumps(rec, ensure_ascii=False) + "\n")
+            flips = sum(1 for d in overlap_decisions if d["disposition"] != d["prefill"])
+            print(f"\nOverlap '?' decisions logged to {REVIEW_OVERLAPS_LOG}: "
+                  f"{len(overlap_decisions)} overlap(s), {flips} flipped from the pre-fill.")
+
         recats, rescued, dropped, edits = [], [], [], []
         for idx, e in by_idx.items():
+            if _overlap_category(e.get("vt_review_note", "")):
+                continue  # tracked in overlap_decisions, not a dedup/categorize miss
             proposed_keep = not e.get("suggested_skip")
-            final_keep = idx in include_indices
+            final_keep = idx in kept_indices
             ov = overrides.get(idx, {})
             if proposed_keep and not final_keep:
                 # excluded something the script proposed to add — a dup or
@@ -3431,7 +3516,7 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
     # dispositions (recategorizations, rescued skips, dropped dupes, field edits)
     # so recurring mistakes can be profiled later. review_events still holds the
     # ORIGINAL proposals here — edits are applied just below.
-    log_review_corrections(review_events, kept_indices, overrides)
+    log_review_corrections(review_events, include_indices, overrides, replace_indices)
 
     # Apply any manual field edits made in the Review tab. Any of these columns
     # can be edited in the sheet and the edit flows to the calendar write.
@@ -3511,6 +3596,7 @@ def add_events(tsv_path=None, dry_run=False, no_ai=False, from_sheets=False, ski
         and e["index"] not in claude_skipped  # automated skip, not a user drop
         and not e.get("suggested_skip")  # wasn't pre-suggested, user chose this
         and not e.get("trusted_note")    # trusted vetoes go to the Trusted tab, not the blocklist
+        and not e.get("vt_review_note")  # an overlap 'n' is a dedup call, not a drop
     ]
     if not dry_run:
         print(f"\nBlocklist audit: {len(user_skipped)} new skip(s) this run.")

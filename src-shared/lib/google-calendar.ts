@@ -8,8 +8,8 @@ const DAYS_AHEAD = 90;
 
 // Today and the horizon, as YYYY-MM-DD strings in Pacific time. Used to clip
 // multi-day events so they never render on past days or far beyond the window.
-const TODAY_STR = new Date().toLocaleDateString('en-CA', { timeZone: TZ });
-function addDaysStr(ymd: string, n: number): string {
+export const TODAY_STR = new Date().toLocaleDateString('en-CA', { timeZone: TZ });
+export function addDaysStr(ymd: string, n: number): string {
   const [y, m, d] = ymd.split('-').map(Number);
   const dt = new Date(Date.UTC(y, m - 1, d + n));
   return dt.toISOString().slice(0, 10);
@@ -26,6 +26,8 @@ export interface CalEvent {
   endTime: string;     // h:mm AM/PM, or ''
   sortKey: number;     // minutes since midnight (Pacific) for chronological sort; -1 for all-day
   allDay: boolean;
+  start: string;       // the event's real start: ISO dateTime with offset, or YYYY-MM-DD if all-day
+  end: string;         // its real end: ISO dateTime, or the LAST day (inclusive) if all-day; '' if none
   location: string;
   mapUrl: string;      // Google Maps search link for the location, or '' if unmappable
   cost: string;
@@ -275,6 +277,10 @@ function toCalEvents(
   }
 
   const multiDay = days.length > 1;
+  // Real span, for structured data (rows are per-day; this is the whole event).
+  // Google's all-day end.date is exclusive, so convert to the inclusive last day.
+  const start = startRaw;
+  const end = allDay ? (endRaw ? addDaysStr(endRaw, -1) : '') : endRaw;
   const location = decodeEntities(item.location?.trim() ?? '');
   const mapUrl = buildMapUrl(location);
 
@@ -286,6 +292,8 @@ function toCalEvents(
     endTime,
     sortKey,
     allDay,
+    start,
+    end,
     location,
     mapUrl,
     cost,

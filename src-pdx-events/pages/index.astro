@@ -7,16 +7,22 @@ import EventsView from '../../src-shared/components/EventsView.astro';
   title="PDX Events"
   description="A curated Portland events calendar — things to do in Portland, OR including farmers markets, trivia nights, Pedalpalooza, and local staples. Updated regularly."
   pageClass="page-events"
-  ogImage="/images/IMG_1945.jpg"
+  ogImage="/images/og-portland.jpg"
 >
   <!-- Hero image -->
   <!-- Shorter on mobile so the top of the events list is visible on load -->
   <div class="w-full relative overflow-hidden h-[180px] sm:h-[300px] md:h-[420px]">
     <img
-      src="/images/IMG_1945.jpg"
-      alt="Portland, Oregon skyline and cityscape"
+      src="/images/hero-1600.webp"
+      srcset="/images/hero-640.webp 640w, /images/hero-1024.webp 1024w, /images/hero-1600.webp 1600w, /images/hero-2400.webp 2400w"
+      sizes="100vw"
+      width="1600"
+      height="1200"
+      alt="Downtown Portland, Oregon skyline at sunset reflected in the Willamette River"
       class="w-full h-full object-cover"
       loading="eager"
+      fetchpriority="high"
+      decoding="async"
     />
     <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent flex items-end">
       <div class="px-4 pb-4 sm:px-6 sm:pb-8 max-w-5xl mx-auto w-full">

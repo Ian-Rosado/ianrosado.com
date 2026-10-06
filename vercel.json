@@ -5,6 +5,10 @@
   "ignoreCommand": "node scripts/vercel-ignore.js",
   "redirects": [
     { "source": "/portland-events", "destination": "https://www.pdx-events.com/", "permanent": true },
-    { "source": "/portland-events/", "destination": "https://www.pdx-events.com/", "permanent": true }
+    { "source": "/portland-events/", "destination": "https://www.pdx-events.com/", "permanent": true },
+    { "source": "/more-pdx/favorites", "destination": "https://www.pdx-events.com/favorites/", "permanent": true },
+    { "source": "/more-pdx/favorites/", "destination": "https://www.pdx-events.com/favorites/", "permanent": true },
+    { "source": "/more-pdx/pickup-soccer", "destination": "https://www.pdx-events.com/pickup-soccer/", "permanent": true },
+    { "source": "/more-pdx/pickup-soccer/", "destination": "https://www.pdx-events.com/pickup-soccer/", "permanent": true }
   ]
 }

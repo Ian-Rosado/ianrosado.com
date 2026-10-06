@@ -1,0 +1,51 @@
+---
+// Category / time-window / trivia-night landing pages — see
+// src-shared/lib/landing-pages.ts for the list and their copy.
+import Layout from '../layouts/Layout.astro';
+import EventDayList from '../../src-shared/components/EventDayList.astro';
+import { fetchAllEvents } from '../../src-shared/lib/events';
+import { LANDING_PAGES, LANDING_BY_SLUG, selectDays, type LandingPage } from '../../src-shared/lib/landing-pages';
+
+export function getStaticPaths() {
+  return LANDING_PAGES.map((page) => ({ params: { landing: page.slug }, props: { page } }));
+}
+
+const { page } = Astro.props as { page: LandingPage };
+const { days, stats } = selectDays(await fetchAllEvents(), page);
+const related = page.related.map((s) => LANDING_BY_SLUG.get(s)!).filter(Boolean);
+const isTriviaDay = page.slug.startsWith('trivia/');
+---
+
+<Layout title={page.title} description={page.description(stats)} pageClass="page-events">
+  <div class="max-w-3xl lg:max-w-5xl mx-auto px-4 py-8">
+    <nav class="text-sm text-stone-400 mb-4" aria-label="Breadcrumb">
+      <a href="/" class="hover:text-orange-600">All Portland events</a>
+      {isTriviaDay && <> › <a href="/trivia/" class="hover:text-orange-600">Trivia nights</a></>}
+    </nav>
+
+    <header class="mb-6">
+      <h1 class="text-3xl sm:text-4xl font-semibold text-stone-900 mb-3" style="font-family: var(--font-serif)">{page.h1}</h1>
+      <p class="text-stone-600 leading-relaxed max-w-2xl">{page.intro(stats)}</p>
+    </header>
+
+    {related.length > 0 && (
+      <ul class="flex flex-wrap gap-2 mb-8 text-sm">
+        {related.map((r) => (
+          <li><a href={`/${r.slug}/`} class="inline-block px-3 py-1 rounded-full border border-stone-200 bg-white text-stone-600 hover:border-orange-400 hover:text-orange-600">{r.label}</a></li>
+        ))}
+      </ul>
+    )}
+
+    <div class="bg-white rounded-2xl border border-stone-100 shadow-sm p-4 sm:p-6">
+      {stats.count > 0 ? (
+        <EventDayList days={days} />
+      ) : (
+        <p class="text-stone-500 text-sm py-6 text-center">Nothing on the calendar here right now — check back soon, or browse <a href="/" class="text-orange-600 hover:underline">all Portland events</a>.</p>
+      )}
+    </div>
+
+    <p class="mt-6 text-sm text-stone-500">
+      Search, filter, and see the next 90 days on the <a href="/" class="text-orange-600 hover:underline">full Portland events calendar</a>.
+    </p>
+  </div>
+</Layout>

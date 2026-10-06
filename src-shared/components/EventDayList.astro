@@ -1,0 +1,30 @@
+---
+// Fully server-rendered event list, grouped by day, with Event JSON-LD for
+// every listed event. Used by the landing pages (no client JS).
+import EventRow from './EventRow.astro';
+import { eventsJsonLd } from '../lib/event-schema';
+import type { Day } from '../lib/landing-pages';
+
+interface Props {
+  days: Day[];
+}
+const { days } = Astro.props;
+
+const longDate = (ymd: string) =>
+  new Date(ymd + 'T12:00:00Z').toLocaleDateString('en-US', {
+    timeZone: 'UTC', weekday: 'long', month: 'long', day: 'numeric',
+  });
+---
+
+<script type="application/ld+json" set:html={eventsJsonLd(days.flatMap(([, evs]) => evs))} />
+
+<div class="events-view">
+  {days.map(([date, evs]) => (
+    <section class="mb-6">
+      <h2 class="text-xs font-semibold uppercase tracking-widest text-stone-500 mb-1.5 pb-1 border-b border-stone-100">{longDate(date)}</h2>
+      <ul class="divide-y divide-stone-50">
+        {evs.map((event) => <EventRow event={event} />)}
+      </ul>
+    </section>
+  ))}
+</div>

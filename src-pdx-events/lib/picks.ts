@@ -4,6 +4,7 @@
 // scripts/add-to-calendar/export_picks.py.
 
 import { TODAY_STR } from '../../src-shared/lib/google-calendar';
+import { FALLBACK_IMAGE } from '../../src-shared/lib/event-schema';
 
 export interface Pick {
   date: string;        // YYYY-MM-DD
@@ -122,6 +123,13 @@ function pacificOffset(ymd: string): string {
   return m ? `${m[1]}${m[2].padStart(2, '0')}:00` : '-08:00';
 }
 
+// Price from the card: free, or the first "$NN" in the details
+function offers(p: Pick) {
+  if (p.free) return { isAccessibleForFree: true, offers: { '@type': 'Offer', price: 0, priceCurrency: 'USD' } };
+  const m = p.details.match(/\$\s?(\d+(?:\.\d+)?)/);
+  return m ? { offers: { '@type': 'Offer', price: Number(m[1]), priceCurrency: 'USD' } } : {};
+}
+
 // schema.org Event JSON-LD for a roundup's picks (`<` escaped for <script>)
 export function picksJsonLd(r: Roundup): string {
   const events = r.picks.filter((p) => p.date).map((p) => ({
@@ -137,7 +145,9 @@ export function picksJsonLd(r: Roundup): string {
       name: p.venue || 'Portland, OR',
       address: /\b(OR|Oregon|WA)\b/.test(p.venue) ? p.venue : 'Portland, OR',
     },
-    ...(p.free ? { isAccessibleForFree: true, offers: { '@type': 'Offer', price: 0, priceCurrency: 'USD' } } : {}),
+    image: FALLBACK_IMAGE,
+    url: `https://www.pdx-events.com/picks/${r.id}/`,
+    ...offers(p),
   }));
   return JSON.stringify({ '@context': 'https://schema.org', '@graph': events }).replace(/</g, '\\u003c');
 }

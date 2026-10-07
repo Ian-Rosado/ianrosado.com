@@ -40,6 +40,7 @@ import { FOOTER_LINKS } from '../../src-shared/lib/landing-pages';
     <section class="bg-white rounded-2xl border border-stone-100 shadow-sm p-6 mb-6">
       <h2 class="text-lg font-semibold text-stone-900 mb-4" style="font-family: var(--font-serif)">Browse Portland events</h2>
       <ul class="flex flex-wrap gap-2 text-sm">
+        <li><a href="/picks/" class="inline-block px-3 py-1 rounded-full border border-orange-300 bg-orange-50 text-orange-700 hover:border-orange-500">This week's picks</a></li>
         {FOOTER_LINKS.map((l) => (
           <li><a href={`/${l.slug}/`} class="inline-block px-3 py-1 rounded-full border border-stone-200 text-stone-600 hover:border-orange-400 hover:text-orange-600">{l.label}</a></li>
         ))}

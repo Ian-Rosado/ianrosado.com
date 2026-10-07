@@ -62,8 +62,9 @@ Ian drives; the exact sequence is:
    ask you to **spell-check his changes** — check only what he edited and report
    any issues; don't silently rewrite his wording.
 
-5. **You correct any issues, then render the images** (hero + cards) and **deliver
-   the caption + the IG account tag list.**
+5. **You correct any issues, then render the images** (hero + cards), **export the
+   picks to the website** (Step 6), and **deliver the caption + the IG account tag
+   list.**
 
 Rendering and the IG-account lookup happen at the **end** — after Ian's HTML
 review — even though you prepare the caption/tag list earlier.
@@ -379,12 +380,31 @@ Rules for the whole list:
 
 ---
 
+## Step 6 — Publish the picks on pdx-events.com (required for every post)
+
+Every post also becomes a page on the website — `/picks/week-of-<Mon>/` or
+`/picks/weekend-of-<Fri>/` — and `/picks/` features the current one. The page is
+built from the event-cards file, so run this **after** the cards are final:
+
+```
+cd scripts/add-to-calendar
+python export_picks.py ../../instagram/event_cards_<dates>.html
+```
+
+It writes `src-pdx-events/data/picks/<week|weekend>-of-<date>.json`. If it
+reports a pick **missing date** or **missing venue**, the card's meta line didn't
+say it — fix the card (or edit the JSON) and re-run. Commit the JSON with the
+post's HTML; the page goes live when the PR merges.
+
+---
+
 ## Output files
 
 - Main grid HTML:  `instagram/plan_your_weekend_<dates>.html` / `portland_events_week_<dates>.html`
 - Main grid PNG:   same name, `.png`
 - Event cards HTML: `instagram/event_cards_<dates>.html`
 - Event card PNGs:  `instagram/event_cards_<dates>/card_01.png` … `card_NN.png`
+- Website picks:    `src-pdx-events/data/picks/<week|weekend>-of-<date>.json` (Step 6)
 
 Keep the HTML files — they are the editable source for tweaks. PNGs are gitignored
 (recent convention); only the HTML files are committed.

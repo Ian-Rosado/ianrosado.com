@@ -1,0 +1,55 @@
+---
+// Features the current week's (and weekend's) picks; archive of every roundup
+// below. Rebuilt with the 6-hourly deploy, so it rolls over on its own.
+import Layout from '../../layouts/Layout.astro';
+import PicksList from '../../components/PicksList.astro';
+import { ROUNDUPS, currentWeek, currentWeekend, rangeLabel } from '../../lib/picks';
+
+const week = currentWeek();
+const weekend = currentWeekend();
+const description = week
+  ? `The best things to do in Portland this week (${rangeLabel(week)}), hand-picked: ${week.picks.slice(0, 3).map((p) => p.name).join(', ')}, and more. A new list every week.`
+  : 'The best things to do in Portland this week, hand-picked from hundreds of events. A new list every week.';
+---
+
+<Layout title="Best Things to Do in Portland This Week — Weekly Picks" description={description} pageClass="page-events">
+  <div class="max-w-3xl lg:max-w-5xl mx-auto px-4 py-8">
+    <header class="mb-8">
+      <h1 class="text-3xl sm:text-4xl font-semibold text-stone-900 mb-3" style="font-family: var(--font-serif)">Best Things to Do in Portland This Week</h1>
+      <p class="text-stone-600 leading-relaxed max-w-2xl">
+        Every week I go through the hundreds of events on the PDX Events calendars and pick the ones worth leaving the house for — a daytime and an evening pick for each day, plus a weekend shortlist.
+        {' '}Also on <a href="https://www.instagram.com/portland_events_calendar/" class="text-orange-600 hover:underline">Instagram</a>.
+      </p>
+    </header>
+
+    {week && (
+      <section class="mb-12">
+        <h2 class="text-2xl font-semibold text-stone-900 mb-1" style="font-family: var(--font-serif)">Events of the Week: {rangeLabel(week)}</h2>
+        <p class="text-sm text-stone-400 mb-6"><a href={`/picks/${week.id}/`} class="hover:text-orange-600">Permalink</a></p>
+        <PicksList roundup={week} headingLevel="h3" />
+      </section>
+    )}
+
+    {weekend && (
+      <section class="mb-12">
+        <h2 class="text-2xl font-semibold text-stone-900 mb-1" style="font-family: var(--font-serif)">Plan Your Weekend: {rangeLabel(weekend)}</h2>
+        <p class="text-sm text-stone-400 mb-6"><a href={`/picks/${weekend.id}/`} class="hover:text-orange-600">Permalink</a></p>
+        <PicksList roundup={weekend} headingLevel="h3" />
+      </section>
+    )}
+
+    <section class="bg-white rounded-2xl border border-stone-100 shadow-sm p-6">
+      <h2 class="text-lg font-semibold text-stone-900 mb-4" style="font-family: var(--font-serif)">Past picks</h2>
+      <ul class="grid sm:grid-cols-2 gap-x-8 gap-y-2 text-sm">
+        {ROUNDUPS.map((r) => (
+          <li>
+            <a href={`/picks/${r.id}/`} class="text-stone-700 hover:text-orange-600">
+              {r.type === 'week' ? 'Week' : 'Weekend'} of {rangeLabel(r)}
+            </a>
+            <span class="text-stone-400"> · {r.picks.length} picks</span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  </div>
+</Layout>

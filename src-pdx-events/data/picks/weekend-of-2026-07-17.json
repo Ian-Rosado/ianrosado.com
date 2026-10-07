@@ -1,0 +1,107 @@
+{
+  "id": "weekend-of-2026-07-17",
+  "type": "weekend",
+  "start": "2026-07-17",
+  "end": "2026-07-19",
+  "source": "instagram/event_cards_jul17_19.html",
+  "picks": [
+    {
+      "date": "2026-07-17",
+      "time": "18:30",
+      "slot": null,
+      "emoji": "🎵",
+      "category": "Porchfest",
+      "name": "Milwaukie Porchfest",
+      "description": "Musicians play live sets from front porches throughout Milwaukie as visitors wander the streets discovering music. Free, casual, and community-driven.",
+      "venue": "Milwaukie",
+      "details": "6:30pm · Free",
+      "free": true
+    },
+    {
+      "date": "2026-07-17",
+      "time": "19:30",
+      "slot": null,
+      "emoji": "🎬",
+      "category": "Movie in the Park",
+      "name": "Zootopia 2",
+      "description": "Free outdoor screening of Zootopia 2 at Khunamokwst Park in NE Portland. Bring a blanket and snacks — movie starts at 7:30pm so arrive early for a good spot on the grass.",
+      "venue": "Khunamokwst Park",
+      "details": "7:30pm · Free",
+      "free": true
+    },
+    {
+      "date": "2026-07-17",
+      "endDate": "2026-07-19",
+      "time": "",
+      "slot": null,
+      "emoji": "🎷",
+      "category": "Jazz Festival",
+      "name": "Cathedral Park Jazz Fest",
+      "description": "Portland's longest-running free jazz festival returns to Cathedral Park beneath the St. Johns Bridge. Multiple days of live jazz — bring a blanket and make a whole day of it.",
+      "venue": "Cathedral Park",
+      "details": "All day · Free",
+      "free": true
+    },
+    {
+      "date": "2026-07-18",
+      "endDate": "2026-07-19",
+      "time": "10:00",
+      "slot": null,
+      "emoji": "⚔️",
+      "category": "Ren Faire",
+      "name": "Canterbury Ren Faire",
+      "description": "The 16th annual Canterbury Renaissance Faire in Silverton features jousting, costumes, vendors, food, and entertainment all day. About 45 minutes south of Portland — worth the trip.",
+      "venue": "Silverton, OR",
+      "details": "10am · Ticketed",
+      "free": false
+    },
+    {
+      "date": "2026-07-18",
+      "time": "13:00",
+      "slot": null,
+      "emoji": "🌸",
+      "category": "Cultural Festival",
+      "name": "Fuji to Hood Festival",
+      "description": "A cultural arts festival celebrating the connection between Japan and Oregon — music, art, food, and performance at The Redd on Salmon Street. A uniquely Portland afternoon.",
+      "venue": "The Redd",
+      "details": "1pm · Ticketed",
+      "free": false
+    },
+    {
+      "date": "2026-07-19",
+      "time": "11:00",
+      "slot": null,
+      "emoji": "🌈",
+      "category": "Pride",
+      "name": "Portland Pride Parade",
+      "description": "Portland Pride Parade rolls through Downtown — one of the biggest Pride celebrations in the Pacific Northwest. Come to cheer, march, or just soak in the energy of one of the city's most joyful days.",
+      "venue": "Downtown Portland",
+      "details": "11am · Free",
+      "free": true
+    },
+    {
+      "date": "2026-07-19",
+      "time": "12:00",
+      "slot": null,
+      "emoji": "⚽",
+      "category": "World Cup Final",
+      "name": "Spain vs Argentina",
+      "description": "The World Cup Final. Portland's soccer bars will be packed — check PDX Monthly's viewing guide to find the best spot to watch with a crowd. Kickoff at noon.",
+      "venue": "Bars around Portland",
+      "details": "12pm · Free",
+      "free": true
+    },
+    {
+      "date": "2026-07-19",
+      "time": "18:00",
+      "slot": null,
+      "emoji": "🐱",
+      "category": "Cat Walk",
+      "name": "Cats of Sunnyside Walk",
+      "description": "A neighborhood cat walk through Sunnyside where residents show off their beloved cats along a mapped route. Free and genuinely delightful — please be respectful of the neighbors and the cats.",
+      "venue": "SE Sunnyside",
+      "details": "6pm · Free",
+      "free": true
+    }
+  ]
+}

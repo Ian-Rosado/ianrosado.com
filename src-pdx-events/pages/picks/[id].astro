@@ -1,0 +1,49 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import PicksList from '../../components/PicksList.astro';
+import { ROUNDUPS, rangeLabel, roundupTitle, roundupDescription, type Roundup } from '../../lib/picks';
+
+export function getStaticPaths() {
+  return ROUNDUPS.map((roundup) => ({ params: { id: roundup.id }, props: { roundup } }));
+}
+
+const { roundup } = Astro.props as { roundup: Roundup };
+// Neighbors of the same type (ROUNDUPS is newest first)
+const sameType = ROUNDUPS.filter((r) => r.type === roundup.type);
+const i = sameType.indexOf(roundup);
+const newer = sameType[i - 1];
+const older = sameType[i + 1];
+const isWeek = roundup.type === 'week';
+---
+
+<Layout title={roundupTitle(roundup)} description={roundupDescription(roundup)} pageClass="page-events">
+  <div class="max-w-3xl lg:max-w-5xl mx-auto px-4 py-8">
+    <nav class="text-sm text-stone-400 mb-4" aria-label="Breadcrumb">
+      <a href="/picks/" class="hover:text-orange-600">Weekly picks</a> › {rangeLabel(roundup)}
+    </nav>
+
+    <header class="mb-8">
+      <p class="text-sm font-semibold uppercase tracking-widest text-orange-600 mb-2">{isWeek ? 'Events of the Week' : 'Plan Your Weekend'}</p>
+      <h1 class="text-3xl sm:text-4xl font-semibold text-stone-900 mb-3" style="font-family: var(--font-serif)">
+        {isWeek ? 'Best Things to Do in Portland' : 'Portland Weekend Picks'}: {rangeLabel(roundup)}
+      </h1>
+      <p class="text-stone-600 leading-relaxed max-w-2xl">
+        {isWeek
+          ? `${roundup.picks.length} hand-picked events for the week — a daytime and an evening pick for each day, chosen from everything on the PDX Events calendars.`
+          : `The ${roundup.picks.length} Portland events worth planning your weekend around, chosen from everything on the PDX Events calendars.`}
+        {' '}Also posted on <a href="https://www.instagram.com/portland_events_calendar/" class="text-orange-600 hover:underline">Instagram</a>.
+      </p>
+    </header>
+
+    <PicksList roundup={roundup} />
+
+    <nav class="mt-10 flex flex-wrap justify-between gap-4 text-sm" aria-label="More picks">
+      {older ? <a href={`/picks/${older.id}/`} class="text-orange-600 hover:underline">← {rangeLabel(older)}</a> : <span></span>}
+      {newer && <a href={`/picks/${newer.id}/`} class="text-orange-600 hover:underline">{rangeLabel(newer)} →</a>}
+    </nav>
+
+    <p class="mt-6 text-sm text-stone-500">
+      Want more? See <a href="/this-weekend/" class="text-orange-600 hover:underline">everything happening this weekend</a> or the <a href="/" class="text-orange-600 hover:underline">full Portland events calendar</a>.
+    </p>
+  </div>
+</Layout>

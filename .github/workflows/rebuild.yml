@@ -41,7 +41,8 @@ jobs:
       # within hours instead of days. Waits (up to 15 min) for the new deploy
       # to go live first. The key file is public-pdx-events/<key>.txt.
       # URLs come from the live sitemap (homepage + event landing pages),
-      # minus the static pages that don't change on a rebuild.
+      # minus the static pages that don't change on a rebuild and any
+      # /picks/<week|weekend>-of-<date>/ page more than a week old.
       - name: Notify IndexNow (pdx-events.com)
         if: env.PDX_TRIGGERED == '1'
         env:
@@ -56,7 +57,9 @@ jobs:
             fi
           done
           URLS=$(curl -fsS https://www.pdx-events.com/sitemap-0.xml | grep -o '<loc>[^<]*' | sed 's/<loc>//' \
-            | grep -vE '/(about|favorites|pickup-soccer)/$' | sed 's/.*/"&"/' | paste -sd, -)
+            | grep -vE '/(about|favorites|pickup-soccer)/$' \
+            | awk -v cutoff="$(date -u -d '-8 days' +%F)" '!match($0, /-of-[0-9-]+\/$/) || substr($0, RSTART + 4, 10) >= cutoff' \
+            | sed 's/.*/"&"/' | paste -sd, -)
           [ -n "$URLS" ] || URLS='"https://www.pdx-events.com/"'
           echo "Submitting $(echo "$URLS" | tr ',' '\n' | wc -l) URLs"
           BODY='{"host":"www.pdx-events.com","key":"'"$KEY"'","keyLocation":"https://www.pdx-events.com/'"$KEY"'.txt","urlList":['"$URLS"']}'

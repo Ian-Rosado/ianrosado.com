@@ -25,6 +25,7 @@ const ogImageUrl = ogImage ? `${siteUrl}${ogImage}` : `${siteUrl}/images/og-port
 
 const navLinks = [
   { href: '/', label: 'Events' },
+  { href: '/picks/', label: 'Weekly Picks' },
   { href: '/favorites', label: 'Favorites' },
   { href: '/pickup-soccer', label: 'Pickup Soccer' },
   { href: '/about', label: 'About' },
@@ -176,6 +177,7 @@ function isActive(href: string) {
     <footer class="border-t border-stone-200 mt-16 py-8 text-center text-sm text-stone-400">
       <nav aria-label="Browse Portland events" class="max-w-3xl mx-auto px-4 mb-4">
         <ul class="flex flex-wrap justify-center gap-x-4 gap-y-1">
+          <li><a href="/picks/" class="hover:text-orange-600 transition-colors">This week's picks</a></li>
           {FOOTER_LINKS.map((l) => (
             <li><a href={`/${l.slug}/`} class="hover:text-orange-600 transition-colors">{l.label}</a></li>
           ))}

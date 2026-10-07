@@ -1,0 +1,106 @@
+{
+  "id": "weekend-of-2026-10-02",
+  "type": "weekend",
+  "start": "2026-10-02",
+  "end": "2026-10-04",
+  "source": "instagram/event_cards_oct2_4.html",
+  "picks": [
+    {
+      "date": "2026-10-02",
+      "time": "10:00",
+      "slot": null,
+      "emoji": "🌲",
+      "category": "Volunteer",
+      "name": "Pier Park Stewardship",
+      "description": "Lend a hand caring for St. Johns' beloved Pier Park — planting, mulching, and tidying trails with Portland Parks. Free, family-friendly, and a feel-good way to start the weekend outside.",
+      "venue": "Pier Park",
+      "details": "Fri 10 AM · Free",
+      "free": true
+    },
+    {
+      "date": "2026-10-02",
+      "time": "20:30",
+      "slot": null,
+      "emoji": "🎉",
+      "category": "Themed Party",
+      "name": "Plaidurday Party",
+      "description": "It's Plaidurday — the global celebration of all things plaid — and Dixie Tavern throws the party. Dust off your flannel and come dance; the more tartan, the better. Get free cover for wearing plaid!",
+      "venue": "Dixie Tavern",
+      "details": "Fri 8:30 PM",
+      "free": false
+    },
+    {
+      "date": "2026-10-03",
+      "endDate": "2026-10-04",
+      "time": "11:00",
+      "slot": null,
+      "emoji": "🍫",
+      "category": "Chocolate Fest",
+      "name": "Craft Chocolate Festival",
+      "description": "Taste your way through dozens of craft chocolate makers at Olympic Mills — bean-to-bar samples, truffles, and more. A rich, delicious weekend for your sweet tooth.",
+      "venue": "Olympic Mills",
+      "details": "Sat–Sun · 11 AM",
+      "free": false
+    },
+    {
+      "date": "2026-10-03",
+      "time": "16:00",
+      "slot": null,
+      "emoji": "🎸",
+      "category": "Backyard Show",
+      "name": "Pandyfest Backyard Show",
+      "description": "A DIY backyard music show in NE Portland — intimate, grassroots, and exactly the kind of lineup that keeps Portland's underground scene alive. $20 at the gate. DM @pandyfestpdx on Instagram for location.",
+      "venue": "NE Portland",
+      "details": "Sat 4 PM · $20",
+      "free": false
+    },
+    {
+      "date": "2026-10-03",
+      "time": "21:00",
+      "slot": null,
+      "emoji": "🤓",
+      "category": "Dance Party",
+      "name": "Sexy Nerds Party",
+      "description": "White Owl's Sexy Nerds Party is a come-as-your-hottest-nerd dance night — cosplay encouraged, judgment checked at the door. Nerd is an easy costume to start getting in the Halloween spirit!",
+      "venue": "White Owl Social Club",
+      "details": "Sat 9 PM",
+      "free": false
+    },
+    {
+      "date": "2026-10-04",
+      "time": "13:00",
+      "slot": null,
+      "emoji": "🏈",
+      "category": "Singles Mixer",
+      "name": "Football Singles Mixer",
+      "description": "Meet Your Match hosts a football-watch singles mixer at The Garden Tavern — catch the game, meet someone new, keep it low-pressure. Free to join.",
+      "venue": "The Garden Tavern",
+      "details": "Sun 1 PM · Free",
+      "free": true
+    },
+    {
+      "date": "2026-10-04",
+      "time": "14:00",
+      "slot": null,
+      "emoji": "🎃",
+      "category": "Maker Workshop",
+      "name": "Felted Pumpkin Workshop",
+      "description": "Make your own felted pumpkin with the Overcast Animation Collective at ADX Fest — a cozy, hands-on craft session and part of ADX's big weekend of maker workshops. Beginner-friendly. Part of the larger ADX-Fest happening all month!",
+      "venue": "ADX",
+      "details": "Sun 2 PM",
+      "free": false
+    },
+    {
+      "date": "2026-10-04",
+      "time": "14:00",
+      "slot": null,
+      "emoji": "🐕",
+      "category": "Costume Contest",
+      "name": "Stumptown Strays Costume Contest",
+      "description": "Dress your dog to the nines for Stumptown Strays' costume contest at The Bye and Bye — prizes, treats, and a parade of very good costumed pups, all benefiting rescue. $10 to enter a costume, free to watch.",
+      "venue": "The Bye and Bye",
+      "details": "Sun 2 PM · $10",
+      "free": false
+    }
+  ]
+}

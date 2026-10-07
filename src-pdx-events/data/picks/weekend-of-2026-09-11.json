@@ -1,0 +1,108 @@
+{
+  "id": "weekend-of-2026-09-11",
+  "type": "weekend",
+  "start": "2026-09-11",
+  "end": "2026-09-13",
+  "source": "instagram/event_cards_sep11_13.html",
+  "picks": [
+    {
+      "date": "2026-09-11",
+      "endDate": "2026-09-13",
+      "time": "",
+      "slot": null,
+      "emoji": "🏨",
+      "category": "Staycation Weekend",
+      "name": "Portland Staycation",
+      "description": "Why leave town? Portland Staycation weekend serves up hotel deals, downtown street fairs, and citywide specials so you can play tourist at home. Book a room or just wander — Ankeny Alley's free street fair anchors the weekend.",
+      "venue": "Downtown & citywide",
+      "details": "All weekend",
+      "free": false
+    },
+    {
+      "date": "2026-09-11",
+      "endDate": "2026-09-13",
+      "time": "",
+      "slot": null,
+      "emoji": "🐼",
+      "category": "Food & Culture",
+      "name": "Panda Fest",
+      "description": "A waterfront celebration of Asian food and culture on Tom McCall Waterfront Park. Dozens of vendors, live performances, and enough dumplings, skewers, and bubble tea to make a full lap worth it.",
+      "venue": "Tom McCall Waterfront Park",
+      "details": "Fri–Sun",
+      "free": false
+    },
+    {
+      "date": "2026-09-12",
+      "time": "10:00",
+      "slot": null,
+      "emoji": "🎪",
+      "category": "Street Fair",
+      "name": "Clinton Street Fair",
+      "description": "The SE Clinton neighborhood throws its annual block party — local vendors, live music, food, and kid stuff along one of Portland's most charming streets. Free, low-key, and very Portland.",
+      "venue": "SE 26th & Clinton",
+      "details": "10 AM · Free",
+      "free": true
+    },
+    {
+      "date": "2026-09-12",
+      "time": "10:00",
+      "slot": null,
+      "emoji": "🎶",
+      "category": "Free Concert",
+      "name": "Porch Concert Series",
+      "description": "Free, family-friendly live music under the Gothic arches of the St. Johns Bridge at Cathedral Park. Bring a blanket, let the kids run, and take in one of the prettiest spots in the city. This week: Red Yarn and Chrissy Marie.",
+      "venue": "Cathedral Park",
+      "details": "10 AM · Free",
+      "free": true
+    },
+    {
+      "date": "2026-09-12",
+      "time": "13:30",
+      "slot": null,
+      "emoji": "🦮",
+      "category": "Feel-Good",
+      "name": "Guide Dog Graduation",
+      "description": "Guide Dogs for the Blind hosts a public graduation where trainers, puppy raisers, and new handlers meet their dogs. It's exactly as heartwarming as it sounds — free and open to all, out in Boring.",
+      "venue": "Boring, OR",
+      "details": "1:30 PM · Free",
+      "free": true
+    },
+    {
+      "date": "2026-09-12",
+      "time": "14:00",
+      "slot": null,
+      "emoji": "🎸",
+      "category": "Block Party",
+      "name": "Rocky Butte Tunnel Concert",
+      "description": "Friends of Rocky Butte throw a block party with live music echoing through the iconic stone tunnel up top. Free, community-run, and a great excuse to hang out at one of the best views in Portland.",
+      "venue": "Rocky Butte",
+      "details": "2 PM · Free",
+      "free": true
+    },
+    {
+      "date": "2026-09-12",
+      "endDate": "2026-09-13",
+      "time": "",
+      "slot": null,
+      "emoji": "🐉",
+      "category": "Festival",
+      "name": "Portland Dragonboat Festival",
+      "description": "Teams paddle ornate dragon boats down the Willamette in one of Portland's most photogenic traditions. Cheer from the South Waterfront, catch the drums and color, and stick around for the performances onshore.",
+      "venue": "South Waterfront",
+      "details": "Sat–Sun · Free",
+      "free": true
+    },
+    {
+      "date": "2026-09-13",
+      "time": "11:00",
+      "slot": null,
+      "emoji": "🚲",
+      "category": "Open Streets",
+      "name": "Sunday Parkways",
+      "description": "The season's final Sunday Parkways closes downtown streets to cars for a 2+ mile loop of biking, walking, and rolling. Free, family-friendly, and the last one of the year. Pair this with a staycation to really feel downtown's heartbeat this weekend!",
+      "venue": "Downtown",
+      "details": "11 AM–4 PM · Free",
+      "free": true
+    }
+  ]
+}

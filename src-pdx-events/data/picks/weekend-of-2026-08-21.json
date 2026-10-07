@@ -1,0 +1,94 @@
+{
+  "id": "weekend-of-2026-08-21",
+  "type": "weekend",
+  "start": "2026-08-21",
+  "end": "2026-08-23",
+  "source": "instagram/event_cards_aug21_23.html",
+  "picks": [
+    {
+      "date": "2026-08-21",
+      "endDate": "2026-08-23",
+      "time": "09:00",
+      "slot": null,
+      "emoji": "🚲",
+      "category": "Bikes",
+      "name": "MADE Bike Show",
+      "description": "The MADE Handmade Bicycle Show brings custom bike builders from across the country to Zidell Yards on the South Waterfront. One-of-a-kind handmade frames, components, and riding culture on full display. Whether you're deep into cycling or just appreciate craftsmanship, it's a genuinely impressive floor to walk.",
+      "venue": "Zidell Yards",
+      "details": "3121 S Moody Ave · 9 AM–5 PM · $30 · @made.bike",
+      "free": false
+    },
+    {
+      "date": "2026-08-21",
+      "time": "19:00",
+      "slot": null,
+      "emoji": "🛼",
+      "category": "Roller Disco",
+      "name": "Secret Roller Disco",
+      "description": "Portland's guerrilla roller disco is back for another Friday night. This week at the convention center plaza. Bring your own skates or rent them there!",
+      "venue": "Convention Center Plaza",
+      "details": "834 NE MLK Blvd · 7 PM · Free · @secretrollerdisco",
+      "free": true
+    },
+    {
+      "date": "2026-08-22",
+      "time": "11:00",
+      "slot": null,
+      "emoji": "⛵",
+      "category": "Parade",
+      "name": "Smile Boat Parade",
+      "description": "The Smile Boat Parade turns North Portland Harbor into a floating celebration — decorated boats cruise the harbor in a colorful, community-organized procession. Watch from the shore along NE Marine Drive, or take a kayak or paddleboard out to catch it from the water. Free and family-friendly.",
+      "venue": "N Portland Harbor",
+      "details": "1611 NE Marine Dr · 11 AM · Free · @northwaterfrontpdx",
+      "free": true
+    },
+    {
+      "date": "2026-08-22",
+      "time": "14:30",
+      "slot": null,
+      "emoji": "🎵",
+      "category": "Block Party",
+      "name": "Volume Bomb Block Party",
+      "description": "Volume Bomb's annual block party takes over the corner of SE 49th and Hawthorne for an afternoon of live music, local vendors, and east-side community energy. Set times are up at volumebomb.com — worth checking before you head out so you catch the acts you want.",
+      "venue": "SE 49th Ave & Hawthorne Blvd",
+      "details": "2:30 PM · @volume.bomb",
+      "free": false
+    },
+    {
+      "date": "2026-08-22",
+      "time": "19:30",
+      "slot": null,
+      "emoji": "🍿",
+      "category": "Movie Night",
+      "name": "Cool Runnings",
+      "description": "Portland Parks & Rec brings the 1993 classic Cool Runnings to Sewallcrest Park for a free outdoor screening. A Jamaican bobsled team underdog story that holds up — bring blankets, snacks, and arrive early for a good spot on the grass before the 7:30 start.",
+      "venue": "Sewallcrest Park",
+      "details": "7:30 PM · Free",
+      "free": true
+    },
+    {
+      "date": "2026-08-23",
+      "time": "11:00",
+      "slot": null,
+      "emoji": "🎪",
+      "category": "Street Fair",
+      "name": "Hawthorne Street Fair",
+      "description": "One of Portland's favorite summer street fairs closes out the weekend along Hawthorne Avenue. Local vendors, live music, food carts, and the eclectic crowd the Hawthorne district is known for. Free to walk and browse — just show up and spend the Sunday exploring.",
+      "venue": "Hawthorne Ave",
+      "details": "11 AM · Free · @hawthorneblvd_pdx",
+      "free": true
+    },
+    {
+      "date": "2026-08-23",
+      "time": "",
+      "slot": null,
+      "emoji": "🎬",
+      "category": "Film Festival",
+      "name": "PFCAT Film Fest",
+      "description": "The Portland Festival of Cinema, Animation & Technology wraps its final weekend at OMSI with screenings of independent films, animation, and tech-driven media. Short films, features, and panels running through Sunday. Check pdxfestofcinema.com for the schedule and tickets — this is the last chance to catch it.",
+      "venue": "OMSI",
+      "details": "1945 SE Water Ave · Ticketed · @thepfcat",
+      "free": false
+    }
+  ]
+}

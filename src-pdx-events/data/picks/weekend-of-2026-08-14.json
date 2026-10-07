@@ -4,6 +4,10 @@
   "start": "2026-08-14",
   "end": "2026-08-16",
   "source": "instagram/event_cards_aug14_16.html",
+  "theme": {
+    "bg": "#0a1f3a",
+    "accent": "#5ca8ff"
+  },
   "picks": [
     {
       "date": "2026-08-14",
@@ -15,7 +19,8 @@
       "description": "An anime-themed rave at The Den. Expect cosplay, DJ sets, anime visuals, and a crowd that's equally enthusiastic about Japanese animation and dancing. Doors at 9 PM — dress up or just show up.",
       "venue": "The Den",
       "details": "9 PM · @thedenportland",
-      "free": false
+      "free": false,
+      "color": "pink"
     },
     {
       "date": "2026-08-14",
@@ -28,7 +33,8 @@
       "description": "The 3rd Annual Portland Jigsaw Masters brings competitive jigsaw puzzling to AVENUE Portland on NE Grand Ave for a full three-day tournament. Teams and solo competitors race through puzzles of varying difficulty across multiple rounds. Even as a spectator it's surprisingly gripping to watch. See portlandjigsawmasters.org for the schedule.",
       "venue": "AVENUE Portland",
       "details": "631 NE Grand Ave · @portlandjigsawmasters",
-      "free": false
+      "free": false,
+      "color": "purple"
     },
     {
       "date": "2026-08-14",
@@ -41,7 +47,8 @@
       "description": "The annual Maywood Park Garage Sale turns this small, tucked-away city-within-a-city into one big community swap meet. Maywood Park is one of the few remaining truly independent cities inside the Portland metro area — easy to miss if you don't know it's there. Arrive early for the best finds. Free to browse all day Friday and Saturday.",
       "venue": "10100 NE Prescott St, Maywood Park",
       "details": "Free",
-      "free": true
+      "free": true,
+      "color": "teal"
     },
     {
       "date": "2026-08-14",
@@ -53,7 +60,8 @@
       "description": "The Rockstar Energy Open comes to Tom McCall Waterfront Park for a free day of action sports on the river. Head down to the waterfront and see what's on — it's free to watch and right in the heart of downtown Portland.",
       "venue": "Tom McCall Waterfront Park",
       "details": "Free",
-      "free": true
+      "free": true,
+      "color": "coral"
     },
     {
       "date": "2026-08-15",
@@ -65,7 +73,8 @@
       "description": "One of Portland's most beloved summer spectacles — homemade, gravity-powered vehicles of wildly varying quality (and structural integrity) race down the slopes of Mt. Tabor Park. Costumes, creative engineering, and chaotic finishes are the norm. Free to watch all day from 10 AM to 4 PM. Bring snacks and a good seat-spot.",
       "venue": "Mt. Tabor Park",
       "details": "10 AM–4 PM · Free · @pdxsoapboxderby",
-      "free": true
+      "free": true,
+      "color": "amber"
     },
     {
       "date": "2026-08-15",
@@ -77,7 +86,8 @@
       "description": "Portland's free seasonal produce-sharing event — neighbors offer homegrown harvest to give to other Portlanders. Tomatoes, zucchini, herbs, eggs, whatever the garden produced. Registration to give produce ends soon! Maps go live Friday at 7 PM. Check pdxyardshare.org for locations.",
       "venue": "pdxyardshare.org",
       "details": "Free · @pdxyardshare",
-      "free": true
+      "free": true,
+      "color": "green"
     },
     {
       "date": "2026-08-16",
@@ -89,7 +99,8 @@
       "description": "Sunday brings two free events to the Lloyd District. The Portland Criterium is a closed-street criterium bike race at the North Park Blocks — fast, technical, and exciting to watch. EcoLloyd's Party on, Portland! takes over Holladay Park from 11 AM with live music, food, and entertainment running alongside the racing.",
       "venue": "North Park Blocks + Holladay Park",
       "details": "11 AM · Free",
-      "free": true
+      "free": true,
+      "color": "teal"
     },
     {
       "date": "2026-08-16",
@@ -101,7 +112,8 @@
       "description": "This is the last weekend to get in before it wraps up Sunday. Browse participating spots and menus at pdxburgerweek.com and use it as an excuse to try somewhere new. The pictures of some of these burgers are mouthwatering.",
       "venue": "Citywide",
       "details": "From $10 · @pdxburgerweek",
-      "free": false
+      "free": false,
+      "color": "amber"
     }
   ]
 }

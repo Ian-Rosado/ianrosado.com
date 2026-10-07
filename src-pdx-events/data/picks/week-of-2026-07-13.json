@@ -4,6 +4,10 @@
   "start": "2026-07-13",
   "end": "2026-07-19",
   "source": "instagram/event_cards_jul13_19.html",
+  "theme": {
+    "bg": "#0a1f3a",
+    "accent": "#5ca8ff"
+  },
   "picks": [
     {
       "date": "2026-07-13",
@@ -15,7 +19,8 @@
       "description": "An outdoor DJ set at Gateway Discovery Park — one of Portland's newer east side green spaces. Free and open to all, perfect for a Monday afternoon on the grass.",
       "venue": "Gateway Discovery Park",
       "details": "11am · Free",
-      "free": true
+      "free": true,
+      "color": "teal"
     },
     {
       "date": "2026-07-13",
@@ -27,7 +32,8 @@
       "description": "Portland's long-running \"people doing strange things with electricity\" meetup. Short talks, demos, and open conversation at CTRL-H hackerspace — free and open to curious minds of all kinds.",
       "venue": "CTRL-H",
       "details": "6:30pm · Free",
-      "free": true
+      "free": true,
+      "color": "purple"
     },
     {
       "date": "2026-07-14",
@@ -39,7 +45,8 @@
       "description": "World Cup semi-final between two of Europe's biggest rivals. Portland's soccer bars will be packed — check PDX Monthly's viewing guide to find the best spot to watch with a crowd.",
       "venue": "Bars around Portland",
       "details": "12pm · Free",
-      "free": true
+      "free": true,
+      "color": "coral"
     },
     {
       "date": "2026-07-14",
@@ -51,7 +58,8 @@
       "description": "Poser Tom's Roadshow Arcade at No Fun Bar. Roadshow Arcade is a video game competition with an entry fee. Watching people play this \"totally normal\" video game is free, however!",
       "venue": "No Fun Bar",
       "details": "7pm · Ticketed",
-      "free": false
+      "free": false,
+      "color": "pink"
     },
     {
       "date": "2026-07-15",
@@ -63,7 +71,8 @@
       "description": "The second World Cup semi-final, with England taking on Argentina — a match loaded with history. Head to a soccer bar and watch with a crowd for the full experience.",
       "venue": "Bars around Portland",
       "details": "12pm · Free",
-      "free": true
+      "free": true,
+      "color": "amber"
     },
     {
       "date": "2026-07-15",
@@ -75,7 +84,8 @@
       "description": "This is one of the more intense bike events in Portland. Participation is not for the faint of heart. No requirements on spectating and partying afterward. The event ENDS at the Sandy Hut.",
       "venue": "Sandy Hut",
       "details": "6pm · Free",
-      "free": true
+      "free": true,
+      "color": "green"
     },
     {
       "date": "2026-07-16",
@@ -87,7 +97,8 @@
       "description": "Andy Z brings high-energy children's music to an outdoor stage at the Valley Community United Presbyterian Church Park & Ride. Free and family-friendly — singing, dancing, and a whole lot of silly.",
       "venue": "Valley Community Park & Ride",
       "details": "10am · Free",
-      "free": true
+      "free": true,
+      "color": "teal"
     },
     {
       "date": "2026-07-16",
@@ -99,7 +110,8 @@
       "description": "Grammy-nominated mandolinist Sierra Hull performs at Topaz Farm's intimate outdoor venue. A 16+ show with a beautiful farm backdrop — bring a blanket and plan for a genuinely special evening. Buy tickets early, Topaz Farm concerts usually sell out.",
       "venue": "Topaz Farm",
       "details": "6:30pm · $27.50",
-      "free": false
+      "free": false,
+      "color": "coral"
     },
     {
       "date": "2026-07-17",
@@ -111,7 +123,8 @@
       "description": "Musicians play from front porches throughout Milwaukie as visitors wander the streets discovering sets. Free, casual, and community-driven — Milwaukie's take on Portland's beloved porchfest tradition.",
       "venue": "Milwaukie",
       "details": "6:30pm · Free",
-      "free": true
+      "free": true,
+      "color": "amber"
     },
     {
       "date": "2026-07-17",
@@ -123,7 +136,8 @@
       "description": "One of Portland's finest summer traditions returns to Cathedral Park beneath the St. Johns Bridge. A full day of live jazz — all free. Bring a blanket and make a whole day of it.",
       "venue": "Cathedral Park",
       "details": "All day · Free",
-      "free": true
+      "free": true,
+      "color": "purple"
     },
     {
       "date": "2026-07-18",
@@ -135,7 +149,8 @@
       "description": "The Mother of All Tribute Festivals returns to the Clackamas County Fairgrounds — a massive multi-day event with tribute bands across multiple stages and genres. Saturday doors at 9am.",
       "venue": "Clackamas Fairgrounds",
       "details": "9am · Ticketed",
-      "free": false
+      "free": false,
+      "color": "green"
     },
     {
       "date": "2026-07-18",
@@ -147,7 +162,8 @@
       "description": "The 16th annual Canterbury Renaissance Faire in Silverton features jousting, costumes, vendors, food, and entertainment all day. About 45 minutes south of Portland — worth the trip.",
       "venue": "Silverton, OR",
       "details": "10am · Ticketed",
-      "free": false
+      "free": false,
+      "color": "pink"
     },
     {
       "date": "2026-07-19",
@@ -159,7 +175,8 @@
       "description": "Portland Pride Parade rolls through Downtown — one of the biggest Pride celebrations in the Pacific Northwest. Come to cheer, march, or just soak in the energy of one of the city's most joyful days of the year.",
       "venue": "Downtown Portland",
       "details": "11am · Free",
-      "free": true
+      "free": true,
+      "color": "teal"
     },
     {
       "date": "2026-07-19",
@@ -171,7 +188,8 @@
       "description": "A neighborhood cat walk through Sunnyside where residents show off their beloved cats along a mapped route. Free and genuinely delightful — please be respectful of the neighbors and the cats.",
       "venue": "SE Sunnyside",
       "details": "6pm · Free",
-      "free": true
+      "free": true,
+      "color": "purple"
     }
   ]
 }

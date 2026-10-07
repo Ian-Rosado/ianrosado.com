@@ -8,6 +8,8 @@ interface Props {
   description?: string;
   pageClass?: string;
   ogImage?: string;
+  // Instagram-post colors for a /picks/ page: tints the page gradient
+  theme?: { bg: string; accent: string };
 }
 
 const {
@@ -15,6 +17,7 @@ const {
   description = 'PDX Events — curated Portland event calendars, favorites, and pickup soccer.',
   pageClass = 'page-events',
   ogImage,
+  theme,
 } = Astro.props;
 
 const pathname = Astro.url.pathname;
@@ -135,7 +138,10 @@ function isActive(href: string) {
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Lora:ital,wght@0,600;1,400&display=swap" rel="stylesheet" />
   </head>
-  <body class={`text-stone-900 min-h-screen ${pageClass}`} style="font-family: var(--font-sans)">
+  <body
+    class={`text-stone-900 min-h-screen ${theme ? 'page-picks' : pageClass}`}
+    style={`font-family: var(--font-sans);${theme ? ` --theme-bg: ${theme.bg}; --theme-accent: ${theme.accent};` : ''}`}
+  >
     <header class="bg-white border-b border-stone-200 sticky top-0 z-50">
       <nav class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
         <a href="/" class="text-xl font-semibold text-stone-800 hover:text-stone-600 transition-colors" style="font-family: var(--font-serif)">

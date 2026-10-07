@@ -4,6 +4,10 @@
   "start": "2026-08-31",
   "end": "2026-09-06",
   "source": "instagram/event_cards_aug31_sep6.html",
+  "theme": {
+    "bg": "#2e1310",
+    "accent": "#ff7a5c"
+  },
   "picks": [
     {
       "date": "2026-08-31",
@@ -15,7 +19,8 @@
       "description": "A low-key community bike ride to Wilshire Park, capped off with live music in the garden. Bring your bike and a blanket — this is a mellow Monday hang in one of NE Portland's quieter parks. All paces welcome.",
       "venue": "Wilshire Park",
       "details": "5 PM · Free",
-      "free": true
+      "free": true,
+      "color": "teal"
     },
     {
       "date": "2026-08-31",
@@ -27,7 +32,8 @@
       "description": "Thousands of Vaux's Swifts spiral into the chimney at Chapman Elementary every fall — one of Portland's most magical free spectacles. The Swifts have been roosting in different chimneys the last couple years, so check at the Greek Orthodox church or other locations as well! Peak Swift season is also closer to the middle of the month, but this is your reminder that it's happening! Bring a blanket, grab a spot on the hill, and watch the sky fill with spinning birds at dusk.",
       "venue": "Chapman Elementary",
       "details": "Dusk · Free",
-      "free": true
+      "free": true,
+      "color": "purple"
     },
     {
       "date": "2026-09-01",
@@ -39,7 +45,8 @@
       "description": "Hillsboro's monthly art walk fills the downtown cultural arts district with open galleries, local artists, and live music. Free and walkable — hop between studios and shops on foot. A great excuse to explore the west side.",
       "venue": "Hillsboro Downtown Cultural Arts District",
       "details": "5 PM · Free",
-      "free": true
+      "free": true,
+      "color": "amber"
     },
     {
       "date": "2026-09-01",
@@ -51,7 +58,8 @@
       "description": "OMSI Science Pub brings together scientists, drinks, and curious minds for an informal public talk. This month's topic with Coyote Neighbors explores urban wildlife and our wild neighbors. No registration required — just show up and learn something.",
       "venue": "Mission Theater",
       "details": "6 PM · @omsi",
-      "free": false
+      "free": false,
+      "color": "blue"
     },
     {
       "date": "2026-09-02",
@@ -63,7 +71,8 @@
       "description": "The Old Church's free lunchtime concert series brings local musicians to one of Portland's most beautiful historic venues. Zach Connolly plays the noon hour — pack a lunch or grab something nearby and settle in for a 45-minute midday escape.",
       "venue": "The Old Church Concert Hall",
       "details": "12 PM · Free · @theoldchurchconcerthall",
-      "free": true
+      "free": true,
+      "color": "green"
     },
     {
       "date": "2026-09-02",
@@ -75,7 +84,8 @@
       "description": "Portland's informal weekly bluegrass jam takes over the rose garden at Ladd's Addition every Wednesday evening. Bring an instrument and jump in, or sit on the grass and listen. All skill levels welcome — beginners especially encouraged.",
       "venue": "Ladd Circle Park",
       "details": "6 PM · Free",
-      "free": true
+      "free": true,
+      "color": "pink"
     },
     {
       "date": "2026-09-03",
@@ -87,7 +97,8 @@
       "description": "Mr. Ben leads a free berry picking outing at Bella Organic Farm on Sauvie Island — a perfect late-summer day. Pick your fill of whatever's ripe, enjoy the island air, and catch live music from Mr. Ben himself. Bring a container and sunscreen.",
       "venue": "Bella Organic Farm",
       "details": "Sauvie Island · 10 AM · Free · @mrbenmusic @bellaorganicfarm",
-      "free": true
+      "free": true,
+      "color": "teal"
     },
     {
       "date": "2026-09-03",
@@ -99,7 +110,8 @@
       "description": "Craig Robinson — best known for The Office and Hot Tub Time Machine — brings his stand-up to Helium Comedy Club for a weeknight run. One of the most naturally funny performers working today. Tickets required.",
       "venue": "Helium Comedy Club",
       "details": "7:30 PM · Tickets required",
-      "free": false
+      "free": false,
+      "color": "blue"
     },
     {
       "date": "2026-09-04",
@@ -111,7 +123,8 @@
       "description": "SE Portland's monthly First Friday art walk opens galleries, studios, and pop-ups along the Division–Clinton corridor. Free and walkable — just follow the lights and open doors. A great way to discover local artists and neighborhood spots you haven't found yet.",
       "venue": "SE Portland",
       "details": "5 PM · Free",
-      "free": true
+      "free": true,
+      "color": "amber"
     },
     {
       "date": "2026-09-04",
@@ -123,7 +136,8 @@
       "description": "Portland indie rock mainstays Typhoon play Topaz Farm's stunning outdoor concert series on Sauvie Island. The farm setting at golden hour is unbeatable, and Typhoon's orchestral arrangements hit differently in the open air. Limited tickets.",
       "venue": "Topaz Farm",
       "details": "Sauvie Island · 6 PM · $37.50 · @topazfarm",
-      "free": false
+      "free": false,
+      "color": "purple"
     },
     {
       "date": "2026-09-05",
@@ -135,7 +149,8 @@
       "description": "Halloween is still two months away but the Swamp Meet at Oaks Amusement Park doesn't wait. Browse vendors selling vintage oddities, costumes, art, and all things spooky in one of Portland's most atmospheric settings. Free to browse.",
       "venue": "Oaks Amusement Park",
       "details": "12 PM · Free to browse",
-      "free": true
+      "free": true,
+      "color": "pink"
     },
     {
       "date": "2026-09-05",
@@ -147,7 +162,8 @@
       "description": "The legendary Earth, Wind & Fire play McMenamins Edgefield's outdoor amphitheater — a bucket-list combo of iconic music and a stunning Pacific Northwest venue. September nights at Edgefield are perfect. Tickets required.",
       "venue": "McMenamins Edgefield",
       "details": "Troutdale · 6:30 PM · Ticketed",
-      "free": false
+      "free": false,
+      "color": "green"
     },
     {
       "date": "2026-09-06",
@@ -159,7 +175,8 @@
       "description": "The first Sunday of every month, OMSI opens its doors for just $5 — a perfect chance to explore hands-on science exhibits, the submarine, and the planetarium at a fraction of the usual price. Great for families and curious adults alike.",
       "venue": "OMSI",
       "details": "All Day · $5 · @omsi",
-      "free": false
+      "free": false,
+      "color": "teal"
     },
     {
       "date": "2026-09-06",
@@ -171,7 +188,8 @@
       "description": "Canadian electronic duo Zeds Dead headline the Bridge City Block Party on the Waterfront — a massive outdoor show to close out the week. Heavy bass, a stunning river backdrop, and a crowd ready to dance. Check bridgecityblockparty.com for lineup and tickets.",
       "venue": "Tom McCall Waterfront Park",
       "details": "4 PM · Ticketed",
-      "free": false
+      "free": false,
+      "color": "blue"
     }
   ]
 }

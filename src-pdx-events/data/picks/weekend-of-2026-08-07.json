@@ -4,6 +4,10 @@
   "start": "2026-08-07",
   "end": "2026-08-09",
   "source": "instagram/event_cards_aug7_9.html",
+  "theme": {
+    "bg": "#0d2b1a",
+    "accent": "#5cdc80"
+  },
   "picks": [
     {
       "date": "2026-08-07",
@@ -16,7 +20,8 @@
       "description": "The North Plains Elephant Garlic Festival is one of Oregon's most beloved small-town summer traditions — a full weekend of garlic-forward food vendors, cooking demos, live music, carnival rides, and community fun just west of Portland. Elephant garlic is bigger, milder, and sweeter than regular garlic. Worth the short trip!",
       "venue": "Jessie Mays Community Hall & Park, North Plains",
       "details": "Free",
-      "free": true
+      "free": true,
+      "color": "amber"
     },
     {
       "date": "2026-08-07",
@@ -29,7 +34,8 @@
       "description": "Professional motorsports racing returns to Portland International Raceway for a full weekend — practice sessions, qualifying, and race day action. General admission tickets start at $25; single-day and full-weekend passes available. PIR is one of the most scenic road racing venues in the country.",
       "venue": "Portland International Raceway",
       "details": "From $25",
-      "free": false
+      "free": false,
+      "color": "blue"
     },
     {
       "date": "2026-08-07",
@@ -42,7 +48,8 @@
       "description": "Two nights of Halloween at the Redd East Event Space, one of Portland's best outdoor-capable venues. Single-night tickets from $13; two-day passes available.",
       "venue": "Redd East Event Space",
       "details": "From $13",
-      "free": false
+      "free": false,
+      "color": "purple"
     },
     {
       "date": "2026-08-07",
@@ -55,7 +62,8 @@
       "description": "Over 85 musicians and performers take over porches, driveways, and historic venues across Oregon City's McLoughlin Neighborhood — one of the oldest planned communities in the Pacific Northwest. Grab a map, pick a route, and discover something wonderful around every corner. Totally free, all ages, and a genuinely charming way to spend a summer afternoon.",
       "venue": "Historic McLoughlin Neighborhood, Oregon City",
       "details": "Free",
-      "free": true
+      "free": true,
+      "color": "coral"
     },
     {
       "date": "2026-08-08",
@@ -67,7 +75,8 @@
       "description": "Annual clothing-optional bicycle protest advocates for cyclist safety, car-free streets, and environmental awareness. This ride is a separate event from the @pdxwnbr World Naked Bike Ride — different organizers, different route, same spirit of cycling freedom. Meet up, suit (or not suit) up, and ride. Free to join.",
       "venue": "Portland",
       "details": "5 PM · Free",
-      "free": true
+      "free": true,
+      "color": "teal"
     },
     {
       "date": "2026-08-08",
@@ -79,7 +88,8 @@
       "description": "Portland Flowmies are taking over Tom McCall Waterfront Park for an evening of flow arts, music, and community. The night opens with a Glowstar Tutorial, then four live DJ sets from 6 to 9 PM, a snack potluck, and ice breakers. All styles and levels of flow welcome — bring your props, your snacks, and your best fit (there'll be drone footage). Sober event, all ages, totally free.",
       "venue": "Tom McCall Waterfront Park",
       "details": "6–9 PM · Free",
-      "free": true
+      "free": true,
+      "color": "coral"
     },
     {
       "date": "2026-08-08",
@@ -91,7 +101,8 @@
       "description": "The world's most beloved cat video film festival returns to Portland, screening the best cat content from creators around the globe. CatVideoFest has screened in over 700 cities worldwide — it's silly, it's heartwarming, and it's genuinely one of the most joyful evenings you'll spend in a movie theater all year. Tickets through PAM CUT's Tomorrow Theater on SE Division.",
       "venue": "Tomorrow Theater (PAM CUT)",
       "details": "3530 SE Division · 7 PM · $15",
-      "free": false
+      "free": false,
+      "color": "pink"
     },
     {
       "date": "2026-08-09",
@@ -103,7 +114,8 @@
       "description": "The Washington Park Summer Festival closes out the season with an evening of original soul music featuring Portland legend Ural Thomas and the Pain at the Rose Garden Amphitheater. Ural Thomas, in his 80s and still performing, is a Portland treasure — a founding figure of the city's soul scene who has earned national recognition. Free outdoor concert under summer skies.",
       "venue": "Washington Park – Rose Garden Amphitheater",
       "details": "6 PM · Free",
-      "free": true
+      "free": true,
+      "color": "amber"
     }
   ]
 }

@@ -4,6 +4,10 @@
   "start": "2026-08-10",
   "end": "2026-08-16",
   "source": "instagram/event_cards_aug10_16.html",
+  "theme": {
+    "bg": "#062a2a",
+    "accent": "#3ecfb0"
+  },
   "picks": [
     {
       "date": "2026-08-10",
@@ -15,7 +19,8 @@
       "description": "Bridge City Children's Theatre performs The Case of the Bone Bandit at Bethany Village Plaza — a free, live interactive mystery show for kids. Great for little ones and curious adults alike.",
       "venue": "Bethany Village Plaza",
       "details": "10 AM · Free",
-      "free": true
+      "free": true,
+      "color": "green"
     },
     {
       "date": "2026-08-10",
@@ -27,7 +32,8 @@
       "description": "Portland comics test fresh material in a low-pressure showcase at Al's Den. The best way to get a taste of the local Portland comedy scene — and the perfect excuse for a weeknight out at McMenamins.",
       "venue": "Al's Den",
       "details": "7:30 PM",
-      "free": false
+      "free": false,
+      "color": "purple"
     },
     {
       "date": "2026-08-11",
@@ -39,7 +45,8 @@
       "description": "100+ Portland restaurants offer special $10 burgers all week long. Classic smashburgers, creative mashups, vegan options — the whole city plays along. Download the map and make your list. Runs Aug 10–16.",
       "venue": "Citywide",
       "details": "From $10",
-      "free": false
+      "free": false,
+      "color": "amber"
     },
     {
       "date": "2026-08-11",
@@ -51,7 +58,8 @@
       "description": "A monthly puzzle hunt where you can solve the puzzle to find the secret bar — then tackle more puzzles over drinks. Download the puzzle at puzzledpint.com to find Tuesday's venue. Beginner-friendly, team-based, and genuinely fun.",
       "venue": "Secret location — solve at puzzledpint.com",
       "details": "",
-      "free": false
+      "free": false,
+      "color": "blue"
     },
     {
       "date": "2026-08-12",
@@ -63,7 +71,8 @@
       "description": "Kids' musician Mr. Ben brings live music to The Heist Food Carts on SE Woodstock for a free Wednesday morning show. Perfect for toddlers and little kids — stick around after for breakfast from the carts.",
       "venue": "The Heist Food Carts, SE Woodstock",
       "details": "10 AM · Free",
-      "free": true
+      "free": true,
+      "color": "coral"
     },
     {
       "date": "2026-08-12",
@@ -75,7 +84,8 @@
       "description": "Rose City Astronomers host a free public star party at Rooster Rock State Park. Volunteers set up telescopes — you can look through theirs or bring your own. Great views of Jupiter and Saturn this time of year. $10 parking.",
       "venue": "Rooster Rock State Park",
       "details": "8 PM · Free",
-      "free": true
+      "free": true,
+      "color": "pink"
     },
     {
       "date": "2026-08-13",
@@ -87,7 +97,8 @@
       "description": "Free outdoor storytime at Topaz Farm on Sauvie Island — one of Portland's most beloved summer farm destinations. After the stories, wander the farm, say hello to the animals, and soak up the Sauvie Island vibes.",
       "venue": "Topaz Farm, Sauvie Island",
       "details": "10:30 AM · Free",
-      "free": true
+      "free": true,
+      "color": "blue"
     },
     {
       "date": "2026-08-13",
@@ -99,7 +110,8 @@
       "description": "Portland Parks screens How to Train Your Dragon (2025) at Wilshire Park — free outdoor movie night for the whole family. Free popcorn provided. Bring a blanket, snacks, and something warm for when the sun goes down.",
       "venue": "Wilshire Park",
       "details": "7:30 PM · Free",
-      "free": true
+      "free": true,
+      "color": "amber"
     },
     {
       "date": "2026-08-14",
@@ -111,7 +123,8 @@
       "description": "The Rockstar Energy Open comes to Tom McCall Waterfront Park for a free day of action sports. Head down to the waterfront and see what's on.",
       "venue": "Tom McCall Waterfront Park",
       "details": "Free",
-      "free": true
+      "free": true,
+      "color": "purple"
     },
     {
       "date": "2026-08-14",
@@ -123,7 +136,8 @@
       "description": "Dress as your favorite Ninja Turtle and ride through Portland with the crew. The group departs from MixTape Vintage on SE Belmont — show up in your best shell and mask. Cowabunga.",
       "venue": "MixTape Vintage, SE Belmont",
       "details": "5:30 PM · Free",
-      "free": true
+      "free": true,
+      "color": "green"
     },
     {
       "date": "2026-08-15",
@@ -135,7 +149,8 @@
       "description": "Portland's legendary annual tradition: 40+ teams race hand-built gravity-powered cars down Mt. Tabor's streets in front of thousands of spectators. The 27th year of this volunteer-run event — free to watch, wildly entertaining.",
       "venue": "Mt. Tabor Park",
       "details": "10 AM–4 PM · Free",
-      "free": true
+      "free": true,
+      "color": "pink"
     },
     {
       "date": "2026-08-15",
@@ -147,7 +162,8 @@
       "description": "A dragon and fantasy-themed rave at Nova PDX, Portland's oldest continuously operating live music venue. Dress to theme and come ready to dance at one of Portland's great underground spots.",
       "venue": "Nova PDX",
       "details": "8 PM",
-      "free": false
+      "free": false,
+      "color": "coral"
     },
     {
       "date": "2026-08-16",
@@ -159,7 +175,8 @@
       "description": "Two free Sunday events: closed-street criterium bike racing at the North Park Blocks in the morning, and EcoLloyd's Party on, Portland! block party at Holladay Park starting at 11 AM — live music, food, and entertainment while you watch high speed road bike racing.",
       "venue": "Holladay Park",
       "details": "Free",
-      "free": true
+      "free": true,
+      "color": "amber"
     },
     {
       "date": "2026-08-16",
@@ -171,7 +188,8 @@
       "description": "Portland's beloved Sunday night tradition: grab a tiny bike (or bring your own), ride MAX up to the West Hills, and bomb back down in a pack. Meet at SW 13th & Burnside. Bring a light and a helmet.",
       "venue": "SW 13th & Burnside",
       "details": "8 PM · Free",
-      "free": true
+      "free": true,
+      "color": "blue"
     }
   ]
 }

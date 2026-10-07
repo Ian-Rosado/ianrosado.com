@@ -4,6 +4,10 @@
   "start": "2026-08-17",
   "end": "2026-08-23",
   "source": "instagram/event_cards_aug17_23.html",
+  "theme": {
+    "bg": "#15163a",
+    "accent": "#8a9bff"
+  },
   "picks": [
     {
       "date": "2026-08-17",
@@ -15,7 +19,8 @@
       "description": "A free community drum circle under the trees at The Shack at Sellwood Park. Bring your own percussion, a blanket, and your best rhythm — or just come to listen and soak up the summer vibes. All ages welcome.",
       "venue": "The Shack at Sellwood Park",
       "details": "11 AM · Free",
-      "free": true
+      "free": true,
+      "color": "green"
     },
     {
       "date": "2026-08-17",
@@ -27,7 +32,8 @@
       "description": "Portland Parks & Rec opens Creston Pool for free open-play swim on Monday evenings. Cool off in the water without spending a dime — Use our public resources. It helps them get funding going forward too!",
       "venue": "Creston Pool",
       "details": "SE 44th & Powell · 6:30 PM · Free",
-      "free": true
+      "free": true,
+      "color": "amber"
     },
     {
       "date": "2026-08-18",
@@ -39,7 +45,8 @@
       "description": "The beloved Portland movie house drops admission to $7 every Tuesday. Catch indie hits and Hollywood classics in a neighborhood theater with a bar and great programming. Most theaters do discounted tickets on Tuesday, check out the one closest to you!",
       "venue": "Laurelhurst Theater",
       "details": "$7 films all day",
-      "free": false
+      "free": false,
+      "color": "coral"
     },
     {
       "date": "2026-08-18",
@@ -51,7 +58,8 @@
       "description": "Portland's Festival of Cinema, Animation & Technology kicks off at OMSI with screenings, short films, and programming exploring the intersection of art, technology, and moving images. A local indie film event worth catching.",
       "venue": "OMSI",
       "details": "5:30 PM · tickets at pdxfestofcinema.com",
-      "free": false
+      "free": false,
+      "color": "purple"
     },
     {
       "date": "2026-08-19",
@@ -63,7 +71,8 @@
       "description": "Clay Commons brings local ceramicists to Director Park in the heart of downtown. Browse handmade cups, bowls, vases, and sculpture from the region's best potters. Free to attend — and a great chance to find your new favorite mug.",
       "venue": "Director Park",
       "details": "815 SW Park Ave · 11 AM · Free",
-      "free": true
+      "free": true,
+      "color": "teal"
     },
     {
       "date": "2026-08-19",
@@ -75,7 +84,8 @@
       "description": "The Lloyd District's regular Wednesday evening hang — Live music, incredible sunsets, and great vibes. Bring some snacks or bevies and make it an evening.",
       "venue": "Lloyd District",
       "details": "5:30 PM",
-      "free": false
+      "free": false,
+      "color": "pink"
     },
     {
       "date": "2026-08-20",
@@ -87,7 +97,8 @@
       "description": "Bella Organic's annual Sunflower Festival is in full swing on Sauvie Island — u-cut sunflowers by the armful, cow train rides, a full farm store, and wine and cider tasting. An easy 20-minute drive from Portland for a proper summer farm day.",
       "venue": "Bella Organic",
       "details": "Sauvie Island · All Day",
-      "free": false
+      "free": false,
+      "color": "green"
     },
     {
       "date": "2026-08-20",
@@ -99,7 +110,8 @@
       "description": "Portland Parks & Rec brings another free summer concert to Grant Park, featuring Ants Ants Ants. Pack a blanket and some snacks and settle in as the evening cools down — Kids' music inspired by the melodies of the 1970s, from The Beatles to Schoolhouse Rock.",
       "venue": "Grant Park",
       "details": "NE 33rd Ave · 6:30 PM · Free",
-      "free": true
+      "free": true,
+      "color": "coral"
     },
     {
       "date": "2026-08-21",
@@ -111,7 +123,8 @@
       "description": "Portland's premier handbuilt bicycle showcase returns to Zidell Yards along the South Waterfront. Framebuilders and small manufacturers from across the country display one-of-a-kind road, mountain, and cargo bikes. Runs Fri–Sun. A must for bike nerds.",
       "venue": "Zidell Yards",
       "details": "3121 S Moody Ave · 9 AM–5 PM",
-      "free": false
+      "free": false,
+      "color": "amber"
     },
     {
       "date": "2026-08-21",
@@ -123,7 +136,8 @@
       "description": "Portland's beloved weekly roller disco rotates to a new secret location each time — follow @secretrollerdisco for the Friday reveal. Free to skate, BYOS or rent a pair. Pure Portland weird in the very best way.",
       "venue": "Secret location",
       "details": "7 PM · Free",
-      "free": true
+      "free": true,
+      "color": "teal"
     },
     {
       "date": "2026-08-22",
@@ -135,7 +149,8 @@
       "description": "Decorated boats parade through North Portland Harbor celebrating community and summer on the water. Grab a spot along the shore at 1611 NE Marine Drive and wave from the bank as the flotilla rolls through. Free and family-friendly.",
       "venue": "North Portland Harbor",
       "details": "1611 NE Marine Dr · 11 AM · Free",
-      "free": true
+      "free": true,
+      "color": "purple"
     },
     {
       "date": "2026-08-22",
@@ -147,7 +162,8 @@
       "description": "Portland Parks & Rec's Summer Free for All screens Cool Runnings in Sewallcrest Park. The beloved underdog classic about Jamaica's Olympic bobsled team holds up completely. Bring a blanket, your neighbors, and maybe a winter hat for irony.",
       "venue": "Sewallcrest Park",
       "details": "7:30 PM · Free",
-      "free": true
+      "free": true,
+      "color": "green"
     },
     {
       "date": "2026-08-23",
@@ -159,7 +175,8 @@
       "description": "Hawthorne Boulevard transforms into a pedestrian festival of local vendors, food carts, live music, and neighborhood energy. One of Portland's most beloved summer street fairs — free, walkable, and the perfect way to close out the week.",
       "venue": "Hawthorne Ave",
       "details": "Portland · 11 AM · Free",
-      "free": true
+      "free": true,
+      "color": "pink"
     },
     {
       "date": "2026-08-23",
@@ -171,7 +188,8 @@
       "description": "Speed painting competition at The High Water Mark in Portland. Watch as talented artists create beautiful or quirky pieces in a short time.",
       "venue": "The High Water Mark",
       "details": "Portland · 7 PM",
-      "free": false
+      "free": false,
+      "color": "amber"
     }
   ]
 }

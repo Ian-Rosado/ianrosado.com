@@ -4,6 +4,10 @@
   "start": "2026-07-20",
   "end": "2026-07-26",
   "source": "instagram/event_cards_jul20_26.html",
+  "theme": {
+    "bg": "#1c0e30",
+    "accent": "#b39dff"
+  },
   "picks": [
     {
       "date": "2026-07-20",
@@ -15,7 +19,8 @@
       "description": "Free live music at Covert Café — Dan Hubbard brings his style to one of Portland's cozy neighborhood spots. No cover, 21+.",
       "venue": "Covert Café",
       "details": "4 PM · Free · 21+",
-      "free": true
+      "free": true,
+      "color": "amber"
     },
     {
       "date": "2026-07-20",
@@ -27,7 +32,8 @@
       "description": "Two poets face off, and the audience decides. Portland's competitive spoken word scene at its most raw and electric.",
       "venue": "Barrel Room",
       "details": "7 PM",
-      "free": false
+      "free": false,
+      "color": "teal"
     },
     {
       "date": "2026-07-21",
@@ -39,7 +45,8 @@
       "description": "Bilingual, all-ages craft workshop at Central Library — make your own piñata and celebrate Pride. All materials provided, no registration required.",
       "venue": "Central Library",
       "details": "1 PM · Free",
-      "free": true
+      "free": true,
+      "color": "green"
     },
     {
       "date": "2026-07-21",
@@ -51,7 +58,8 @@
       "description": "Wonderlove's weekly Tuesday gathering — a welcoming spot for an early-evening drink and dancing. Free entry!",
       "venue": "Wonderlove",
       "details": "5 PM · Free",
-      "free": true
+      "free": true,
+      "color": "coral"
     },
     {
       "date": "2026-07-22",
@@ -63,7 +71,8 @@
       "description": "Cool off at one of Portland's beloved outdoor pools. Portland Parks runs free open-play swim sessions all summer — no registration needed, no cost.",
       "venue": "Grant Pool, NE 33rd",
       "details": "1 PM · Free",
-      "free": true
+      "free": true,
+      "color": "blue"
     },
     {
       "date": "2026-07-22",
@@ -75,7 +84,8 @@
       "description": "The vibes are immaculate at Duckworth Wednesdays — bring snacks and some drinks, chill on the dock or in the water, and soak in the sunset while listening to free music. The dock gets busy so be prepared to get there early or pack in close.",
       "venue": "Lloyd Esplanade",
       "details": "5:30 PM · Free",
-      "free": true
+      "free": true,
+      "color": "pink"
     },
     {
       "date": "2026-07-23",
@@ -87,7 +97,8 @@
       "description": "Every Thursday in South Waterfront — local farmers and artisans with fresh produce, specialty goods, and prepared food. Free to browse all afternoon.",
       "venue": "South Waterfront",
       "details": "12 PM · Free",
-      "free": true
+      "free": true,
+      "color": "coral"
     },
     {
       "date": "2026-07-23",
@@ -99,7 +110,8 @@
       "description": "AWOL Dance Collective performs aerial dance among the trees in Mary S Young Park at dusk — suspended performance as natural light fades. Tickets are a little $$, but this is a unique experience.",
       "venue": "Mary S Young Park, West Linn",
       "details": "9 PM · $45",
-      "free": false
+      "free": false,
+      "color": "amber"
     },
     {
       "date": "2026-07-24",
@@ -111,7 +123,8 @@
       "description": "Crowd Supply's annual open hardware conference at the Jupiter Hotel — talks, demos, and community for engineers, makers, and electronics enthusiasts. All-day celebration of building things. Pre-registration required.",
       "venue": "Jupiter Hotel",
       "details": "9:30 AM",
-      "free": false
+      "free": false,
+      "color": "teal"
     },
     {
       "date": "2026-07-24",
@@ -123,7 +136,8 @@
       "description": "A free outdoor performance of \"Cruzar la Cara de la Luna\" — a Grammy-winning mariachi opera blending classical storytelling with the soul of traditional Mexican music.",
       "venue": "",
       "details": "6:30 PM · Free",
-      "free": true
+      "free": true,
+      "color": "green"
     },
     {
       "date": "2026-07-25",
@@ -135,7 +149,8 @@
       "description": "SE 42nd Avenue closes for a full day of live music, food trucks, comedy, a beer garden, and an art walk. Family-friendly, all-ages, and completely free.",
       "venue": "SE 42nd (Francis–Holgate)",
       "details": "10 AM · Free",
-      "free": true
+      "free": true,
+      "color": "pink"
     },
     {
       "date": "2026-07-25",
@@ -147,7 +162,8 @@
       "description": "Break out the neon — Crystal Ballroom's GLOW Night brings back the best of the 90s and early 2000s for a blacklight dance party on Portland's most iconic dance floor. This will be packed with millennials ready to boogie. If you like to dance, check this one out.",
       "venue": "Crystal Ballroom",
       "details": "8 PM",
-      "free": false
+      "free": false,
+      "color": "blue"
     },
     {
       "date": "2026-07-26",
@@ -159,7 +175,8 @@
       "description": "The Montavilla neighborhood's beloved annual street fair returns to SE Stark Street. Local vendors, food, live music, and community energy — all free, all day.",
       "venue": "SE Stark & 76th",
       "details": "10 AM · Free",
-      "free": true
+      "free": true,
+      "color": "amber"
     },
     {
       "date": "2026-07-26",
@@ -171,7 +188,8 @@
       "description": "Adopt a numbered rubber duck, cheer it on to the finish line, and enjoy the beautiful silliness of competitive waterfowl racing. This is the Portland whimsy you're looking for.",
       "venue": "Starday Tavern",
       "details": "4 PM · Free",
-      "free": true
+      "free": true,
+      "color": "coral"
     }
   ]
 }

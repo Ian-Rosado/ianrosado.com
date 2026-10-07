@@ -14,6 +14,24 @@ export async function getStaticPaths() {
 const { recipe } = Astro.props;
 const { Content } = await render(recipe);
 
+// Structured-data steps: one HowToStep per "## " section of the markdown, with
+// its prose only (images, video/figure HTML and markdown syntax stripped).
+// The closing "Let's discuss" / "Let's talk about…" notes aren't steps.
+function recipeInstructions(md: string) {
+  return md.split(/^## /m).slice(1).flatMap((section) => {
+    const [heading, ...lines] = section.split('\n');
+    if (/discuss|talk about/i.test(heading)) return [];
+    const text = lines
+      .filter((l) => !/^\s*(!\[|<)/.test(l))
+      .join(' ')
+      .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+      .replace(/[*_`]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+    return text ? [{ '@type': 'HowToStep', name: heading.trim(), text }] : [];
+  });
+}
+
 function frac(text: string): string {
   return text.replace(/(\d+)\s*\/\s*(\d+)/g, (_, n, d) =>
     `<span class="frac"><sup>${n}</sup><span aria-hidden="true">⁄</span><sub>${d}</sub></span>`
@@ -31,6 +49,7 @@ function frac(text: string): string {
     "datePublished": recipe.data.date.toISOString().split('T')[0],
     "keywords": recipe.data.tags.join(', '),
     "recipeIngredient": recipe.data.ingredients,
+    "recipeInstructions": recipeInstructions(recipe.body ?? ''),
     ...(recipe.data.coverImage ? { "image": `https://www.ianrosado.com${recipe.data.coverImage}` } : {}),
     ...(recipe.data.prepTime ? { "prepTime": recipe.data.prepTime } : {}),
     ...(recipe.data.cookTime ? { "cookTime": recipe.data.cookTime } : {}),

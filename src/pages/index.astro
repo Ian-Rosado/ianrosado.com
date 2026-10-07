@@ -9,6 +9,32 @@ const recentRecipes = recipes
 ---
 
 <Layout title="Home" pageClass="page-home">
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": "https://www.ianrosado.com/#website",
+        "url": "https://www.ianrosado.com",
+        "name": "Ian Rosado",
+        "publisher": { "@id": "https://www.ianrosado.com/#person" }
+      },
+      {
+        "@type": "Person",
+        "@id": "https://www.ianrosado.com/#person",
+        "name": "Ian Rosado",
+        "url": "https://www.ianrosado.com",
+        "image": "https://www.ianrosado.com/images/ian.jpg",
+        "jobTitle": "Data and Analytics Engineer",
+        "address": { "@type": "PostalAddress", "addressLocality": "Portland", "addressRegion": "OR" },
+        "sameAs": [
+          "https://www.linkedin.com/in/ianrosado/",
+          "https://github.com/Ian-Rosado",
+          "https://www.instagram.com/ian_p_rosado/"
+        ]
+      }
+    ]
+  })} />
   <!-- Hero -->
   <section class="max-w-5xl mx-auto px-4 py-16 md:py-24">
     <h1 class="text-5xl md:text-6xl font-semibold text-stone-900 mb-4 leading-tight" style="font-family: var(--font-serif)">

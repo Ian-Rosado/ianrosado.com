@@ -4,6 +4,10 @@
   "start": "2026-07-10",
   "end": "2026-07-12",
   "source": "instagram/event_cards_jul10_12.html",
+  "theme": {
+    "bg": "#062a2a",
+    "accent": "#3ecfb0"
+  },
   "picks": [
     {
       "date": "2026-07-10",
@@ -15,7 +19,8 @@
       "description": "Portland's biggest night market fills SE Alder with 200+ local vendors — food, art, vintage, and handmade goods. Free and all ages, running until 11pm. Entry line can get long, but generally moves fast.",
       "venue": "SE Alder St",
       "details": "4pm · Free",
-      "free": true
+      "free": true,
+      "color": "coral"
     },
     {
       "date": "2026-07-10",
@@ -27,7 +32,8 @@
       "description": "Oregon Public Shakespeare Festival presents Henry IV, Part 1 at Laurelhurst Park. Free outdoor Shakespeare — bring a blanket and enjoy the show under the evening sky. There's no Comedy in the park this week, so make this your Friday Laurelhurst Excursion!",
       "venue": "Laurelhurst Park",
       "details": "7pm · Free",
-      "free": true
+      "free": true,
+      "color": "purple"
     },
     {
       "date": "2026-07-10",
@@ -39,7 +45,8 @@
       "description": "A dance night dedicated to the best of Y2K pop, hip hop, and R&B at Lola's Room. Come ready to sing along and move to the hits that defined the decade. It gets hot inside, so dress accordingly!",
       "venue": "Lola's Room",
       "details": "9:30pm · Ticketed",
-      "free": false
+      "free": false,
+      "color": "pink"
     },
     {
       "date": "2026-07-11",
@@ -51,7 +58,8 @@
       "description": "N Mississippi Ave shuts down for local vendors, live music stages, and food carts. The full energy of one of Portland's most vibrant neighborhoods, free and all ages. This is one of if not THE biggest street fair of the summer.",
       "venue": "N Mississippi Ave",
       "details": "10am · Free",
-      "free": true
+      "free": true,
+      "color": "blue"
     },
     {
       "date": "2026-07-11",
@@ -63,7 +71,8 @@
       "description": "Portland Art Museum opens the asphalt for a community mural painting event. Add your mark to a large-scale collaborative piece — all materials provided, free to join.",
       "venue": "Portland Art Museum",
       "details": "10am · Free",
-      "free": true
+      "free": true,
+      "color": "coral"
     },
     {
       "date": "2026-07-11",
@@ -76,7 +85,8 @@
       "description": "Musicians play from front porches throughout the Overlook neighborhood as visitors walk house to house discovering sets. One of Portland's most charming free summer traditions. Look up the event map and schedule, and pair with the neighborhood yard sale!",
       "venue": "Overlook",
       "details": "N Portland · All day · Free",
-      "free": true
+      "free": true,
+      "color": "amber"
     },
     {
       "date": "2026-07-11",
@@ -89,7 +99,8 @@
       "description": "Community-wide yard sale throughout Overlook, with dozens of households participating at once — plus a free table for things folks just want to give away. Find the map of participating houses online.",
       "venue": "Overlook",
       "details": "N Portland · All day · Free",
-      "free": true
+      "free": true,
+      "color": "green"
     },
     {
       "date": "2026-07-12",
@@ -101,7 +112,8 @@
       "description": "The Buffy the Vampire Slayer universe gets the full drag and burlesque treatment at Mississippi Pizza Pub. Early show — costumes encouraged, all are welcome.",
       "venue": "Mississippi Pizza Pub",
       "details": "5pm · Ticketed",
-      "free": false
+      "free": false,
+      "color": "purple"
     }
   ]
 }

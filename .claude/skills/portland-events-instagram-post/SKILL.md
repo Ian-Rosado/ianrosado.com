@@ -391,7 +391,9 @@ cd scripts/add-to-calendar
 python export_picks.py ../../instagram/event_cards_<dates>.html
 ```
 
-It writes `src-pdx-events/data/picks/<week|weekend>-of-<date>.json`. If it
+It writes `src-pdx-events/data/picks/<week|weekend>-of-<date>.json`, including each
+tile's color class and the post's canvas/accent theme — the page reuses them, so
+the site's cards and background match the post. If it
 reports a pick **missing date** or **missing venue**, the card's meta line didn't
 say it — fix the card (or edit the JSON) and re-run. Commit the JSON with the
 post's HTML; the page goes live when the PR merges.

@@ -4,6 +4,10 @@
   "start": "2026-09-18",
   "end": "2026-09-20",
   "source": "instagram/event_cards_sep18_20.html",
+  "theme": {
+    "bg": "#0a1f3a",
+    "accent": "#5ca8ff"
+  },
   "picks": [
     {
       "date": "2026-09-18",
@@ -15,7 +19,8 @@
       "description": "It's cuffing season! One of Portland's incredible live dating shows takes over the cozy stage at McMenamins Al's Den. Part matchmaking, part roast — contestants field questions while the crowd plays wingman. A little chaotic, a lot of fun, and a great way to meet friends and potential partners.",
       "venue": "Al's Den",
       "details": "6:30 PM",
-      "free": false
+      "free": false,
+      "color": "green"
     },
     {
       "date": "2026-09-19",
@@ -27,7 +32,8 @@
       "description": "SE Belmont shuts down for its annual street party — local makers, food carts, live music, and beer gardens stretched along the strip. Wander, snack, and soak up peak late-summer Portland weirdness. It's free to roam all day.",
       "venue": "SE Belmont St",
       "details": "10 AM–5 PM",
-      "free": false
+      "free": false,
+      "color": "teal"
     },
     {
       "date": "2026-09-19",
@@ -39,7 +45,8 @@
       "description": "Steeplejack turns its NE Broadway brewery — a gorgeously converted old church — into an Oktoberfest hall for the day. House lagers, Bavarian bites, and steins all afternoon. Free to get in, family-friendly, and pours run till 8.",
       "venue": "Steeplejack Brewing",
       "details": "12–8 PM · Free",
-      "free": true
+      "free": true,
+      "color": "amber"
     },
     {
       "date": "2026-09-19",
@@ -51,7 +58,8 @@
       "description": "The iconic Bridge of the Gods turns 100, and Cascade Locks throws a Gorge-side party to mark it — history, live music, food, and one of the most jaw-dropping backdrops in Oregon. Worth the scenic drive east for a day trip out of the city.",
       "venue": "Port of Cascade Locks",
       "details": "12–8 PM",
-      "free": false
+      "free": false,
+      "color": "coral"
     },
     {
       "date": "2026-09-19",
@@ -63,7 +71,8 @@
       "description": "Guide Dogs for the Blind hosts a public graduation where puppy raisers hand off their dogs to the new handlers they'll change life for. It's exactly as heartwarming as it sounds — free, open to all, out in Boring.",
       "venue": "Boring, OR",
       "details": "1:30 PM · Free",
-      "free": true
+      "free": true,
+      "color": "purple"
     },
     {
       "date": "2026-09-20",
@@ -75,7 +84,8 @@
       "description": "Pull up in your convertible listening to \"Just Dance\" by Lady Gaga, please. The Social Spoon throws an all-Britney brunch — pop anthems, themed cocktails, and a menu to match. Grab the crew, dress the part, and make a Sunday of it.",
       "venue": "The Social Spoon",
       "details": "12–2 PM",
-      "free": false
+      "free": false,
+      "color": "pink"
     },
     {
       "date": "2026-09-20",
@@ -87,7 +97,8 @@
       "description": "Tryon Life Community Farm celebrates apple season with fresh-pressed cider, live music, farm tours, and hands-on fun on its wooded SW Portland land. Ten bucks buys a mellow, kid-friendly afternoon in nature.",
       "venue": "Tryon Life Farm",
       "details": "1–4 PM · $10",
-      "free": false
+      "free": false,
+      "color": "green"
     },
     {
       "date": "2026-09-20",
@@ -99,7 +110,8 @@
       "description": "Portland's own a cappella pirates drop anchor at Canton Phoenix for a night of raucous sea shanties and original \"piraty\" parodies. Costumes encouraged, sing-alongs guaranteed. Cap the weekend with something delightfully, gloriously weird.",
       "venue": "Canton Phoenix",
       "details": "8:30 PM",
-      "free": false
+      "free": false,
+      "color": "teal"
     }
   ]
 }

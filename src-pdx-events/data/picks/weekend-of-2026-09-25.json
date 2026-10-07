@@ -4,6 +4,10 @@
   "start": "2026-09-25",
   "end": "2026-09-27",
   "source": "instagram/event_cards_sep25_27.html",
+  "theme": {
+    "bg": "#0a1f3a",
+    "accent": "#5ca8ff"
+  },
   "picks": [
     {
       "date": "2026-09-25",
@@ -15,7 +19,8 @@
       "description": "The Portland Japanese Garden marks the autumn harvest moon with O-Tsukimi — an evening of moonlit strolls, tea, music, and seasonal beauty. A serene, once-a-year way to open the weekend.",
       "venue": "Portland Japanese Garden",
       "details": "Fri · Ticketed",
-      "free": false
+      "free": false,
+      "color": "teal"
     },
     {
       "date": "2026-09-26",
@@ -28,7 +33,8 @@
       "description": "Portland-made Chrome Industries opens its NW warehouse for deep deals on bags, apparel, and gear — the once-a-season chance to score their tough, cult-loved goods for less.",
       "venue": "NW Portland",
       "details": "Sat–Sun · 10 AM",
-      "free": false
+      "free": false,
+      "color": "green"
     },
     {
       "date": "2026-09-26",
@@ -40,7 +46,8 @@
       "description": "Free, family-friendly live music under the Gothic arches of the St. Johns Bridge at Cathedral Park. Bring a blanket, let the kids run, and take in one of the prettiest spots in the city.",
       "venue": "Cathedral Park",
       "details": "Sat 10 AM · Free",
-      "free": true
+      "free": true,
+      "color": "coral"
     },
     {
       "date": "2026-09-26",
@@ -52,7 +59,8 @@
       "description": "Sellwood Community House hosts its beloved neighborhood dog show at the Shack — categories for waggiest tail, best costume, and more. Free, family-friendly, and heavy on very good boys and girls.",
       "venue": "Sellwood Park",
       "details": "Sat 11 AM · Free",
-      "free": true
+      "free": true,
+      "color": "purple"
     },
     {
       "date": "2026-09-26",
@@ -64,7 +72,8 @@
       "description": "Portland joins the global \"Thrill the World\" by learning Michael Jackson's \"Thriller\" zombie dance en masse at Irving Park. Free, all levels — nail the moves for the big synchronized day. Practices are every Saturday and Sunday 11:30 AM–1 PM through October 18th.",
       "venue": "Irving Park Basketball Court",
       "details": "Sat 11:30 AM · Free",
-      "free": true
+      "free": true,
+      "color": "pink"
     },
     {
       "date": "2026-09-26",
@@ -76,7 +85,8 @@
       "description": "Portland's giant cheese celebration returns to Alder Block — taste hundreds of cheeses, meet the makers, and wash it all down with perfect pairings. A dairy-lover's dream afternoon.",
       "venue": "Alder Block",
       "details": "Sat 12–5 PM",
-      "free": false
+      "free": false,
+      "color": "teal"
     },
     {
       "date": "2026-09-26",
@@ -88,7 +98,8 @@
       "description": "Cedar Mill's historic Young House presses the season with a free cider festival — fresh apple cider, live music, and old-fashioned fall fun for the whole family. A cozy way to welcome autumn.",
       "venue": "Cedar Mill",
       "details": "Sat 12 PM · Free",
-      "free": true
+      "free": true,
+      "color": "green"
     },
     {
       "date": "2026-09-26",
@@ -101,7 +112,8 @@
       "description": "Bring your broken lamp, bike, or busted zipper — volunteer fixers help you mend it for free at Repair PDX's community fairs. Keep stuff out of the landfill and learn a thing or two while you wait. www.repairpdx.org for details on times and locations.",
       "venue": "Various locations",
       "details": "Sat–Sun · Free",
-      "free": true
+      "free": true,
+      "color": "amber"
     }
   ]
 }

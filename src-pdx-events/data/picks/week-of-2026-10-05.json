@@ -4,6 +4,10 @@
   "start": "2026-10-05",
   "end": "2026-10-11",
   "source": "instagram/event_cards_oct5_11.html",
+  "theme": {
+    "bg": "#2a0e28",
+    "accent": "#f07ad8"
+  },
   "picks": [
     {
       "date": "2026-10-05",
@@ -15,7 +19,8 @@
       "description": "A vibrant marketplace of Black and Indigenous makers, artists, and vendors at Open Signal on MLK. Shop local, discover new creators, and support the community — all under one roof.",
       "venue": "Open Signal",
       "details": "3 PM",
-      "free": false
+      "free": false,
+      "color": "green"
     },
     {
       "date": "2026-10-05",
@@ -27,7 +32,8 @@
       "description": "The Moth's open-mic storytelling night comes to the Old Church with the theme \"Magic.\" Put your name in the hat to tell a true five-minute story, or just come to listen — either way it's unforgettable.",
       "venue": "The Old Church",
       "details": "8 PM",
-      "free": false
+      "free": false,
+      "color": "blue"
     },
     {
       "date": "2026-10-06",
@@ -39,7 +45,8 @@
       "description": "A full day bringing the cheese industry together at Bauman's on Oak — education, guided tastings, and networking with makers like Rogue Creamery, Vermont Creamery, and Le Gruyère AOP. A trade event for cheesemakers, mongers, and buyers.",
       "venue": "Bauman's on Oak",
       "details": "10 AM",
-      "free": false
+      "free": false,
+      "color": "amber"
     },
     {
       "date": "2026-10-06",
@@ -51,7 +58,8 @@
       "description": "Canadian pop-punk firecracker LØLØ brings her \"God Forbid a Girl Goes on Tour\" show to Holocene — sharp, funny, cathartic hooks you'll be screaming by the second chorus.",
       "venue": "Holocene",
       "details": "7 PM",
-      "free": false
+      "free": false,
+      "color": "coral"
     },
     {
       "date": "2026-10-07",
@@ -63,7 +71,8 @@
       "description": "A free, social group bike ride rolling out from the Jupiter Hotel. Easy pace, good company, and a fun way to see the city on two wheels — all riders welcome. Free Biketown rentals included for the event as well!",
       "venue": "Jupiter Hotel",
       "details": "1 PM · Free",
-      "free": true
+      "free": true,
+      "color": "purple"
     },
     {
       "date": "2026-10-07",
@@ -75,7 +84,8 @@
       "description": "A free, spooky-season edition of The Pharmacy's burlesque revue — costumes, camp, and killer performances. Get there early; the good seats go fast.",
       "venue": "The Pharmacy",
       "details": "9 PM · Free",
-      "free": true
+      "free": true,
+      "color": "teal"
     },
     {
       "date": "2026-10-08",
@@ -87,7 +97,8 @@
       "description": "The ReBuilding Center throws open its doors for a free open house — tour the salvaged-materials warehouse, meet the crew, and get inspired for your next reuse project.",
       "venue": "ReBuilding Center",
       "details": "4 PM · Free",
-      "free": true
+      "free": true,
+      "color": "green"
     },
     {
       "date": "2026-10-08",
@@ -99,7 +110,8 @@
       "description": "Funhouse Lounge turns Hawkins upside down with a loving musical parody of Stranger Things — Eleven, Demogorgons, and all. Campy, clever, and perfect for spooky season.",
       "venue": "Funhouse Lounge",
       "details": "7 PM",
-      "free": false
+      "free": false,
+      "color": "blue"
     },
     {
       "date": "2026-10-09",
@@ -111,7 +123,8 @@
       "description": "Every October, Roux celebrates food, drink, and culture while elevating women-owned businesses — pop-up dinners, chef collabs, panels, and brunch across the city. Explore the full lineup at rouxportland.com.",
       "venue": "Multiple venues",
       "details": "",
-      "free": false
+      "free": false,
+      "color": "amber"
     },
     {
       "date": "2026-10-09",
@@ -123,7 +136,8 @@
       "description": "Comedian Zak Toscani takes over the Portland Streetcar for a one-of-a-kind stand-up show rolling through the Central Eastside. An intimate, offbeat night — grab your seat before it departs. There are two shows, and they'll both sell out — get tickets soon!",
       "venue": "Portland Streetcar",
       "details": "7:30 PM · $30",
-      "free": false
+      "free": false,
+      "color": "coral"
     },
     {
       "date": "2026-10-10",
@@ -135,7 +149,8 @@
       "description": "North Portland's German brewery throws a free, family-friendly Oktoberfest — house-brewed lagers, brats, pretzels, and live music in the beer garden. Prost!",
       "venue": "Occidental Brewing",
       "details": "12 PM · Free",
-      "free": true
+      "free": true,
+      "color": "purple"
     },
     {
       "date": "2026-10-10",
@@ -147,7 +162,8 @@
       "description": "A masquerade silent disco aboard the Portland Spirit — three DJ channels on your headphones, masks on, cruising the Willamette after dark. A one-of-a-kind spooky-season night. 21+.",
       "venue": "Portland Spirit",
       "details": "10 PM · $34 · 21+",
-      "free": false
+      "free": false,
+      "color": "teal"
     },
     {
       "date": "2026-10-11",
@@ -159,7 +175,8 @@
       "description": "Learn how to plant and grow your own garlic at this free class at Capitol Hill Library — perfect timing, since fall is the season to get cloves in the ground. Beginner-friendly and totally free.",
       "venue": "Capitol Hill Library",
       "details": "3 PM · Free",
-      "free": true
+      "free": true,
+      "color": "green"
     },
     {
       "date": "2026-10-11",
@@ -171,7 +188,8 @@
       "description": "The cult witchy classic Practical Magic on the big screen at PAM CUT's Tomorrow Theater, part of their Witch Month. Gather your coven for a cozy, spellbinding Sunday night.",
       "venue": "Tomorrow Theater",
       "details": "7 PM",
-      "free": false
+      "free": false,
+      "color": "blue"
     }
   ]
 }

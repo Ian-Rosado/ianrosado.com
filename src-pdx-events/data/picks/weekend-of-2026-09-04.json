@@ -4,6 +4,10 @@
   "start": "2026-09-04",
   "end": "2026-09-07",
   "source": "instagram/event_cards_sep4_7.html",
+  "theme": {
+    "bg": "#2a1c06",
+    "accent": "#f0a500"
+  },
   "picks": [
     {
       "date": "2026-09-04",
@@ -15,7 +19,8 @@
       "description": "Portland's beloved neighborhood jazz festival fills Montavilla's streets and venues with live jazz performances all day. Multiple stages, local artists, and a great neighborhood vibe — free and open to all.",
       "venue": "Montavilla",
       "details": "All Day · Free",
-      "free": true
+      "free": true,
+      "color": "teal"
     },
     {
       "date": "2026-09-05",
@@ -27,7 +32,8 @@
       "description": "A free Halloween market at Oaks Amusement Park featuring vendors with gothic, vintage, horror, and all things creepy-cool. A great early-season dose of Halloween for all ages.",
       "venue": "Oaks Amusement Park",
       "details": "12 PM · Free",
-      "free": true
+      "free": true,
+      "color": "pink"
     },
     {
       "date": "2026-09-05",
@@ -39,7 +45,8 @@
       "description": "Legendary funk and R&B icons bring their electrifying live show to the outdoor stage at McMenamins Edgefield. Tickets required — Take advantage of this break in the rain!",
       "venue": "McMenamins Edgefield",
       "details": "6:30 PM · Ticketed",
-      "free": false
+      "free": false,
+      "color": "green"
     },
     {
       "date": "2026-09-05",
@@ -51,7 +58,8 @@
       "description": "Stand-up special from the beloved comedian and musician best known from The Office and plenty more. A late-night show at Helium Comedy Club — grab tickets before they sell out.",
       "venue": "Helium Comedy Club",
       "details": "9:30 PM · $50",
-      "free": false
+      "free": false,
+      "color": "coral"
     },
     {
       "date": "2026-09-06",
@@ -63,7 +71,8 @@
       "description": "Drop in for free tabletop gaming at Midland Library — board games, card games, and more in a welcoming, all-ages environment. No registration needed, just show up and play.",
       "venue": "Midland Library · SE 122nd",
       "details": "1–5 PM · Free",
-      "free": true
+      "free": true,
+      "color": "purple"
     },
     {
       "date": "2026-09-06",
@@ -75,7 +84,8 @@
       "description": "A free community art bike ride exploring Portland's public crow installations. Part 1 departs OMSI Plaza at 1 PM; Part 2 follows at 2:30 PM. All skill levels welcome — just bring your bike and curiosity.",
       "venue": "OMSI Main Plaza",
       "details": "1 PM · Free",
-      "free": true
+      "free": true,
+      "color": "blue"
     },
     {
       "date": "2026-09-06",
@@ -87,7 +97,8 @@
       "description": "Toronto-based bass music duo Zeds Dead headlines the Bridge City Block Party on the waterfront. A huge outdoor show to close out the long weekend — get your tickets now.",
       "venue": "Waterfront Park",
       "details": "4 PM · Ticketed",
-      "free": false
+      "free": false,
+      "color": "coral"
     },
     {
       "date": "2026-09-07",
@@ -99,7 +110,8 @@
       "description": "One of Portland's most beloved annual art festivals returns to the North Park Blocks for Labor Day. Dozens of fine artists, live music, food, and a great vibe in the Pearl District. Free to attend all day.",
       "venue": "North Park Blocks",
       "details": "10 AM–4 PM · Free",
-      "free": true
+      "free": true,
+      "color": "purple"
     },
     {
       "date": "2026-09-07",
@@ -111,7 +123,8 @@
       "description": "Pick your own sunflowers at Bella Organic Farm on Sauvie Island — a classic end-of-summer outing with sweeping field views and the island's laid-back charm. A perfect Labor Day day trip.",
       "venue": "Bella Organic · Sauvie Island",
       "details": "All Day · $11.20",
-      "free": false
+      "free": false,
+      "color": "green"
     }
   ]
 }

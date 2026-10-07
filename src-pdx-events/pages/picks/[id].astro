@@ -1,7 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import PicksList from '../../components/PicksList.astro';
-import { ROUNDUPS, rangeLabel, roundupTitle, roundupDescription, type Roundup } from '../../lib/picks';
+import { ROUNDUPS, rangeLabel, roundupTitle, roundupDescription, themeOf, type Roundup } from '../../lib/picks';
 
 export function getStaticPaths() {
   return ROUNDUPS.map((roundup) => ({ params: { id: roundup.id }, props: { roundup } }));
@@ -14,16 +14,17 @@ const i = sameType.indexOf(roundup);
 const newer = sameType[i - 1];
 const older = sameType[i + 1];
 const isWeek = roundup.type === 'week';
+const theme = themeOf(roundup);
 ---
 
-<Layout title={roundupTitle(roundup)} description={roundupDescription(roundup)} pageClass="page-events">
+<Layout title={roundupTitle(roundup)} description={roundupDescription(roundup)} theme={theme}>
   <div class="max-w-3xl lg:max-w-5xl mx-auto px-4 py-8">
     <nav class="text-sm text-stone-400 mb-4" aria-label="Breadcrumb">
-      <a href="/picks/" class="hover:text-orange-600">Weekly picks</a> › {rangeLabel(roundup)}
+      <a href="/picks/" class="theme-link">Weekly picks</a> › {rangeLabel(roundup)}
     </nav>
 
     <header class="mb-8">
-      <p class="text-sm font-semibold uppercase tracking-widest text-orange-600 mb-2">{isWeek ? 'Events of the Week' : 'Plan Your Weekend'}</p>
+      <p class="text-sm font-semibold uppercase tracking-widest mb-2" style={`color: ${theme.bg}`}>{isWeek ? 'Events of the Week' : 'Plan Your Weekend'}</p>
       <h1 class="text-3xl sm:text-4xl font-semibold text-stone-900 mb-3" style="font-family: var(--font-serif)">
         {isWeek ? 'Best Things to Do in Portland' : 'Portland Weekend Picks'}: {rangeLabel(roundup)}
       </h1>
@@ -31,19 +32,19 @@ const isWeek = roundup.type === 'week';
         {isWeek
           ? `${roundup.picks.length} hand-picked events for the week — a daytime and an evening pick for each day, chosen from everything on the PDX Events calendars.`
           : `The ${roundup.picks.length} Portland events worth planning your weekend around, chosen from everything on the PDX Events calendars.`}
-        {' '}Also posted on <a href="https://www.instagram.com/pdx_events_calendar/" class="text-orange-600 hover:underline">Instagram</a>.
+        {' '}Also posted on <a href="https://www.instagram.com/pdx_events_calendar/" class="theme-link">Instagram</a>.
       </p>
     </header>
 
     <PicksList roundup={roundup} />
 
     <nav class="mt-10 flex flex-wrap justify-between gap-4 text-sm" aria-label="More picks">
-      {older ? <a href={`/picks/${older.id}/`} class="text-orange-600 hover:underline">← {rangeLabel(older)}</a> : <span></span>}
-      {newer && <a href={`/picks/${newer.id}/`} class="text-orange-600 hover:underline">{rangeLabel(newer)} →</a>}
+      {older ? <a href={`/picks/${older.id}/`} class="theme-link">← {rangeLabel(older)}</a> : <span></span>}
+      {newer && <a href={`/picks/${newer.id}/`} class="theme-link">{rangeLabel(newer)} →</a>}
     </nav>
 
     <p class="mt-6 text-sm text-stone-500">
-      Want more? See <a href="/this-weekend/" class="text-orange-600 hover:underline">everything happening this weekend</a> or the <a href="/" class="text-orange-600 hover:underline">full Portland events calendar</a>.
+      Want more? See <a href="/this-weekend/" class="theme-link">everything happening this weekend</a> or the <a href="/" class="theme-link">full Portland events calendar</a>.
     </p>
   </div>
 </Layout>

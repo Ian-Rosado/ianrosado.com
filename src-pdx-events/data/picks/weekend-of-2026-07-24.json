@@ -4,6 +4,10 @@
   "start": "2026-07-24",
   "end": "2026-07-26",
   "source": "instagram/event_cards_jul24_26.html",
+  "theme": {
+    "bg": "#2a0e28",
+    "accent": "#f07ad8"
+  },
   "picks": [
     {
       "date": "2026-07-24",
@@ -15,7 +19,8 @@
       "description": "Dozens of local musicians perform on front porches across Milwaukie's neighborhoods. Grab a map, pick a route, and wander at your own pace. It's one of the most charming free music experiences in the Portland area.",
       "venue": "Milwaukie",
       "details": "6:30 PM · Free",
-      "free": true
+      "free": true,
+      "color": "coral"
     },
     {
       "date": "2026-07-24",
@@ -27,7 +32,8 @@
       "description": "Portland's beloved annual parade takes over the waterfront. Expect mermaids, sea creatures, elaborate costumes, and pure community joy. All ages welcome — come dressed up or just come to cheer.",
       "venue": "Tom McCall Waterfront Park",
       "details": "All day · Free",
-      "free": true
+      "free": true,
+      "color": "teal"
     },
     {
       "date": "2026-07-25",
@@ -39,7 +45,8 @@
       "description": "A neighborhood street fair on SE 42nd with local vendors, live music, food carts, and community energy. Free all day and all ages — a quintessential Portland summer Saturday.",
       "venue": "SE 42nd Ave",
       "details": "10 AM · Free · All ages",
-      "free": true
+      "free": true,
+      "color": "amber"
     },
     {
       "date": "2026-07-25",
@@ -52,7 +59,8 @@
       "description": "Two days of authentic Thai food, cultural performances, traditional dance, and community celebration near the Burnside Bridgehead. One of Portland's most vibrant free cultural festivals — bring your appetite.",
       "venue": "33 NE 3rd Ave",
       "details": "11 AM – 6 PM · Free",
-      "free": true
+      "free": true,
+      "color": "green"
     },
     {
       "date": "2026-07-25",
@@ -64,7 +72,8 @@
       "description": "The Candlelight concert series reimagines 90s hip-hop classics performed by a live string ensemble — inside The Old Church, one of Portland's most beautiful historic venues. Tickets required; grab them before they sell out.",
       "venue": "The Old Church",
       "details": "6:30 PM · Ticketed",
-      "free": false
+      "free": false,
+      "color": "blue"
     },
     {
       "date": "2026-07-25",
@@ -76,7 +85,8 @@
       "description": "Break out the glow sticks. An all-out 90s and 2000s dance party inside the Crystal Ballroom. This will be jam-packed with millennials ready to boogie. Dress for the heat!",
       "venue": "Crystal Ballroom",
       "details": "8 PM · Ticketed",
-      "free": false
+      "free": false,
+      "color": "purple"
     },
     {
       "date": "2026-07-26",
@@ -88,7 +98,8 @@
       "description": "The annual Montavilla Street Fair shuts down SE Stark for a full day of local makers, food carts, live music, and community. Free all day and all ages — one of summer's best neighborhood fairs in Portland.",
       "venue": "SE Stark & 76th",
       "details": "10 AM · Free · All ages",
-      "free": true
+      "free": true,
+      "color": "teal"
     },
     {
       "date": "2026-07-26",
@@ -100,7 +111,8 @@
       "description": "Watch rubber ducks race down a course at Starday Tavern. Free entry, summer vibes, and a healthy dose of silliness. A perfect low-key Sunday afternoon. Not saying you can't get REALLY into it though.",
       "venue": "Starday Tavern",
       "details": "4 PM · Free",
-      "free": true
+      "free": true,
+      "color": "coral"
     }
   ]
 }

@@ -4,6 +4,10 @@
   "start": "2026-09-07",
   "end": "2026-09-13",
   "source": "instagram/event_cards_sep7_13.html",
+  "theme": {
+    "bg": "#20260a",
+    "accent": "#c4dd5e"
+  },
   "picks": [
     {
       "date": "2026-09-07",
@@ -15,7 +19,8 @@
       "description": "Labor Day closes out with Portland's biggest art & craft fair spreading across the North Park Blocks — 100+ juried artists, live craft demos, music, and a hands-on area for kids. Free to wander all day.",
       "venue": "North Park Blocks",
       "details": "10 AM–4 PM · Free",
-      "free": true
+      "free": true,
+      "color": "teal"
     },
     {
       "date": "2026-09-07",
@@ -27,7 +32,8 @@
       "description": "The Curbside Serenade series brings a free evening of live music up to Mt Tabor, featuring Nicolas James and Erina McLaren. Pack a blanket and a picnic and settle in on the hill.",
       "venue": "Mt Tabor Park",
       "details": "6 PM · Free",
-      "free": true
+      "free": true,
+      "color": "blue"
     },
     {
       "date": "2026-09-08",
@@ -39,7 +45,8 @@
       "description": "Sugar Hill turns back the clock with throwback prices every Tuesday — a sweet, cheap excuse to stop in on SE Belmont. $3 burgers, fries, beers, and tequila. $1 oysters (get there early because they sell out).",
       "venue": "Sugar Hill, SE Belmont",
       "details": "All day · Deals",
-      "free": false
+      "free": false,
+      "color": "amber"
     },
     {
       "date": "2026-09-08",
@@ -51,7 +58,8 @@
       "description": "A boozy twist on the grade-school classic at The Social Spoon — sign up to compete or heckle from the crowd. Bring your worst spelling and your best liquid courage.",
       "venue": "The Social Spoon",
       "details": "7 PM · Ticketed",
-      "free": false
+      "free": false,
+      "color": "coral"
     },
     {
       "date": "2026-09-09",
@@ -63,7 +71,8 @@
       "description": "Downtown's Director Park fills with local ceramicists selling mugs, bowls, and one-of-a-kind pieces straight from the studio. A free, family-friendly afternoon of handmade clay.",
       "venue": "Director Park",
       "details": "11 AM–3 PM · Free",
-      "free": true
+      "free": true,
+      "color": "purple"
     },
     {
       "date": "2026-09-09",
@@ -75,7 +84,8 @@
       "description": "Exactly what it sounds like: gather on the Eastbank Esplanade and let out a collective scream to shake off the week. Free, cathartic, and very Portland.",
       "venue": "Eastbank Esplanade",
       "details": "6 PM · Free",
-      "free": true
+      "free": true,
+      "color": "pink"
     },
     {
       "date": "2026-09-10",
@@ -87,7 +97,8 @@
       "description": "PICA's Time-Based Art Festival is a two-week whirlwind of boundary-pushing performance, dance, and live music staged all over the city. Check the schedule and pick your adventure.",
       "venue": "PICA",
       "details": "Varies",
-      "free": false
+      "free": false,
+      "color": "teal"
     },
     {
       "date": "2026-09-10",
@@ -99,7 +110,8 @@
       "description": "Funhouse Lounge goes to Hawkins with a campy, song-filled parody of Stranger Things. Upside-down laughs, big '80s energy, the kind of thing the Funhouse does best.",
       "venue": "Funhouse Lounge",
       "details": "7 PM · Ticketed",
-      "free": false
+      "free": false,
+      "color": "blue"
     },
     {
       "date": "2026-09-11",
@@ -111,7 +123,8 @@
       "description": "Old Town's Ankeny Alley turns into a free street fair — vendors, performers, and art — as part of Portland Staycation weekend. Wander, snack, and soak up downtown. Find deals on hotels and treat yourself without traveling!",
       "venue": "Old Town",
       "details": "All day · Free",
-      "free": true
+      "free": true,
+      "color": "amber"
     },
     {
       "date": "2026-09-11",
@@ -123,7 +136,8 @@
       "description": "AMP takes over the Star Theater with a stacked local lineup — Matt Cameron, Jenny Don't & The Spurs, Altar Girl, and more. One ticket, a full night of Portland rock.",
       "venue": "Star Theater",
       "details": "8 PM · Ticketed",
-      "free": false
+      "free": false,
+      "color": "coral"
     },
     {
       "date": "2026-09-12",
@@ -135,7 +149,8 @@
       "description": "The Culinary Breeding Network's beloved Tomato Fest returns to SE Division — taste dozens of tomato varieties straight from the region's growers. Free, delicious, and peak late-summer.",
       "venue": "SE 34th & Division",
       "details": "12 PM–4 PM · Free",
-      "free": true
+      "free": true,
+      "color": "purple"
     },
     {
       "date": "2026-09-12",
@@ -147,7 +162,8 @@
       "description": "The German American Society throws open the Haus for beer, brats, and oompah music from noon till nine. Cheap entry, big steins, and proper Gemütlichkeit in NE Portland.",
       "venue": "German American Society",
       "details": "Til 9 PM · $9",
-      "free": false
+      "free": false,
+      "color": "pink"
     },
     {
       "date": "2026-09-13",
@@ -159,7 +175,8 @@
       "description": "The season's final Sunday Parkways closes downtown streets to cars for a 2+ mile loop of biking, walking, and rolling. Free, family-friendly, and the last one of the year.",
       "venue": "Downtown",
       "details": "11 AM–4 PM · Free",
-      "free": true
+      "free": true,
+      "color": "teal"
     },
     {
       "date": "2026-09-13",
@@ -171,7 +188,8 @@
       "description": "Bring a sketchbook to Portland's beloved goth bar for a laid-back Drink & Draw — sip something dark and doodle among the cobwebs. All skill levels welcome; get the creative juices flowing.",
       "venue": "Coffin Club",
       "details": "7 PM",
-      "free": false
+      "free": false,
+      "color": "blue"
     }
   ]
 }

@@ -4,6 +4,10 @@
   "start": "2026-07-31",
   "end": "2026-08-02",
   "source": "instagram/event_cards_jul31_aug2.html",
+  "theme": {
+    "bg": "#2a1c06",
+    "accent": "#f0a500"
+  },
   "picks": [
     {
       "date": "2026-07-31",
@@ -15,7 +19,8 @@
       "description": "The Denver chamber-pop ensemble brings their singular Balkan-gypsy-mariachi sound to Revolution Hall. String orchestrations, cinematic drama, and a lead singer who sings like the world is ending in the best possible way. One of the most distinctive live acts around.",
       "venue": "Revolution Hall",
       "details": "7 PM · Tickets",
-      "free": false
+      "free": false,
+      "color": "blue"
     },
     {
       "date": "2026-07-31",
@@ -28,7 +33,8 @@
       "description": "The beloved indie festival kicks off at Pendarvis Farm in Happy Valley — intimate stages, thoughtful curation, and a crowd that loves music. If you haven't been to Pickathon, it's worth it.",
       "venue": "Pendarvis Farm, Happy Valley",
       "details": "Tickets required",
-      "free": false
+      "free": false,
+      "color": "purple"
     },
     {
       "date": "2026-08-01",
@@ -40,7 +46,8 @@
       "description": "The Beaumont-Wilshire neighborhood closes NE Fremont from 42nd to 51st for a full day of local vendors, food trucks, live music. A great excuse to explore one of NE Portland's best streets.",
       "venue": "NE Fremont St (42nd–51st)",
       "details": "10 AM–6 PM · Free",
-      "free": true
+      "free": true,
+      "color": "teal"
     },
     {
       "date": "2026-08-01",
@@ -52,7 +59,8 @@
       "description": "One of Portland's most charming neighborhood fairs in one of its most charming neighborhoods — local vendors, live music, food, and that unhurried Sellwood energy. Free for all ages and a perfect summer Saturday.",
       "venue": "SE Sellwood-Moreland",
       "details": "10 AM · Free",
-      "free": true
+      "free": true,
+      "color": "pink"
     },
     {
       "date": "2026-08-01",
@@ -64,7 +72,8 @@
       "description": "Annual celebration of Chinese culture and community at Pioneer Courthouse Square, organized by the Oregon Chinese Coalition. Traditional performances, authentic food, cultural demonstrations, and a gathering that's been connecting Portland's Chinese community with the city for years.",
       "venue": "Pioneer Courthouse Square",
       "details": "11 AM · Free",
-      "free": true
+      "free": true,
+      "color": "coral"
     },
     {
       "date": "2026-08-01",
@@ -76,7 +85,8 @@
       "description": "The Cascadia Cup rivalry under the lights — Portland Timbers vs. Seattle Sounders at Providence Park. If you can't make the game, get to a bar and watch with your fellow Portlanders.",
       "venue": "Providence Park",
       "details": "7:30 PM · Tickets",
-      "free": false
+      "free": false,
+      "color": "purple"
     },
     {
       "date": "2026-08-01",
@@ -88,7 +98,8 @@
       "description": "Portland Parks' Summer Free for All screens the 1997 sci-fi classic at Colonel Summers Park. Grab a blanket, pick up food from a nearby spot on SE Belmont, and watch Will Smith and Tommy Lee Jones save the planet from extraterrestrials as the sun goes down.",
       "venue": "Colonel Summers Park",
       "details": "Dusk (~9 PM) · Free",
-      "free": true
+      "free": true,
+      "color": "green"
     },
     {
       "date": "2026-08-02",
@@ -100,7 +111,8 @@
       "description": "Streets close to cars, bikes and pedestrians take over — Sunday Parkways returns to North Portland. Ride the route, hit free activities along the way, and enjoy the city at human speed. Family-friendly and quintessentially Portland.",
       "venue": "Columbia Park, N Portland",
       "details": "11 AM · Free",
-      "free": true
+      "free": true,
+      "color": "blue"
     }
   ]
 }

@@ -70,6 +70,25 @@
   background-size: auto, 100% 100%;
 }
 
+/* PDX Events /picks/: the site's dot grid + diagonal gradient, recolored to
+   the Instagram post's theme (--theme-accent / --theme-bg set on <body>) */
+.page-picks {
+  background-image:
+    radial-gradient(circle, color-mix(in srgb, var(--theme-bg) 22%, transparent) 1px, transparent 1px),
+    linear-gradient(
+      135deg,
+      #ffffff 0%,
+      color-mix(in srgb, var(--theme-accent) 12%, white) 30%,
+      color-mix(in srgb, var(--theme-accent) 45%, white) 65%,
+      var(--theme-accent) 100%
+    );
+  background-size: 22px 22px, 100% 100%;
+}
+
+/* Links on /picks/ pages take the post's dark canvas color */
+.page-picks a.theme-link { color: var(--theme-bg); font-weight: 500; }
+.page-picks a.theme-link:hover { text-decoration: underline; }
+
 /* About: just the gradient, clean */
 .page-about {
   background-image: var(--gradient-base);

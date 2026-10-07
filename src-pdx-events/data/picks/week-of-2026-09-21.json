@@ -4,6 +4,10 @@
   "start": "2026-09-21",
   "end": "2026-09-27",
   "source": "instagram/event_cards_sep21_27.html",
+  "theme": {
+    "bg": "#15163a",
+    "accent": "#8a9bff"
+  },
   "picks": [
     {
       "date": "2026-09-21",
@@ -15,7 +19,8 @@
       "description": "Bars across Portland pour riffs on the classic Campari-gin-vermouth trio all week, often with proceeds going to charity. A citywide excuse to bar-hop and find the negroni variation you didn't know you needed.",
       "venue": "Multiple bars",
       "details": "",
-      "free": false
+      "free": false,
+      "color": "green"
     },
     {
       "date": "2026-09-21",
@@ -27,7 +32,8 @@
       "description": "The Toledo-bred post-hardcore favorites bring their heavy-hearted anthems to the Wonder Ballroom. Expect big singalongs and to FEEL something.",
       "venue": "Wonder Ballroom",
       "details": "6 PM",
-      "free": false
+      "free": false,
+      "color": "teal"
     },
     {
       "date": "2026-09-22",
@@ -39,7 +45,8 @@
       "description": "A new immersive forest-art exhibition at the World Forestry Center turns Oregon's woods into a walk-through of light, sound, and scale. Quiet, dreamy, and a lovely midweek reset.",
       "venue": "World Forestry Center",
       "details": "10 AM",
-      "free": false
+      "free": false,
+      "color": "amber"
     },
     {
       "date": "2026-09-22",
@@ -51,7 +58,8 @@
       "description": "Portland's brand-new WNBA team, the Fire, host Golden State's Valkyries at the Moda Center in their inaugural season. Get in on the ground floor of pro women's hoops in PDX.",
       "venue": "Moda Center",
       "details": "7 PM",
-      "free": false
+      "free": false,
+      "color": "coral"
     },
     {
       "date": "2026-09-23",
@@ -63,7 +71,8 @@
       "description": "A morning mixer for LGBTQ+ and ally professionals at Social Good Place — coffee, connections, and a warm, low-key start to the workday. New faces always welcome.",
       "venue": "Social Good Place",
       "details": "9 AM",
-      "free": false
+      "free": false,
+      "color": "purple"
     },
     {
       "date": "2026-09-23",
@@ -75,7 +84,8 @@
       "description": "Covert Cafe hosts a free, drop-in Dungeons & Dragons night — roll up with a character or just watch the chaos unfold. 21+, and no experience required.",
       "venue": "Covert Cafe",
       "details": "7–10 PM · Free · 21+",
-      "free": true
+      "free": true,
+      "color": "pink"
     },
     {
       "date": "2026-09-24",
@@ -87,7 +97,8 @@
       "description": "A multi-day gathering for the fungi-curious at Brown Bottle Farm — talks, workshops, and forays into all things mushroom. Passes slide from a single day to the full convergence.",
       "venue": "Brown Bottle Farm",
       "details": "12 PM · $12+",
-      "free": false
+      "free": false,
+      "color": "green"
     },
     {
       "date": "2026-09-24",
@@ -99,7 +110,8 @@
       "description": "The historic mansion opens after hours for terrace views over the whole city and a cash bar from a rotating local winery - This time Dobbes Family Winery in Dundee. Golden-hour Portland at its absolute prettiest.",
       "venue": "Pittock Mansion",
       "details": "5:30 PM",
-      "free": false
+      "free": false,
+      "color": "teal"
     },
     {
       "date": "2026-09-25",
@@ -111,7 +123,8 @@
       "description": "NE 28th's beloved German beer hall throws its annual Oktoberfest, with steins, brats, and Bavarian cheer spilling onto the patio all weekend long. Prost!",
       "venue": "Stammtisch",
       "details": "NE 28th · All weekend",
-      "free": false
+      "free": false,
+      "color": "amber"
     },
     {
       "date": "2026-09-25",
@@ -123,7 +136,8 @@
       "description": "The Portland Japanese Garden celebrates the harvest moon with music, tea, and lantern-lit strolls through the grounds after dark. Serene, seasonal, and quintessentially fall.",
       "venue": "Portland Japanese Garden",
       "details": "Evening",
-      "free": false
+      "free": false,
+      "color": "coral"
     },
     {
       "date": "2026-09-26",
@@ -135,7 +149,8 @@
       "description": "The riverside town of St. Helens becomes the real Halloweentown — pumpkin lighting, movie sets, vendors, and spooky-season magic all day. A must for anyone who lives for October. This is opening day!",
       "venue": "St. Helens",
       "details": "11 AM · $20–50",
-      "free": false
+      "free": false,
+      "color": "purple"
     },
     {
       "date": "2026-09-26",
@@ -147,7 +162,8 @@
       "description": "The Thorns take the pitch under the lights at Providence Park in front of one of the loudest, most electric crowds in women's soccer. Wear red and bring your voice.",
       "venue": "Providence Park",
       "details": "5:45 PM",
-      "free": false
+      "free": false,
+      "color": "pink"
     },
     {
       "date": "2026-09-27",
@@ -159,7 +175,8 @@
       "description": "A free afternoon of mariachi, ballet folklórico, and family fun at the Hillsboro Ballpark celebrating Mexican music and heritage. Bring the whole crew and a folding chair.",
       "venue": "Hillsboro Ballpark",
       "details": "12 PM · Free",
-      "free": true
+      "free": true,
+      "color": "green"
     },
     {
       "date": "2026-09-27",
@@ -171,7 +188,8 @@
       "description": "The Cats of Sunnyside crew leads a leashed-cat (and cat-curious) stroll down SE Division — yes, really. Portland's most wholesomely weird way to close out the week.",
       "venue": "SE Division",
       "details": "4–6 PM · Free",
-      "free": true
+      "free": true,
+      "color": "teal"
     }
   ]
 }

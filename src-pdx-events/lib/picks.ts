@@ -17,13 +17,42 @@ export interface Pick {
   venue: string;
   details: string;     // e.g. "7 PM · Free"
   free: boolean;
+  color: TileColor | null; // the card's tile color in the Instagram post
 }
+
+// The Instagram card tiles' palette (same in every template): a dark tile
+// background with a lighter accent for the category label.
+export const TILE_COLORS = {
+  green:  { bg: '#0a3520', accent: '#5cdc80' },
+  teal:   { bg: '#003d35', accent: '#3ecfb0' },
+  blue:   { bg: '#0a2050', accent: '#5ca8ff' },
+  amber:  { bg: '#7a3d00', accent: '#f0a500' },
+  coral:  { bg: '#5c1a10', accent: '#ff7a5c' },
+  purple: { bg: '#2d1a5e', accent: '#b39dff' },
+  pink:   { bg: '#4a1040', accent: '#f07ad8' },
+} as const;
+export type TileColor = keyof typeof TILE_COLORS;
+const TILE_ORDER = Object.keys(TILE_COLORS) as TileColor[];
+
+// A pick's tile colors; picks without one cycle through the palette
+export function tileColors(p: Pick, i: number) {
+  return TILE_COLORS[p.color ?? TILE_ORDER[i % TILE_ORDER.length]];
+}
+
+// The post's dark canvas + accent (the Instagram color-wheel theme)
+export interface Theme {
+  bg: string;
+  accent: string;
+}
+const DEFAULT_THEME: Theme = { bg: '#2e1310', accent: '#ff7a5c' };
+export const themeOf = (r?: Roundup): Theme => r?.theme ?? DEFAULT_THEME;
 
 export interface Roundup {
   id: string;          // week-of-2026-10-05 / weekend-of-2026-10-02
   type: 'week' | 'weekend';
   start: string;
   end: string;
+  theme: Theme | null;
   picks: Pick[];
 }
 

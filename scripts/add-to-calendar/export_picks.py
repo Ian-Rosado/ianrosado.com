@@ -44,6 +44,32 @@ TIME_RANGE_RE = re.compile(r"\b(\d{1,2})(?::(\d{2}))?\s*(?:([ap])\.?m)?\s*[–-]
 COST_RE = re.compile(r"\bfree\b|\$|\btickets?\b|\bticketed\b|^from\b|\bdonations?\b|\bpwyc\b|\brsvp\b|\bsliding\b|\bno cover\b", re.I)
 
 
+# Tile palette shared by every card template (the site has the same colors)
+TILE_COLORS = {"green", "teal", "blue", "amber", "coral", "purple", "pink"}
+
+# Post canvas → accent, from the color-wheel table in the
+# portland-events-instagram-post skill (plus the two legacy canvases)
+THEME_ACCENTS = {
+    "#0d2b1a": "#5cdc80", "#062a2a": "#3ecfb0", "#0a1f3a": "#5ca8ff",
+    "#15163a": "#8a9bff", "#1c0e30": "#b39dff", "#2a0e28": "#f07ad8",
+    "#2e1310": "#ff7a5c", "#2a1c06": "#f0a500", "#20260a": "#c4dd5e",
+    "#0a1a3a": "#5ca8ff", "#1a0e2e": "#f07ad8",
+}
+
+
+def post_theme(source):
+    """The post's canvas + accent colors, from its `.post { background }` CSS."""
+    m = re.search(r"\.post\s*\{[^}]*?background:\s*(#[0-9a-f]{6})", source, re.I)
+    if not m:
+        return None
+    bg = m.group(1).lower()
+    accent = THEME_ACCENTS.get(bg)
+    if not accent:
+        a = re.search(r"\.title span\s*\{\s*color:\s*(#[0-9a-f]{6})", source, re.I)
+        accent = a.group(1).lower() if a else None
+    return {"bg": bg, "accent": accent} if accent else None
+
+
 class CardParser(HTMLParser):
     """Collects (field, text) in document order; text goes to the innermost
     element carrying one of FIELDS."""
@@ -60,6 +86,11 @@ class CardParser(HTMLParser):
         if tag in ("br", "img", "rect", "path"):
             return
         classes = (dict(attrs).get("class") or "").split()
+        # A tile's color class ("event-tile green" / "tile amber")
+        if self.in_body and ({"event-tile", "tile"} & set(classes)):
+            color = next((c for c in classes if c in TILE_COLORS), None)
+            if color:
+                self.tokens.append(["tile-color", color])
         field = next((c for c in classes if c in FIELDS), None)
         self.stack.append(field)
         if field and self.in_body:
@@ -175,13 +206,16 @@ def parse_file(path, year):
     days = window_days(start, end)
     kind = "week" if len(days) == 7 and start.weekday() == 0 else "weekend"
 
+    source = Path(path).read_text(encoding="utf-8")
     p = CardParser()
-    p.feed(Path(path).read_text(encoding="utf-8"))
+    p.feed(source)
 
-    picks, date_ctx, category = [], "", ""
+    picks, date_ctx, category, color = [], "", "", ""
     for field, raw in p.tokens:
         text = clean(raw)
-        if field == "day-name":
+        if field == "tile-color":
+            color = raw
+        elif field == "day-name":
             date_ctx = text
         elif field == "day-num":
             date_ctx = f"{date_ctx} {text}".strip()
@@ -190,9 +224,9 @@ def parse_file(path, year):
         elif field in ("category", "tile-tag"):
             category = text
         elif field == "event-name":
-            picks.append({"_date_ctx": date_ctx, "_category": category, "name": text,
+            picks.append({"_date_ctx": date_ctx, "_category": category, "_color": color, "name": text,
                           "description": "", "_meta": "", "venue": "", "details": ""})
-            category = ""
+            category, color = "", ""
         elif picks:
             cur = picks[-1]
             if field == "description":
@@ -236,6 +270,7 @@ def parse_file(path, year):
             "venue": pk["venue"],
             "details": pk["details"],
             "free": free,
+            "color": pk.pop("_color") or None,
         }
         if not rec["date"] or not rec["venue"]:
             problems.append(f"{stem}: {rec['name']!r} missing {'date' if not rec['date'] else 'venue'}")
@@ -244,7 +279,7 @@ def parse_file(path, year):
     out.sort(key=lambda r: (r["date"] or "9", 0 if r["slot"] == "day" else 1 if r["slot"] == "night" else 0, r["time"] or "99"))
     rid = f"{'week' if kind == 'week' else 'weekend'}-of-{start.isoformat()}"
     data = {"id": rid, "type": kind, "start": start.isoformat(), "end": end.isoformat(),
-            "source": f"instagram/{Path(path).name}", "picks": out}
+            "source": f"instagram/{Path(path).name}", "theme": post_theme(source), "picks": out}
     return data, problems
 
 

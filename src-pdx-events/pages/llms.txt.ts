@@ -39,7 +39,9 @@ ${pages.join('\n')}
 ## Machine-readable data
 
 - [events.json](${SITE}/events.json): every upcoming event (90 days). Shape: \`{ cats: [slug, cssClass, calendarName][], days: [date, [catIndex, time, title, location, mapsQuery, cost, costClass, url][]][] }\`. \`costClass\` is free | paid | unknown.
+- [picks.json](${SITE}/picks.json): this week's (and the upcoming weekend's) picks with descriptions.
 - [Weekly picks RSS](${SITE}/picks/rss.xml)
+- WebMCP: in browsers that expose \`document.modelContext\`, every page registers two read-only tools — \`search_events\` (keyword, category, date range, free-only) and \`get_weekly_picks\`.
 - Event pages also carry schema.org Event JSON-LD.
 ${week ? `
 ## This week's picks (${rangeLabel(week)})

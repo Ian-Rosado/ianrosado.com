@@ -57,7 +57,7 @@ jobs:
             fi
           done
           URLS=$(curl -fsS https://www.pdx-events.com/sitemap-0.xml | grep -o '<loc>[^<]*' | sed 's/<loc>//' \
-            | grep -vE '/(about|favorites|pickup-soccer|subscribe)/$' \
+            | grep -vE '/(about|favorites|pickup-soccer)/$' \
             | awk -v cutoff="$(date -u -d '-8 days' +%F)" '!match($0, /-of-[0-9-]+\/$/) || substr($0, RSTART + 4, 10) >= cutoff' \
             | sed 's/.*/"&"/' | paste -sd, -)
           [ -n "$URLS" ] || URLS='"https://www.pdx-events.com/"'

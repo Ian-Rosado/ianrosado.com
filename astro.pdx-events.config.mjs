@@ -7,7 +7,7 @@ import sitemap from '@astrojs/sitemap';
 // deploy, so they change each build; a dated /picks/ page is fixed once its
 // week starts; static pages get none (Google ignores lastmod it can't trust).
 const BUILD_TIME = new Date().toISOString();
-const STATIC_PAGE = /\/(about|favorites|pickup-soccer|subscribe)\/$/;
+const STATIC_PAGE = /\/(about|favorites|pickup-soccer)\/$/;
 function lastmod(item) {
   const picks = item.url.match(/\/picks\/(?:week|weekend)-of-(\d{4}-\d{2}-\d{2})\/$/);
   if (picks) item.lastmod = picks[1];

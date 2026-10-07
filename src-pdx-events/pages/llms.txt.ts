@@ -3,7 +3,6 @@
 // Rebuilt with every deploy, so the counts and picks stay current.
 import { LANDING_PAGES, selectDays } from '../../src-shared/lib/landing-pages';
 import { fetchAllEvents } from '../../src-shared/lib/events';
-import { SUBSCRIBABLE, subscribeLinks } from '../../src-shared/lib/calendars';
 import { currentWeek, longDate, rangeLabel } from '../lib/picks';
 
 const SITE = 'https://www.pdx-events.com';
@@ -29,7 +28,6 @@ Listings give the date, time and venue/address, the cost (or "Free") when known,
 
 - [All Portland events](${SITE}/): searchable list and month calendar of every upcoming event, with FAQ.
 - [Weekly picks](${SITE}/picks/): the best things to do in Portland this week, hand-picked, with a short description of each.
-- [Subscribe](${SITE}/subscribe/): add any of the calendars to Google Calendar, Apple Calendar or Outlook.
 - [Portland favorites](${SITE}/favorites/): Ian's favorite Portland restaurants, coffee, parks and spots.
 - [Pickup soccer](${SITE}/pickup-soccer/): where and when to find pickup soccer games in Portland.
 - [About](${SITE}/about/)
@@ -43,8 +41,6 @@ ${pages.join('\n')}
 - [events.json](${SITE}/events.json): every upcoming event (90 days). Shape: \`{ cats: [slug, cssClass, calendarName][], days: [date, [catIndex, time, title, location, mapsQuery, cost, costClass, url][]][] }\`. \`costClass\` is free | paid | unknown.
 - [Weekly picks RSS](${SITE}/picks/rss.xml)
 - Event pages also carry schema.org Event JSON-LD.
-- iCal feeds (one per calendar):
-${SUBSCRIBABLE.map((c) => `  - ${c.name}: ${subscribeLinks(c).ical.replace('webcal://', 'https://')}`).join('\n')}
 ${week ? `
 ## This week's picks (${rangeLabel(week)})
 

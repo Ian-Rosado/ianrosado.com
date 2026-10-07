@@ -3,8 +3,6 @@
 // src-shared/lib/landing-pages.ts for the list and their copy.
 import Layout from '../layouts/Layout.astro';
 import EventDayList from '../../src-shared/components/EventDayList.astro';
-import SubscribeLinks from '../../src-shared/components/SubscribeLinks.astro';
-import { SUBSCRIBABLE } from '../../src-shared/lib/calendars';
 import { fetchAllEvents } from '../../src-shared/lib/events';
 import { LANDING_PAGES, LANDING_BY_SLUG, selectDays, type LandingPage } from '../../src-shared/lib/landing-pages';
 
@@ -16,7 +14,6 @@ const { page } = Astro.props as { page: LandingPage };
 const { days, stats } = selectDays(await fetchAllEvents(), page);
 const related = page.related.map((s) => LANDING_BY_SLUG.get(s)!).filter(Boolean);
 const isTriviaDay = page.slug.startsWith('trivia/');
-const subscribe = page.calendar ? SUBSCRIBABLE.filter((c) => c.slug === page.calendar) : [];
 ---
 
 <Layout title={page.title} description={page.description(stats)} pageClass="page-events">
@@ -46,13 +43,6 @@ const subscribe = page.calendar ? SUBSCRIBABLE.filter((c) => c.slug === page.cal
         <p class="text-stone-500 text-sm py-6 text-center">Nothing on the calendar here right now — check back soon, or browse <a href="/" class="text-orange-600 hover:underline">all Portland events</a>.</p>
       )}
     </div>
-
-    {subscribe.length > 0 && (
-      <section class="mt-6 bg-white rounded-2xl border border-stone-100 shadow-sm p-4 sm:p-6">
-        <h2 class="text-sm font-semibold text-stone-900 mb-2">Get these in your calendar app</h2>
-        <SubscribeLinks calendars={subscribe} />
-      </section>
-    )}
 
     <p class="mt-6 text-sm text-stone-500">
       Search, filter, and see the next 90 days on the <a href="/" class="text-orange-600 hover:underline">full Portland events calendar</a>.

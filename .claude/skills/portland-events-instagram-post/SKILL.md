@@ -181,7 +181,7 @@ same color adjacently: `green`, `teal`, `blue`, `amber`, `coral`, `purple`, `pin
 avoid the tile color that matches the current canvas theme, e.g. skip `coral` tiles
 on the Maroon theme, so they don't blend in.)
 
-**Footer** — leave as-is (pdx-events.com, @portland_events_calendar, hashtags).
+**Footer** — leave as-is (pdx-events.com, @pdx_events_calendar, hashtags).
 
 ### Background theme — advance one step along the color wheel each post
 

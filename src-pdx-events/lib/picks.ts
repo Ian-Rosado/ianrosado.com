@@ -125,9 +125,10 @@ function pacificOffset(ymd: string): string {
 
 // Price from the card: free, or the first "$NN" in the details
 function offers(p: Pick) {
-  if (p.free) return { isAccessibleForFree: true, offers: { '@type': 'Offer', price: 0, priceCurrency: 'USD' } };
+  const offer = { '@type': 'Offer', priceCurrency: 'USD', availability: 'https://schema.org/InStock' };
+  if (p.free) return { isAccessibleForFree: true, offers: { ...offer, price: 0 } };
   const m = p.details.match(/\$\s?(\d+(?:\.\d+)?)/);
-  return m ? { offers: { '@type': 'Offer', price: Number(m[1]), priceCurrency: 'USD' } } : {};
+  return m ? { offers: { ...offer, price: Number(m[1]) } } : {};
 }
 
 // schema.org Event JSON-LD for a roundup's picks (`<` escaped for <script>)
@@ -137,7 +138,9 @@ export function picksJsonLd(r: Roundup): string {
     name: p.name,
     ...(p.description ? { description: p.description } : {}),
     startDate: p.time ? `${p.date}T${p.time}:00${pacificOffset(p.date)}` : p.date,
-    ...(p.endDate ? { endDate: p.endDate } : {}),
+    // Cards give no end time: an all-day pick ends on its (last) day; a timed
+    // one only gets an end date when it spans several days
+    ...(p.endDate || !p.time ? { endDate: p.endDate ?? p.date } : {}),
     eventStatus: 'https://schema.org/EventScheduled',
     eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
     location: {

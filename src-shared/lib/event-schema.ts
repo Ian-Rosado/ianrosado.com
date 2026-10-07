@@ -19,8 +19,15 @@ function place(location: string) {
   return { '@type': 'Place', name: named ? first : flat, address };
 }
 
-function offer(e: CalEvent) {
-  const base = { '@type': 'Offer', priceCurrency: 'USD' };
+// Only for a known price (or free). `url` is the event's own page, where the
+// tickets/RSVP are; we can't know sell-outs, so listed events count as available.
+function offer(e: CalEvent, url: string) {
+  const base = {
+    '@type': 'Offer',
+    priceCurrency: 'USD',
+    availability: 'https://schema.org/InStock',
+    ...(url ? { url } : {}),
+  };
   if (e.costClass === 'free') return { ...base, price: 0 };
   const m = e.cost.match(/\$\s?(\d[\d,]*(?:\.\d+)?)/);
   return m ? { ...base, price: Number(m[1].replace(/,/g, '')) } : null;
@@ -58,7 +65,7 @@ function description(e: CalEvent, name: string, venue: { name: string }): string
 
 function toEvent(e: CalEvent) {
   const url = e.url || e.googleUrl;
-  const offers = offer(e);
+  const offers = offer(e, url);
   // Some scraped titles carry a "[comedy] " source prefix
   const name = e.title.replace(/^\[[^\]]+\]\s*/, '');
   const location = place(e.location);
@@ -70,7 +77,7 @@ function toEvent(e: CalEvent) {
     image: FALLBACK_IMAGE,
     ...(org ? { organizer: org } : {}),
     startDate: e.start,
-    ...(e.end && e.end !== e.start ? { endDate: e.end } : {}),
+    ...(e.end ? { endDate: e.end } : {}),
     eventStatus: 'https://schema.org/EventScheduled',
     eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
     location,

@@ -14,29 +14,73 @@ function place(location: string) {
   const [first, ...rest] = flat.split(/,\s*/);
   const named = rest.length > 0 && !/^\d/.test(first);
   let address = named ? rest.join(', ') : flat;
-  if (!HAS_REGION.test(address)) address += ', Portland, OR';
+  // A bare street gets the city; "street, Vancouver" already names one
+  if (!HAS_REGION.test(address) && !address.includes(',')) address += ', Portland, OR';
   return { '@type': 'Place', name: named ? first : flat, address };
 }
 
-function offer(e: CalEvent) {
-  const base = { '@type': 'Offer', priceCurrency: 'USD' };
+// Only for a known price (or free). `url` is the event's own page, where the
+// tickets/RSVP are; we can't know sell-outs, so listed events count as available.
+function offer(e: CalEvent, url: string) {
+  const base = {
+    '@type': 'Offer',
+    priceCurrency: 'USD',
+    availability: 'https://schema.org/InStock',
+    ...(url ? { url } : {}),
+  };
   if (e.costClass === 'free') return { ...base, price: 0 };
   const m = e.cost.match(/\$\s?(\d[\d,]*(?:\.\d+)?)/);
   return m ? { ...base, price: Number(m[1].replace(/,/g, '')) } : null;
 }
 
+// What kind of event each calendar holds, for the generated description
+const KIND: Record<string, string> = {
+  events: 'Event',
+  'live-music': 'Live music',
+  comedy: 'Comedy',
+  karaoke: 'Karaoke',
+  'farmers-markets': 'Farmers market',
+  sports: 'Game',
+  trivia: 'Trivia night',
+  pedalpalooza: 'Group bike ride',
+};
+
+// We have no per-event images; Google asks for one, so use the site's
+export const FALLBACK_IMAGE = 'https://www.pdx-events.com/images/og-portland.jpg';
+
+// Trivia titles are "Venue — Company" (e.g. "Advice Booth — Untapped Trivia");
+// otherwise the host is the named venue. Bare addresses name no organizer.
+function organizer(e: CalEvent, name: string, venue: { name: string }, url: string) {
+  const company = e.calendarSlug === 'trivia' ? name.split(' — ')[1] : undefined;
+  const host = company ?? (/^\d/.test(venue.name) || venue.name === 'Portland, OR' ? '' : venue.name);
+  return host ? { '@type': 'Organization', name: host, ...(url ? { url } : {}) } : null;
+}
+
+function description(e: CalEvent, name: string, venue: { name: string }): string {
+  const cost = e.costClass === 'free' ? ' Free.' : e.cost ? ` ${e.cost}.` : '';
+  const where = venue.name === 'Portland, OR' ? 'in Portland, OR' : `at ${venue.name}`;
+  const end = /[.!?]$/.test(where) ? '' : '.';
+  return `${KIND[e.calendarSlug] ?? 'Event'}: ${name} ${where}${end}${cost}`;
+}
+
 function toEvent(e: CalEvent) {
   const url = e.url || e.googleUrl;
-  const offers = offer(e);
+  const offers = offer(e, url);
+  // Some scraped titles carry a "[comedy] " source prefix
+  const name = e.title.replace(/^\[[^\]]+\]\s*/, '');
+  const location = place(e.location);
+  const org = organizer(e, name, location, url);
   return {
     '@type': 'Event',
-    // Some scraped titles carry a "[comedy] " source prefix
-    name: e.title.replace(/^\[[^\]]+\]\s*/, ''),
+    name,
+    description: description(e, name, location),
+    image: FALLBACK_IMAGE,
+    ...(org ? { organizer: org } : {}),
     startDate: e.start,
-    ...(e.end && e.end !== e.start ? { endDate: e.end } : {}),
+    ...(e.end ? { endDate: e.end } : {}),
     eventStatus: 'https://schema.org/EventScheduled',
     eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
-    location: place(e.location),
+    location,
     ...(url ? { url } : {}),
     ...(offers ? { offers } : {}),
   };

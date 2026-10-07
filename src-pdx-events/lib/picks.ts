@@ -4,6 +4,7 @@
 // scripts/add-to-calendar/export_picks.py.
 
 import { TODAY_STR } from '../../src-shared/lib/google-calendar';
+import { FALLBACK_IMAGE } from '../../src-shared/lib/event-schema';
 
 export interface Pick {
   date: string;        // YYYY-MM-DD
@@ -122,6 +123,14 @@ function pacificOffset(ymd: string): string {
   return m ? `${m[1]}${m[2].padStart(2, '0')}:00` : '-08:00';
 }
 
+// Price from the card: free, or the first "$NN" in the details
+function offers(p: Pick) {
+  const offer = { '@type': 'Offer', priceCurrency: 'USD', availability: 'https://schema.org/InStock' };
+  if (p.free) return { isAccessibleForFree: true, offers: { ...offer, price: 0 } };
+  const m = p.details.match(/\$\s?(\d+(?:\.\d+)?)/);
+  return m ? { offers: { ...offer, price: Number(m[1]) } } : {};
+}
+
 // schema.org Event JSON-LD for a roundup's picks (`<` escaped for <script>)
 export function picksJsonLd(r: Roundup): string {
   const events = r.picks.filter((p) => p.date).map((p) => ({
@@ -129,7 +138,9 @@ export function picksJsonLd(r: Roundup): string {
     name: p.name,
     ...(p.description ? { description: p.description } : {}),
     startDate: p.time ? `${p.date}T${p.time}:00${pacificOffset(p.date)}` : p.date,
-    ...(p.endDate ? { endDate: p.endDate } : {}),
+    // Cards give no end time: an all-day pick ends on its (last) day; a timed
+    // one only gets an end date when it spans several days
+    ...(p.endDate || !p.time ? { endDate: p.endDate ?? p.date } : {}),
     eventStatus: 'https://schema.org/EventScheduled',
     eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
     location: {
@@ -137,7 +148,9 @@ export function picksJsonLd(r: Roundup): string {
       name: p.venue || 'Portland, OR',
       address: /\b(OR|Oregon|WA)\b/.test(p.venue) ? p.venue : 'Portland, OR',
     },
-    ...(p.free ? { isAccessibleForFree: true, offers: { '@type': 'Offer', price: 0, priceCurrency: 'USD' } } : {}),
+    image: FALLBACK_IMAGE,
+    url: `https://www.pdx-events.com/picks/${r.id}/`,
+    ...offers(p),
   }));
   return JSON.stringify({ '@context': 'https://schema.org', '@graph': events }).replace(/</g, '\\u003c');
 }

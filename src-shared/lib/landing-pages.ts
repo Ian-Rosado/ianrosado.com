@@ -34,6 +34,7 @@ export interface LandingPage {
   // reasonable on busy categories; the first day is always included)
   maxEvents: number;
   related: string[];  // slugs linked under the list
+  calendar?: string;  // calendar slug: offer subscribe links for it
 }
 
 const WEEKDAYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
@@ -122,6 +123,7 @@ const MAIN: LandingPage[] = [
     description: (s) => `${plural(s.count, 'concert')} and live shows in Portland, OR over the next ${plural(s.days, 'day')} — clubs, bars, theaters and big venues, with ${s.freeCount} free shows.`,
     intro: (s) => `${plural(s.count, 'show')} over the next ${plural(s.days, 'day')} at Portland's clubs, bars, theaters and arenas — ${s.freeCount} of them free or no cover.`,
     filter: bySlug('live-music'),
+    calendar: 'live-music',
     maxDays: 7,
     maxEvents: 450,
     related: CATEGORY_LINKS,
@@ -134,6 +136,7 @@ const MAIN: LandingPage[] = [
     description: (s) => `Every weekly trivia night and pub quiz in Portland, OR — ${plural(s.count, 'game')} this week at bars and breweries in N/NE, NW/SW, SE Portland and the suburbs.`,
     intro: (s) => `Portland's pub quiz scene runs every night of the week. This is the full schedule for the next seven days — ${plural(s.count, 'game')} at bars, breweries and pizza places across the city and suburbs. Nearly all are free to play; on busy nights, arrive 15–30 minutes early to get a table.`,
     filter: bySlug('trivia'),
+    calendar: 'trivia',
     maxDays: 7,
     maxEvents: 600,
     related: [...WEEKDAYS.slice(1), WEEKDAYS[0]].map((d) => `trivia/${d}`),
@@ -146,6 +149,7 @@ const MAIN: LandingPage[] = [
     description: (s) => `Portland-area farmers market schedule for the next ${plural(s.days, 'day')} — ${plural(s.count, 'market day')}, with times and locations from Portland to Beaverton, Hillsboro, Gresham and Vancouver.`,
     intro: (s) => `${plural(s.count, 'market day')} over the next ${plural(s.days, 'day')} across the Portland metro — the PSU Saturday market, neighborhood markets like Hollywood, Moreland and St. Johns, and suburban markets in Beaverton, Hillsboro, Gresham and beyond. Free to browse.`,
     filter: bySlug('farmers-markets'),
+    calendar: 'farmers-markets',
     maxDays: 28,
     maxEvents: 450,
     related: CATEGORY_LINKS,
@@ -158,6 +162,7 @@ const MAIN: LandingPage[] = [
     description: (s) => `${plural(s.count, 'comedy show')} in Portland, OR over the next ${plural(s.days, 'day')} — stand-up, improv and open mics, ${s.freeCount} free.`,
     intro: (s) => `${plural(s.count, 'show')} over the next ${plural(s.days, 'day')}: touring headliners, local showcases, improv and open mics — ${s.freeCount} of them free.`,
     filter: bySlug('comedy'),
+    calendar: 'comedy',
     maxDays: 28,
     maxEvents: 450,
     related: CATEGORY_LINKS,
@@ -170,6 +175,7 @@ const MAIN: LandingPage[] = [
     description: (s) => `Karaoke nights at Portland bars and venues — ${plural(s.count, 'night')} over the next ${plural(s.days, 'day')}, including themed and live-band karaoke.`,
     intro: (s) => `${plural(s.count, 'karaoke night')} over the next ${plural(s.days, 'day')} — regular bar karaoke plus themed nights and live-band karaoke.`,
     filter: bySlug('karaoke'),
+    calendar: 'karaoke',
     maxDays: 28,
     maxEvents: 450,
     related: CATEGORY_LINKS,
@@ -182,6 +188,7 @@ const MAIN: LandingPage[] = [
     description: (s) => `Home games in Portland, OR for the next ${plural(s.days, 'day')} — Timbers, Thorns, Trail Blazers, Winterhawks, Portland Pilots, roller derby and more (${plural(s.count, 'game')}).`,
     intro: (s) => `${plural(s.count, 'home game')} over the next ${plural(s.days, 'day')} — pro soccer, basketball and hockey, University of Portland Pilots, roller derby and more.`,
     filter: bySlug('sports'),
+    calendar: 'sports',
     maxDays: 90,
     maxEvents: 450,
     related: CATEGORY_LINKS,
@@ -194,6 +201,7 @@ const MAIN: LandingPage[] = [
     description: (s) => `${plural(s.count, 'group bike ride')} in Portland over the next ${plural(s.days, 'day')} — Shift community rides year-round and Pedalpalooza every summer. Nearly all free.`,
     intro: (s) => `${plural(s.count, 'ride')} over the next ${plural(s.days, 'day')} from the Shift community calendar — themed social rides, slow rides and explorations. Every summer they become Pedalpalooza, weeks of rides all over the city. Nearly all are free and open to anyone with a bike.`,
     filter: bySlug('pedalpalooza'),
+    calendar: 'pedalpalooza',
     maxDays: 28,
     maxEvents: 450,
     related: CATEGORY_LINKS,
@@ -208,6 +216,7 @@ const TRIVIA_DAYS: LandingPage[] = WEEKDAYS.map((day, i) => ({
   description: (s) => `${plural(s.count, 'trivia night')} in Portland on ${cap(day)} (${formatRange(s.firstDate, s.firstDate)}) — pub quizzes at bars and breweries across the city and suburbs, nearly all free.`,
   intro: (s) => `Where to play trivia in Portland on a ${cap(day)}: ${plural(s.count, 'game')} this ${cap(day)}, ${formatRange(s.firstDate, s.firstDate)}. Most run weekly, so this is a good guide to any ${cap(day)}.`,
   filter: bySlug('trivia'),
+  calendar: 'trivia',
   window: () => nextWeekday(i),
   maxDays: 1,
   maxEvents: 600,

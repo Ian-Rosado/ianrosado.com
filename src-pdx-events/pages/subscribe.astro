@@ -1,0 +1,42 @@
+---
+import Layout from '../layouts/Layout.astro';
+import SubscribeLinks from '../../src-shared/components/SubscribeLinks.astro';
+import { CALENDARS, TRIVIA_CALENDARS, TRIVIA_GROUP, PEDALPALOOZA_CALENDAR } from '../../src-shared/lib/calendars';
+
+const sections = [
+  ...CALENDARS.map((c) => ({ id: c.slug, name: c.name, description: c.description, calendars: [c] })),
+  { id: 'trivia', name: TRIVIA_GROUP.name, description: `${TRIVIA_GROUP.description} One calendar per area — add the ones near you.`, calendars: TRIVIA_CALENDARS },
+  { id: 'bike-rides', name: 'Pedalpalooza & Shift Bike Rides', description: PEDALPALOOZA_CALENDAR.description, calendars: [PEDALPALOOZA_CALENDAR] },
+];
+---
+
+<Layout
+  title="Subscribe to Portland Event Calendars"
+  description="Add Portland's events, live music, comedy, trivia nights, farmers markets, sports and bike rides to Google Calendar, Apple Calendar or Outlook — free calendars that update automatically."
+  pageClass="page-events"
+>
+  <div class="max-w-3xl mx-auto px-4 py-12">
+    <header class="mb-8">
+      <h1 class="text-3xl sm:text-4xl font-semibold text-stone-900 mb-3" style="font-family: var(--font-serif)">Subscribe to the Calendars</h1>
+      <p class="text-stone-600 leading-relaxed">
+        Every calendar on PDX Events is a public Google Calendar. Subscribe to the ones you like and new events show up in your own calendar app automatically —
+        Google Calendar on any device, or the iCal link for Apple Calendar and Outlook.
+      </p>
+    </header>
+
+    <div class="space-y-4">
+      {sections.map((s) => (
+        <section id={s.id} class="bg-white rounded-2xl border border-stone-100 shadow-sm p-6 scroll-mt-20">
+          <h2 class="text-lg font-semibold text-stone-900 mb-1" style="font-family: var(--font-serif)">{s.name}</h2>
+          {s.description && <p class="text-sm text-stone-500 mb-3">{s.description}</p>}
+          <SubscribeLinks calendars={s.calendars} />
+        </section>
+      ))}
+    </div>
+
+    <p class="mt-8 text-sm text-stone-500">
+      Prefer to browse? See the <a href="/" class="text-orange-600 hover:underline">full calendar</a> or <a href="/picks/" class="text-orange-600 hover:underline">this week's picks</a>
+      (also as an <a href="/picks/rss.xml" class="text-orange-600 hover:underline">RSS feed</a>).
+    </p>
+  </div>
+</Layout>

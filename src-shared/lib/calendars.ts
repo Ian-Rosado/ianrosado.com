@@ -43,3 +43,15 @@ export const COLOR_MAP: Record<string, { bg: string; text: string; border: strin
   teal:   { bg: 'bg-teal-50',    text: 'text-teal-700',    border: 'border-teal-200',   dot: 'bg-teal-500'   },
   red:    { bg: 'bg-red-50',     text: 'text-red-700',     border: 'border-red-200',    dot: 'bg-red-500'    },
 };
+
+// Every public calendar a visitor can subscribe to (trivia as its 4 areas)
+export const SUBSCRIBABLE: CalendarConfig[] = [...CALENDARS, ...TRIVIA_CALENDARS, PEDALPALOOZA_CALENDAR];
+
+// "Add to Google Calendar" + iCal (Apple Calendar, Outlook) subscribe links
+// for a public Google Calendar
+export function subscribeLinks(c: CalendarConfig): { google: string; ical: string } {
+  return {
+    google: `https://calendar.google.com/calendar/u/0?cid=${btoa(c.id).replace(/=+$/, '')}`,
+    ical: `webcal://calendar.google.com/calendar/ical/${encodeURIComponent(c.id)}/public/basic.ics`,
+  };
+}

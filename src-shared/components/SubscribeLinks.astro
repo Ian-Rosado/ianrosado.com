@@ -1,0 +1,23 @@
+---
+// Subscribe links (Google Calendar + iCal) for one or more public calendars
+import { subscribeLinks, type CalendarConfig } from '../lib/calendars';
+
+interface Props {
+  calendars: CalendarConfig[];
+}
+const { calendars } = Astro.props;
+---
+
+<ul class="space-y-1.5 text-sm">
+  {calendars.map((c) => {
+    const { google, ical } = subscribeLinks(c);
+    return (
+      <li>
+        {calendars.length > 1 && <span class="text-stone-700 font-medium">{c.name}: </span>}
+        <a href={google} target="_blank" rel="noopener noreferrer" class="text-orange-600 hover:underline">Google Calendar</a>
+        <span class="text-stone-300"> · </span>
+        <a href={ical} class="text-orange-600 hover:underline">Apple / Outlook (iCal)</a>
+      </li>
+    );
+  })}
+</ul>

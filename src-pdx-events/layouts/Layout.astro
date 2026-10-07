@@ -201,6 +201,11 @@ function isActive(href: string) {
       const btn = document.getElementById('menu-btn');
       const menu = document.getElementById('mobile-menu');
       btn?.addEventListener('click', () => menu?.classList.toggle('hidden'));
+
+      // WebMCP tools for AI agents — only fetched when the browser supports it
+      if ('modelContext' in document || 'modelContext' in navigator) {
+        import('../scripts/webmcp').then((m) => m.registerTools());
+      }
     </script>
 
     <!-- Vercel Web Analytics (independent of Google Analytics) -->

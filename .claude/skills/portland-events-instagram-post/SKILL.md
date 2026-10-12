@@ -53,6 +53,9 @@ Ian drives; the exact sequence is:
 
 3. **Once the list is final, build everything (no rendering yet):**
    - Look up each event's full details from the calendar (Step 1 below).
+   - **Verify each event with its organizer/host (Step 1b)** — confirm it's real
+     and happening on the stated date. Try the organizer's or venue's own site;
+     hand Ian any you can't verify so he can check them before the post goes out.
    - Build the **hero image HTML** and the **event cards HTML** (Steps 2–4/4b).
      EOTW cards = **two events per card, one card per day** (Day + Night pair).
      PYW cards = **one card per event**.
@@ -112,6 +115,39 @@ python get_events.py --ig --from 2026-09-01 --to 2026-09-07 # a specific week
 
 Same JSON shape. This is a menu to help Ian choose — he still confirms the final
 table and can add un-flagged events or drop flagged ones.
+
+---
+
+## Step 1b — Verify each event with the organizer (required)
+
+The calendar is fed by scrapers that trust each source's date. Some aggregators —
+**ma.to (`source: "Mato"`) especially** — occasionally re-surface a *past* event
+with a plausible future date, so a real-looking but wrong listing slips through.
+(A real case: a 2025 MURBER comedy night was re-listed by ma.to as "Saturday,
+17 October" → ingested as **2026-10-17**, a valid upcoming Saturday. Nothing
+flagged it; the venue caught it in the comments after posting.)
+
+So before building, **confirm every pick is actually happening on its stated date**
+by checking a source the aggregator can't corrupt — the **organizer's or venue's
+own channel**, not the ma.to/aggregator page the event was scraped from:
+
+1. Find the organizer/venue's own page — its website (check `venues.json` or the
+   event's `url` when that link is the org's own site, not `ma.to`), its ticketing
+   page (Eventbrite/etc.), or its Instagram. Web-search
+   `"<event or organizer>" <venue> <month> <year>` if there's no direct link.
+2. Confirm the event appears there **on the same date**, and that the date's
+   **weekday matches** (e.g. Oct 17 is a Saturday in 2026, a Friday in 2025 — a
+   weekday mismatch is the tell that a year got rolled).
+3. Treat the `ma.to` listing alone as **not** verification — it's the source that
+   can be wrong. A second, organizer-controlled source is what counts.
+
+Report each pick as **verified** (name the source) or **unverified**. For anything
+you can't confirm from an organizer/host source, **list it for Ian** — he'll check
+those himself — rather than quietly keeping it. Swap or drop confirmed-bad events
+(and tell Ian so he can fix the calendar) before you build.
+
+This is a light pass for most picks (a venue's own site usually lists its calendar);
+spend the effort on aggregator-sourced ones and anything whose weekday looks off.
 
 ---
 

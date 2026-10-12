@@ -1,0 +1,118 @@
+{
+  "id": "weekend-of-2026-10-09",
+  "type": "weekend",
+  "start": "2026-10-09",
+  "end": "2026-10-11",
+  "source": "instagram/event_cards_oct9_11.html",
+  "theme": {
+    "bg": "#2e1310",
+    "accent": "#ff7a5c"
+  },
+  "picks": [
+    {
+      "date": "2026-10-08",
+      "time": "16:00",
+      "slot": null,
+      "emoji": "🔨",
+      "category": "Free Open House",
+      "name": "ReUse Open House",
+      "description": "The ReBuilding Center's \"Keep it in Motion\" open house is a free afternoon of live music, food trucks, hands-on activities, and the debut of its new Reuse Showrooms. Don't miss the Salvage Showdown, where local artists transform reclaimed materials into one-of-a-kind art.",
+      "venue": "ReBuilding Center",
+      "details": "Thu 4 PM · Free",
+      "free": true,
+      "color": "green"
+    },
+    {
+      "date": "2026-10-09",
+      "time": "18:00",
+      "slot": null,
+      "emoji": "🍂",
+      "category": "Harvest Dinner",
+      "name": "Harvest Dinner at Edgefield",
+      "description": "A cozy fall harvest dinner at McMenamins' historic Edgefield — seasonal dishes and good company as the leaves turn. Get tickets early for this one!",
+      "venue": "McMenamins Edgefield",
+      "details": "Fri 6 PM",
+      "free": false,
+      "color": "teal"
+    },
+    {
+      "date": "2026-10-09",
+      "endDate": "2026-10-11",
+      "time": "",
+      "slot": null,
+      "emoji": "🍴",
+      "category": "Food Festival",
+      "name": "Roux",
+      "description": "Every October, Roux celebrates food, drink, and culture while elevating women-owned businesses — pop-up dinners, chef collabs, panels, and brunch across the city. Explore the full lineup at rouxportland.com.",
+      "venue": "Multiple venues",
+      "details": "Fri–Sun",
+      "free": false,
+      "color": "amber"
+    },
+    {
+      "date": "2026-10-10",
+      "time": "15:00",
+      "slot": null,
+      "emoji": "🥩",
+      "category": "Cooking Class",
+      "name": "How to Cook a Steak",
+      "description": "Jacobsen Salt Co. teams up with Snake River Farms for a hands-on class on cooking the perfect steak — technique, seasoning, and plenty of tasting along the way. Walk away a better cook, and very well-fed.",
+      "venue": "The Bunk Building",
+      "details": "Sat 3 PM · $110",
+      "free": false,
+      "color": "blue"
+    },
+    {
+      "date": "2026-10-10",
+      "time": "18:00",
+      "slot": null,
+      "emoji": "🎃",
+      "category": "Spooky Show",
+      "name": "House of Horrors",
+      "description": "A house basement party with a slight Halloween lean — the kind of underground show that keeps Portland weird and alive. Expect high energy and to meet some new folks.",
+      "venue": "DM @laneamore for the address",
+      "details": "Sat 6 PM · Free",
+      "free": true,
+      "color": "purple"
+    },
+    {
+      "date": "2026-10-10",
+      "time": "18:30",
+      "slot": null,
+      "emoji": "🎻",
+      "category": "Candlelight Concert",
+      "name": "Vivaldi's Four Seasons",
+      "description": "Vivaldi's Four Seasons performed by candlelight in the gorgeous Old Church — a live string ensemble, flickering light, and one of classical music's most beloved works. Pure autumn magic.",
+      "venue": "The Old Church",
+      "details": "Sat 6:30 PM",
+      "free": false,
+      "color": "pink"
+    },
+    {
+      "date": "2026-10-10",
+      "time": "22:00",
+      "slot": null,
+      "emoji": "🎭",
+      "category": "Masquerade",
+      "name": "Masquerade Boat Party",
+      "description": "A masquerade silent disco aboard the Portland Spirit — three DJ channels on your headphones, masks on, cruising the Willamette after dark. A one-of-a-kind night on the water. 21+.",
+      "venue": "Portland Spirit",
+      "details": "Sat 10 PM · $34 · 21+",
+      "free": false,
+      "color": "green"
+    },
+    {
+      "date": "2026-10-11",
+      "time": "17:00",
+      "slot": null,
+      "emoji": "📖",
+      "category": "Eerie Reading",
+      "name": "Weird Fiction Night",
+      "description": "A night of weird, eerie, and uncanny fiction read aloud at Brujos — part reading series, part Halloween mood. Free, strange, and perfectly October.",
+      "venue": "Brujos",
+      "details": "Sun 5 PM · Free",
+      "free": true,
+      "color": "amber"
+    }
+  ]
+}

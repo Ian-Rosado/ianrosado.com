@@ -163,15 +163,17 @@ const maxDate = dateKeys[dateKeys.length - 1] ?? '';
 
 
 <script>
+  import { makeIsUpcoming, pruneRenderedRows } from '../lib/upcoming';
+
   // ---- Data -------------------------------------------------------------
   // Full event list comes from /events.json (shape documented in
   // src-shared/lib/events-payload.ts). Until it arrives, only the
   // server-rendered first days are on the page; filter changes made in the
   // meantime are applied as soon as it loads.
-  type EventTuple = [number, string, string, string, string, string, string, string];
+  type EventTuple = [number, string, string, string, string, string, string, string, number];
   interface Ev {
     cat: number; time: string; title: string; loc: string; map: string;
-    cost: string; cc: string; link: string; titleLc: string; locLc: string;
+    cost: string; cc: string; link: string; endMin: number; titleLc: string; locLc: string;
   }
   interface Day { date: string; events: Ev[] }
 
@@ -229,7 +231,7 @@ const maxDate = dateKeys[dateKeys.length - 1] ?? '';
     const cost = ev.cc === 'free'
       ? '<span class="er-free">Free</span>'
       : ev.cost ? `<span class="er-cost">${escapeHtml(ev.cost)}</span>` : '';
-    return `<li class="er"><span class="er-dot ${dot}" title="${escapeHtml(calName)}"></span><span class="er-time">${escapeHtml(ev.time)}</span><span class="er-main">${title}${loc} ${map}</span>${cost}</li>`;
+    return `<li class="er"${ev.endMin >= 0 ? ` data-end="${ev.endMin}"` : ''}><span class="er-dot ${dot}" title="${escapeHtml(calName)}"></span><span class="er-time">${escapeHtml(ev.time)}</span><span class="er-main">${title}${loc} ${map}</span>${cost}</li>`;
   }
 
   // Must match the date-group section in the template above.
@@ -532,37 +534,11 @@ const maxDate = dateKeys[dateKeys.length - 1] ?? '';
   lgQuery.addEventListener('change', enforceBreakpoint);
   enforceBreakpoint();
 
-  // ---- Hide what's already under way --------------------------------------
-  // The page is built every few hours, so it can't know the visitor's time:
-  // drop days before today (Pacific), and today's events that started more
-  // than GRACE_MIN ago. All-day events stay.
-  const GRACE_MIN = 60;
-  const nowMin = (() => {
-    const [h, m] = new Date()
-      .toLocaleTimeString('en-GB', { timeZone: TZ, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' })
-      .split(':').map(Number);
-    return h * 60 + m;
-  })();
-  // "7:30 PM" → minutes since midnight; -1 for "all day"
-  function startMin(time: string): number {
-    const m = time.match(/(\d{1,2}):(\d{2})\s*([AP])M/i);
-    if (!m) return -1;
-    return ((Number(m[1]) % 12) + (m[3].toUpperCase() === 'P' ? 12 : 0)) * 60 + Number(m[2]);
-  }
-  function isUpcoming(date: string, time: string): boolean {
-    if (date !== todayStr) return date > todayStr;
-    const start = startMin(time);
-    return start < 0 || start >= nowMin - GRACE_MIN;
-  }
-
-  // Server-rendered days
-  listDays.querySelectorAll<HTMLElement>('.date-group').forEach((section) => {
-    const date = section.dataset.date ?? '';
-    section.querySelectorAll('.er').forEach((row) => {
-      if (!isUpcoming(date, row.querySelector('.er-time')?.textContent ?? '')) row.remove();
-    });
-    if (!section.querySelector('.er')) section.remove();
-  });
+  // ---- Hide what's already over ------------------------------------------
+  // The page is built every few hours, so it can't know the visitor's time;
+  // see src-shared/lib/upcoming.ts for the rules.
+  const isUpcoming = makeIsUpcoming();
+  pruneRenderedRows(listDays, isUpcoming);
 
   // ---- Load the full event list -----------------------------------------
   fetch('/events.json')
@@ -574,9 +550,9 @@ const maxDate = dateKeys[dateKeys.length - 1] ?? '';
       cats = data.cats;
       allDays = data.days.flatMap(([date, tuples]) => {
         const events = tuples
-          .filter(([, time]) => isUpcoming(date, time))
-          .map(([cat, time, title, loc, map, cost, cc, link]) => ({
-            cat, time, title, loc, map, cost, cc, link,
+          .filter(([, time, , , , , , , endMin]) => isUpcoming(date, time, endMin))
+          .map(([cat, time, title, loc, map, cost, cc, link, endMin]) => ({
+            cat, time, title, loc, map, cost, cc, link, endMin,
             titleLc: title.toLowerCase(), locLc: loc.toLowerCase(),
           }));
         if (!events.length) return [];

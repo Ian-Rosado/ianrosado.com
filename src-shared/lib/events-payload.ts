@@ -5,7 +5,9 @@
 // Shape (arrays instead of objects to keep it small):
 //   cats: [slug, dotClass, calendarName][]
 //   days: [date, EventTuple[]][]
-//   EventTuple: [catIdx, time, title, location, mapQuery, cost, costClass, link]
+//   EventTuple: [catIdx, time, title, location, mapQuery, cost, costClass, link, endMin]
+// `endMin` is CalEvent.endMin: minutes after the start day's midnight, -1 if
+// unknown (including the pipeline's 2-hour placeholder ends).
 // `mapQuery` is the Google Maps URL with MAP_PREFIX stripped ('' = no link).
 
 import { COLOR_MAP } from './calendars';
@@ -14,7 +16,7 @@ import { groupByDate, type CalEvent } from './google-calendar';
 
 export const MAP_PREFIX = 'https://www.google.com/maps/search/?api=1&query=';
 
-export type EventTuple = [number, string, string, string, string, string, string, string];
+export type EventTuple = [number, string, string, string, string, string, string, string, number];
 export interface EventsPayload {
   cats: [string, string, string][];
   days: [string, EventTuple[]][];
@@ -42,6 +44,7 @@ export function buildEventsPayload(events: CalEvent[]): EventsPayload {
         e.cost || '',
         e.costClass,
         e.url || e.googleUrl || '',
+        e.endMin,
       ];
     }),
   ]) as [string, EventTuple[]][];

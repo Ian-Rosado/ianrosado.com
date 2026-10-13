@@ -5,6 +5,7 @@ const API_KEY = import.meta.env.GOOGLE_CALENDAR_API_KEY;
 const BASE = 'https://www.googleapis.com/calendar/v3/calendars';
 const TZ = 'America/Los_Angeles';
 const DAYS_AHEAD = 90;
+const PLACEHOLDER_DURATION_MIN = 120; // = DEFAULT_DURATION_MINUTES in scripts/add-to-calendar
 
 // Today and the horizon, as YYYY-MM-DD strings in Pacific time. Used to clip
 // multi-day events so they never render on past days or far beyond the window.
@@ -25,6 +26,8 @@ export interface CalEvent {
   time: string;        // h:mm AM/PM, or '' for all-day
   endTime: string;     // h:mm AM/PM, or ''
   sortKey: number;     // minutes since midnight (Pacific) for chronological sort; -1 for all-day
+  endMin: number;      // end, in minutes since midnight of `date` (past 1440 if it runs
+                       // past midnight); -1 if all-day or no real end (end == start)
   allDay: boolean;
   start: string;       // the event's real start: ISO dateTime with offset, or YYYY-MM-DD if all-day
   end: string;         // its real end: ISO dateTime, or the LAST day (inclusive) if all-day; '' if none
@@ -222,6 +225,14 @@ function toCalEvents(
   const time    = allDay ? '' : formatTime(startRaw);
   const endTime = allDay ? '' : (endRaw ? formatTime(endRaw) : '');
   const sortKey = allDay ? -1 : minutesOfDay(startRaw);
+  let endMin = -1;
+  if (!allDay && endRaw && endRaw !== startRaw) {
+    const dayDiff = Math.round((Date.parse(formatDate(endRaw)) - Date.parse(formatDate(startRaw))) / 86400000);
+    const m = minutesOfDay(endRaw) + 1440 * dayDiff;
+    // The add-to-calendar pipeline fills in a 2-hour end when the source has
+    // none (DEFAULT_DURATION_MINUTES), so a 2-hour event's end is unknown.
+    if (m > sortKey && m - sortKey !== PLACEHOLDER_DURATION_MIN) endMin = m;
+  }
 
   const { cost, url, tags: descTags } = parseDescription(item.description ?? '');
 
@@ -291,6 +302,7 @@ function toCalEvents(
     time,
     endTime,
     sortKey,
+    endMin,
     allDay,
     start,
     end,

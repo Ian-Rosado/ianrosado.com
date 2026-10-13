@@ -18,7 +18,7 @@ const link = e.url || e.googleUrl;
 // .events-view ancestor.
 ---
 
-<li class="er">
+<li class="er" data-end={e.endMin >= 0 ? e.endMin : undefined}>
   <span class={`er-dot ${colors.dot}`} title={e.calendarName}></span>
   <span class="er-time">{e.allDay ? 'all day' : e.time}</span>
   <span class="er-main">

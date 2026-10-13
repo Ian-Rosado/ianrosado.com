@@ -163,15 +163,17 @@ const maxDate = dateKeys[dateKeys.length - 1] ?? '';
 
 
 <script>
+  import { makeIsUpcoming, pruneRenderedRows } from '../lib/upcoming';
+
   // ---- Data -------------------------------------------------------------
   // Full event list comes from /events.json (shape documented in
   // src-shared/lib/events-payload.ts). Until it arrives, only the
   // server-rendered first days are on the page; filter changes made in the
   // meantime are applied as soon as it loads.
-  type EventTuple = [number, string, string, string, string, string, string, string];
+  type EventTuple = [number, string, string, string, string, string, string, string, number];
   interface Ev {
     cat: number; time: string; title: string; loc: string; map: string;
-    cost: string; cc: string; link: string; titleLc: string; locLc: string;
+    cost: string; cc: string; link: string; endMin: number; titleLc: string; locLc: string;
   }
   interface Day { date: string; events: Ev[] }
 
@@ -229,7 +231,7 @@ const maxDate = dateKeys[dateKeys.length - 1] ?? '';
     const cost = ev.cc === 'free'
       ? '<span class="er-free">Free</span>'
       : ev.cost ? `<span class="er-cost">${escapeHtml(ev.cost)}</span>` : '';
-    return `<li class="er"><span class="er-dot ${dot}" title="${escapeHtml(calName)}"></span><span class="er-time">${escapeHtml(ev.time)}</span><span class="er-main">${title}${loc} ${map}</span>${cost}</li>`;
+    return `<li class="er"${ev.endMin >= 0 ? ` data-end="${ev.endMin}"` : ''}><span class="er-dot ${dot}" title="${escapeHtml(calName)}"></span><span class="er-time">${escapeHtml(ev.time)}</span><span class="er-main">${title}${loc} ${map}</span>${cost}</li>`;
   }
 
   // Must match the date-group section in the template above.
@@ -532,6 +534,12 @@ const maxDate = dateKeys[dateKeys.length - 1] ?? '';
   lgQuery.addEventListener('change', enforceBreakpoint);
   enforceBreakpoint();
 
+  // ---- Hide what's already over ------------------------------------------
+  // The page is built every few hours, so it can't know the visitor's time;
+  // see src-shared/lib/upcoming.ts for the rules.
+  const isUpcoming = makeIsUpcoming();
+  pruneRenderedRows(listDays, isUpcoming);
+
   // ---- Load the full event list -----------------------------------------
   fetch('/events.json')
     .then((r) => {
@@ -540,13 +548,16 @@ const maxDate = dateKeys[dateKeys.length - 1] ?? '';
     })
     .then((data: { cats: [string, string, string][]; days: [string, EventTuple[]][] }) => {
       cats = data.cats;
-      allDays = data.days.map(([date, tuples]) => {
-        const events = tuples.map(([cat, time, title, loc, map, cost, cc, link]) => ({
-          cat, time, title, loc, map, cost, cc, link,
-          titleLc: title.toLowerCase(), locLc: loc.toLowerCase(),
-        }));
+      allDays = data.days.flatMap(([date, tuples]) => {
+        const events = tuples
+          .filter(([, time, , , , , , , endMin]) => isUpcoming(date, time, endMin))
+          .map(([cat, time, title, loc, map, cost, cc, link, endMin]) => ({
+            cat, time, title, loc, map, cost, cc, link, endMin,
+            titleLc: title.toLowerCase(), locLc: loc.toLowerCase(),
+          }));
+        if (!events.length) return [];
         dayMap.set(date, events);
-        return { date, events };
+        return [{ date, events }];
       });
       buildMonthList();
       listStatus?.classList.add('hidden');
@@ -556,7 +567,9 @@ const maxDate = dateKeys[dateKeys.length - 1] ?? '';
       } else {
         // No filters yet: keep the server-rendered days and continue after them.
         viewDays = allDays;
-        renderedIdx = listDays.querySelectorAll('.date-group').length;
+        const lastSsr = [...listDays.querySelectorAll<HTMLElement>('.date-group')].at(-1)?.dataset.date;
+        renderedIdx = lastSsr ? allDays.findIndex((d) => d.date === lastSsr) + 1 : 0;
+        if (countEl) countEl.textContent = String(allDays.reduce((n, d) => n + d.events.length, 0));
         fillList();
         if (isCalendarVisible()) renderMonth(monthIdx);
       }

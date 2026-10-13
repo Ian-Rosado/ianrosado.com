@@ -18,9 +18,9 @@ const longDate = (ymd: string) =>
 
 <script type="application/ld+json" set:html={eventsJsonLd(days.flatMap(([, evs]) => evs))} />
 
-<div class="events-view">
+<div class="events-view day-list">
   {days.map(([date, evs]) => (
-    <section class="mb-6">
+    <section class="date-group mb-6" data-date={date}>
       <h2 class="text-xs font-semibold uppercase tracking-widest text-stone-500 mb-1.5 pb-1 border-b border-stone-100">{longDate(date)}</h2>
       <ul class="divide-y divide-stone-50">
         {evs.map((event) => <EventRow event={event} />)}
@@ -28,3 +28,17 @@ const longDate = (ymd: string) =>
     </section>
   ))}
 </div>
+<p class="day-list-done hidden text-stone-500 text-sm py-6 text-center">
+  Everything listed here is already over — see what's coming up on the <a href="/" class="text-orange-600 hover:underline">full Portland events calendar</a>.
+</p>
+
+<script>
+  // The page is built every few hours; hide events that are already over
+  // (rules in src-shared/lib/upcoming.ts).
+  import { makeIsUpcoming, pruneRenderedRows } from '../lib/upcoming';
+
+  const isUpcoming = makeIsUpcoming();
+  document.querySelectorAll<HTMLElement>('.day-list').forEach((list) => {
+    if (pruneRenderedRows(list, isUpcoming) === 0) list.nextElementSibling?.classList.remove('hidden');
+  });
+</script>

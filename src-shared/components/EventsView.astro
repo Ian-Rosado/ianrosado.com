@@ -532,6 +532,38 @@ const maxDate = dateKeys[dateKeys.length - 1] ?? '';
   lgQuery.addEventListener('change', enforceBreakpoint);
   enforceBreakpoint();
 
+  // ---- Hide what's already under way --------------------------------------
+  // The page is built every few hours, so it can't know the visitor's time:
+  // drop days before today (Pacific), and today's events that started more
+  // than GRACE_MIN ago. All-day events stay.
+  const GRACE_MIN = 60;
+  const nowMin = (() => {
+    const [h, m] = new Date()
+      .toLocaleTimeString('en-GB', { timeZone: TZ, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' })
+      .split(':').map(Number);
+    return h * 60 + m;
+  })();
+  // "7:30 PM" → minutes since midnight; -1 for "all day"
+  function startMin(time: string): number {
+    const m = time.match(/(\d{1,2}):(\d{2})\s*([AP])M/i);
+    if (!m) return -1;
+    return ((Number(m[1]) % 12) + (m[3].toUpperCase() === 'P' ? 12 : 0)) * 60 + Number(m[2]);
+  }
+  function isUpcoming(date: string, time: string): boolean {
+    if (date !== todayStr) return date > todayStr;
+    const start = startMin(time);
+    return start < 0 || start >= nowMin - GRACE_MIN;
+  }
+
+  // Server-rendered days
+  listDays.querySelectorAll<HTMLElement>('.date-group').forEach((section) => {
+    const date = section.dataset.date ?? '';
+    section.querySelectorAll('.er').forEach((row) => {
+      if (!isUpcoming(date, row.querySelector('.er-time')?.textContent ?? '')) row.remove();
+    });
+    if (!section.querySelector('.er')) section.remove();
+  });
+
   // ---- Load the full event list -----------------------------------------
   fetch('/events.json')
     .then((r) => {
@@ -540,13 +572,16 @@ const maxDate = dateKeys[dateKeys.length - 1] ?? '';
     })
     .then((data: { cats: [string, string, string][]; days: [string, EventTuple[]][] }) => {
       cats = data.cats;
-      allDays = data.days.map(([date, tuples]) => {
-        const events = tuples.map(([cat, time, title, loc, map, cost, cc, link]) => ({
-          cat, time, title, loc, map, cost, cc, link,
-          titleLc: title.toLowerCase(), locLc: loc.toLowerCase(),
-        }));
+      allDays = data.days.flatMap(([date, tuples]) => {
+        const events = tuples
+          .filter(([, time]) => isUpcoming(date, time))
+          .map(([cat, time, title, loc, map, cost, cc, link]) => ({
+            cat, time, title, loc, map, cost, cc, link,
+            titleLc: title.toLowerCase(), locLc: loc.toLowerCase(),
+          }));
+        if (!events.length) return [];
         dayMap.set(date, events);
-        return { date, events };
+        return [{ date, events }];
       });
       buildMonthList();
       listStatus?.classList.add('hidden');
@@ -556,7 +591,9 @@ const maxDate = dateKeys[dateKeys.length - 1] ?? '';
       } else {
         // No filters yet: keep the server-rendered days and continue after them.
         viewDays = allDays;
-        renderedIdx = listDays.querySelectorAll('.date-group').length;
+        const lastSsr = [...listDays.querySelectorAll<HTMLElement>('.date-group')].at(-1)?.dataset.date;
+        renderedIdx = lastSsr ? allDays.findIndex((d) => d.date === lastSsr) + 1 : 0;
+        if (countEl) countEl.textContent = String(allDays.reduce((n, d) => n + d.events.length, 0));
         fillList();
         if (isCalendarVisible()) renderMonth(monthIdx);
       }

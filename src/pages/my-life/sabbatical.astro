@@ -10,7 +10,7 @@ const entries = (await getCollection('sabbatical')).sort(
 <Layout title="Sabbatical Road Trip" description="40+ days from Oregon through California, Utah, Arizona, New Mexico, and Texas." pageClass="page-mylife">
   <div class="max-w-5xl mx-auto px-4 py-12">
 
-    <a href="/my-life" class="inline-flex items-center gap-1 text-sm text-stone-400 hover:text-stone-700 transition-colors mb-8">
+    <a href="/my-life/" class="inline-flex items-center gap-1 text-sm text-stone-400 hover:text-stone-700 transition-colors mb-8">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
       </svg>
@@ -26,7 +26,7 @@ const entries = (await getCollection('sabbatical')).sort(
       {entries.map((entry) => {
         const coverSrc = `/images/${entry.data.photoSource}/${entry.id}/${entry.data.coverPhoto}`;
         return (
-          <a href={`/my-life/sabbatical/${entry.id}`} class="group block bg-white rounded-2xl border border-stone-100 shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+          <a href={`/my-life/sabbatical/${entry.id}/`} class="group block bg-white rounded-2xl border border-stone-100 shadow-sm hover:shadow-md transition-shadow overflow-hidden">
             <div class="aspect-[4/3] bg-stone-100 overflow-hidden">
               <img
                 src={coverSrc}

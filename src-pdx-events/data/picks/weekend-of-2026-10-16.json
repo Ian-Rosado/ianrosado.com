@@ -1,0 +1,117 @@
+{
+  "id": "weekend-of-2026-10-16",
+  "type": "weekend",
+  "start": "2026-10-16",
+  "end": "2026-10-18",
+  "source": "instagram/event_cards_oct16_18.html",
+  "theme": {
+    "bg": "#20260a",
+    "accent": "#c4dd5e"
+  },
+  "picks": [
+    {
+      "date": "2026-10-16",
+      "time": "19:00",
+      "slot": null,
+      "emoji": "🎸",
+      "category": "Live Music",
+      "name": "Finn Wolfhard",
+      "description": "The Stranger Things and IT star moonlights as an indie rocker, and his band rolls into the Hawthorne Theatre with opener Malcy. Expect a young, loud, high-energy crowd.",
+      "venue": "Hawthorne Theatre",
+      "details": "Fri 7 PM",
+      "free": false,
+      "color": "coral"
+    },
+    {
+      "date": "2026-10-17",
+      "time": "10:00",
+      "slot": null,
+      "emoji": "🏃",
+      "category": "Costume Run",
+      "name": "Haunted 5K at Hagg Lake",
+      "description": "A spooky run/walk along the shore of Hagg Lake with Washington County Parks — costumes encouraged, scares optional. A scenic, low-key way to earn your Halloween candy.",
+      "venue": "Hagg Lake · Gaston",
+      "details": "Sat 10 AM · $15",
+      "free": false,
+      "color": "teal"
+    },
+    {
+      "date": "2026-10-17",
+      "time": "13:00",
+      "slot": null,
+      "emoji": "🎃",
+      "category": "Zoo Tradition",
+      "name": "Squishing of the Squash",
+      "description": "The Oregon Zoo's beloved fall ritual: the elephants (and other animals) get giant pumpkins to smash, toss, and devour. Free with zoo admission, and a hit with kids. Happening as part of Howloween at the zoo.",
+      "venue": "Oregon Zoo",
+      "details": "Sat 1 PM · w/ admission",
+      "free": false,
+      "color": "amber"
+    },
+    {
+      "date": "2026-10-17",
+      "time": "17:00",
+      "slot": null,
+      "emoji": "🚗",
+      "category": "Horror Drive-In",
+      "name": "Cinema of Horrors Drive-In",
+      "description": "A live-action horror drive-in at the Clark County Fairgrounds — watch a classic on the big screen while costumed monsters prowl between the cars. Keep your doors locked. Gates 5 PM, show at 7. This Saturday is The Shining, but there are different movies through the rest of the month!",
+      "venue": "Clark Co. Fairgrounds",
+      "details": "Sat · Gates 5 PM",
+      "free": false,
+      "color": "pink"
+    },
+    {
+      "date": "2026-10-17",
+      "time": "19:30",
+      "slot": null,
+      "emoji": "🎤",
+      "category": "Concert",
+      "name": "Doja Cat",
+      "description": "Doja Cat brings her Tour Ma Vie — behind her new album Vie — to the Moda Center, with Latto opening. The weekend's big arena spectacle, costumes and all.",
+      "venue": "Moda Center",
+      "details": "Sat 7:30 PM",
+      "free": false,
+      "color": "blue"
+    },
+    {
+      "date": "2026-10-17",
+      "time": "",
+      "slot": null,
+      "emoji": "💀",
+      "category": "Día de Muertos",
+      "name": "Luminarias Día de Muertos",
+      "description": "Vancouver Ballet Folklórico's free Day of the Dead celebration lights up Esther Short Park with luminarias, traditional dance, music, food, and a community altar. Bring a photo of a loved one to honor.",
+      "venue": "Esther Short Park · Vancouver",
+      "details": "Sat · Free",
+      "free": true,
+      "color": "purple"
+    },
+    {
+      "date": "2026-10-18",
+      "time": "10:00",
+      "slot": null,
+      "emoji": "🍞",
+      "category": "Food Festival",
+      "name": "Bread Fest PDX",
+      "description": "A carb-lover's dream: local bakeries gather at Avenue Portland to show off (and sample out) their best loaves, pastries, and bakes. Just $5 to get in — come hungry.",
+      "venue": "Avenue Portland",
+      "details": "Sun 10 AM · $5",
+      "free": false,
+      "color": "amber"
+    },
+    {
+      "date": "2026-10-18",
+      "time": "10:00",
+      "slot": null,
+      "emoji": "🎃",
+      "category": "Pumpkin Race",
+      "name": "Giant Pumpkin Regatta",
+      "description": "Yes, really: giant hollowed-out pumpkins paddled across the pond at Tualatin Commons. Free, absurd, and the most Oregon thing you'll see all fall — plus a harvest festival on shore. This will be busy, so plan time for parking and budget time for food if you want some.",
+      "venue": "Tualatin Commons",
+      "details": "Sun 10 AM · Free",
+      "free": true,
+      "color": "teal"
+    }
+  ]
+}

@@ -3,6 +3,7 @@
   "outputDirectory": "dist",
   "installCommand": "npm install",
   "ignoreCommand": "node scripts/vercel-ignore.js",
+  "trailingSlash": true,
   "redirects": [
     { "source": "/portland-events", "destination": "https://www.pdx-events.com/", "permanent": true },
     { "source": "/portland-events/", "destination": "https://www.pdx-events.com/", "permanent": true },

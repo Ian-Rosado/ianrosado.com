@@ -18,7 +18,7 @@ recipes.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
 
     <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
       {recipes.map(recipe => (
-        <a href={`/recipes/${recipe.id}`} class="group block bg-white rounded-2xl overflow-hidden border border-stone-100 shadow-sm hover:shadow-md hover:border-orange-200 transition-all">
+        <a href={`/recipes/${recipe.id}/`} class="group block bg-white rounded-2xl overflow-hidden border border-stone-100 shadow-sm hover:shadow-md hover:border-orange-200 transition-all">
           {recipe.data.coverImage ? (
             <div class="aspect-[4/3] overflow-hidden bg-orange-50">
               <Image

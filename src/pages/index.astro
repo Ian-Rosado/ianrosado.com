@@ -47,7 +47,7 @@ const recentRecipes = recipes
       <a href="https://www.pdx-events.com" class="px-5 py-2.5 bg-orange-600 text-white text-sm font-medium rounded-full hover:bg-orange-700 transition-colors">
         Portland Events
       </a>
-      <a href="/recipes" class="px-5 py-2.5 bg-white border border-stone-200 text-stone-700 text-sm font-medium rounded-full hover:border-orange-300 hover:text-orange-600 transition-colors">
+      <a href="/recipes/" class="px-5 py-2.5 bg-white border border-stone-200 text-stone-700 text-sm font-medium rounded-full hover:border-orange-300 hover:text-orange-600 transition-colors">
         Recipes
       </a>
     </div>
@@ -78,11 +78,11 @@ const recentRecipes = recipes
     <section class="max-w-5xl mx-auto px-4 pb-12">
       <div class="flex items-baseline justify-between mb-6">
         <h2 class="text-2xl font-semibold text-stone-900" style="font-family: var(--font-serif)">Recent Recipes</h2>
-        <a href="/recipes" class="text-sm text-stone-400 hover:text-orange-600 transition-colors">All recipes →</a>
+        <a href="/recipes/" class="text-sm text-stone-400 hover:text-orange-600 transition-colors">All recipes →</a>
       </div>
       <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
         {recentRecipes.map(recipe => (
-          <a href={`/recipes/${recipe.id}`} class="group block bg-white rounded-2xl overflow-hidden border border-stone-100 shadow-sm hover:shadow-md hover:border-orange-200 transition-all">
+          <a href={`/recipes/${recipe.id}/`} class="group block bg-white rounded-2xl overflow-hidden border border-stone-100 shadow-sm hover:shadow-md hover:border-orange-200 transition-all">
             {recipe.data.coverImage && (
               <div class="aspect-[4/3] overflow-hidden bg-orange-50">
                 <img
